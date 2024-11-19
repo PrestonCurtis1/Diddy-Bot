@@ -1,6 +1,6 @@
 const fs = require('fs');
-const { Client, GatewayIntentBits } = require('discord.js');
-const { token } = require('./config.json'); // Load the bot token from config.json
+const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
+const { token, clientId } = require('./config.json'); // Load the bot token and client ID from config.json
 
 // Read pickup lines from the file
 let PICKUP_LINES = [];
@@ -14,38 +14,50 @@ try {
 
 // Create a new client instance
 const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.DirectMessages,
-    ],
+    intents: [GatewayIntentBits.Guilds]
 });
 
+// Define and register the slash command
+const commands = [
+    {
+        name: 'rizzme',
+        description: 'Receive a random pickup line!',
+    },
+];
+
+const rest = new REST({ version: '10' }).setToken(token);
+
+(async () => {
+    try {
+        console.log('Started refreshing application (/) commands.');
+
+        await rest.put(Routes.applicationCommands(clientId), {
+            body: commands,
+        });
+
+        console.log('Successfully reloaded application (/) commands.');
+    } catch (error) {
+        console.error(error);
+    }
+})();
+
+// Handle the interaction for the slash command
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isCommand()) return;
+
+    if (interaction.commandName === 'rizzme') {
+        // Send a random pickup line
+        const response = PICKUP_LINES[Math.floor(Math.random() * PICKUP_LINES.length)];
+        const reply = await interaction.reply({ content: response, fetchReply: true });
+
+        console.log(`[rizzme] User: ${interaction.user.tag}, Message: ${response}`);
+    }
+});
+
+// Log in to Discord and handle the ready event
 client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
-client.on('messageCreate', async (message) => {
-    // Check if the command is !rizzme
-    if (message.content.toLowerCase() === '!rizzme') {
-        // Log the user and the command in the console
-
-        // Send a random pickup line
-        const response = PICKUP_LINES[Math.floor(Math.random() * PICKUP_LINES.length)];
-        const botMessage = await message.reply(response)
-        console.log(`[rizzme] User: ${message.author.tag}, Message: ${response}`);
-
-        // Delete the command and the response after 30 seconds
-        setTimeout(async () => {
-            try {
-                await message.delete();
-                await botMessage.delete();
-            } catch (error) {
-                console.error('Failed to delete messages:', error);
-            }
-        }, 30000); // 30 seconds
-    }
-});
 // Login to Discord with the bot token
 client.login(token);
