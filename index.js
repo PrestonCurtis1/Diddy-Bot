@@ -15,7 +15,11 @@ try {
 
     // Create a new client instance
     const client = new Client({
-        intents: [GatewayIntentBits.Guilds]
+        intents: [
+            GatewayIntentBits.Guilds, 
+            GatewayIntentBits.GuildMessages,
+            GatewayIntentBits.MessageContent
+        ]
     });
 
     // Define and register the slash command
@@ -50,9 +54,10 @@ try {
             if (interaction.commandName === 'rizzme') {
                 // Send a random pickup line
                 const response = PICKUP_LINES[Math.floor(Math.random() * PICKUP_LINES.length)];
-                const reply = await interaction.reply({ content: response, fetchReply: true });
+                await interaction.reply({ content: response, fetchReply: true });
 
-                console.log(`[rizzme] User: ${interaction.user.tag}, Message: ${response}`);
+                const channelName = interaction.channel ? interaction.channel.name : 'DM';
+                console.log(`[rizzme] User: ${interaction.user.tag}, Channel: ${channelName}, Message: ${response}`);
             }
         } catch (error) {
             console.error('Error handling interaction:', error);
