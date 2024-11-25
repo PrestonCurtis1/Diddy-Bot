@@ -112,6 +112,8 @@ try {
     });
 
     // Login to Discord with the bot token
+    
+    client.login(token);
 } catch (err) {
     console.error('Fatal error in the script:', err);
 }
