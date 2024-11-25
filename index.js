@@ -18,7 +18,8 @@ try {
         intents: [
             GatewayIntentBits.Guilds,
             GatewayIntentBits.GuildMessages,
-            GatewayIntentBits.MessageContent
+            GatewayIntentBits.MessageContent,
+            GatewayIntentBits.DirectMessages
         ]
     });
 
@@ -108,6 +109,10 @@ try {
     });
 
     // Login to Discord with the bot token
+    client.user.setPresence({
+        activities: [{ name: 'at the Diddy Party', type: 0 }], // Type 0 is "Playing"
+        status: 'online', // Status can be 'online', 'idle', 'dnd', or 'invisible'
+    });
     client.login(token);
 } catch (err) {
     console.error('Fatal error in the script:', err);
