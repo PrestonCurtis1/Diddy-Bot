@@ -28,6 +28,18 @@ try {
             name: 'rizzme',
             description: 'Receive a random pickup line!',
         },
+        {
+            name: "oil",
+            description: "oil up your friends",
+            options: [
+                {
+                    name: 'user',
+                    type: 6, // Type 6 means 'USER' for selecting a user
+                    description: 'Choose a user to oil up',
+                    required: true, // Again, optional
+                }
+            ]
+        }
     ];
 
     const rest = new REST({ version: '10' }).setToken(token);
@@ -59,6 +71,26 @@ try {
                 const channelName = interaction.channel ? interaction.channel.name : 'DM';
                 const serverName = interaction.guild ? interaction.guild.name : 'DM';
                 console.log(`[rizzme] User: ${interaction.user.tag}, Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
+            }
+            if (interaction.commandName === 'oil') {
+                // Get the user from the command options
+                const target = interaction.options.getUser("user");
+                const oiler = interaction.user;
+            
+                if (!target) {
+                    return interaction.reply({ content: "You need to mention someone to oil up!", ephemeral: true });
+                }
+            
+                // Create the response with proper mentions and IDs
+                const response = `<@${oiler.id}> oiled up <@${target.id}>`;
+            
+                // Send the reply
+                await interaction.reply({ content: response, fetchReply: true });
+            
+                // Log details to the console
+                const channelName = interaction.channel ? interaction.channel.name : 'DM';
+                const serverName = interaction.guild ? interaction.guild.name : 'DM';
+                console.log(`[oil] Oiler: ${oiler.tag} (${oiler.id}), Target: ${target.tag} (${target.id}), Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
             }
         } catch (error) {
             console.error('Error handling interaction:', error);
