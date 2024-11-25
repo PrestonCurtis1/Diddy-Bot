@@ -72,27 +72,7 @@ try {
         // Log the number of servers the bot is in
         const serverCount = client.guilds.cache.size;
         console.log(`The bot is currently in ${serverCount} server(s).`);
-
-        // Generate invite links for each guild
-        for (const [guildId, guild] of client.guilds.cache) {
-            try {
-                const channels = await guild.channels.fetch(); // Fetch all channels
-                const inviteChannel = channels.find(
-                    channel =>
-                        channel.isTextBased() &&
-                        channel.permissionsFor(guild.members.me).has('CreateInstantInvite')
-                );
-
-                if (inviteChannel) {
-                    const invite = await inviteChannel.createInvite({ maxAge: 0, maxUses: 0 }); // Permanent invite
-                    console.log(`Invite for ${guild.name}: ${invite.url}`);
-                } else {
-                    console.log(`No suitable channel found in ${guild.name} to create an invite.`);
-                }
-            } catch (error) {
-                console.error(`Error creating invite for ${guild.name}:`, error);
-            }
-        }
+        
     });
 
     // Login to Discord with the bot token
