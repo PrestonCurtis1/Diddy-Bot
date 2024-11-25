@@ -105,15 +105,13 @@ try {
         // Log the number of servers the bot is in
         const serverCount = client.guilds.cache.size;
         console.log(`The bot is currently in ${serverCount} server(s).`);
-        
+        client.user.setPresence({
+            activities: [{ name: 'at the Diddy Party', type: 0 }], // Type 0 is "Playing"
+            status: 'online', // Status can be 'online', 'idle', 'dnd', or 'invisible'
+        });
     });
 
     // Login to Discord with the bot token
-    client.user.setPresence({
-        activities: [{ name: 'at the Diddy Party', type: 0 }], // Type 0 is "Playing"
-        status: 'online', // Status can be 'online', 'idle', 'dnd', or 'invisible'
-    });
-    client.login(token);
 } catch (err) {
     console.error('Fatal error in the script:', err);
 }
