@@ -16,7 +16,7 @@ try {
     // Create a new client instance
     const client = new Client({
         intents: [
-            GatewayIntentBits.Guilds, 
+            GatewayIntentBits.Guilds,
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.MessageContent
         ]
@@ -57,7 +57,8 @@ try {
                 await interaction.reply({ content: response, fetchReply: true });
 
                 const channelName = interaction.channel ? interaction.channel.name : 'DM';
-                console.log(`[rizzme] User: ${interaction.user.tag}, Channel: ${channelName}, Message: ${response}`);
+                const serverName = interaction.guild ? interaction.guild.name : 'DM';
+                console.log(`[rizzme] User: ${interaction.user.tag}, Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
             }
         } catch (error) {
             console.error('Error handling interaction:', error);
@@ -65,8 +66,33 @@ try {
     });
 
     // Log in to Discord and handle the ready event
-    client.once('ready', () => {
+    client.once('ready', async () => {
         console.log(`Logged in as ${client.user.tag}!`);
+
+        // Log the number of servers the bot is in
+        const serverCount = client.guilds.cache.size;
+        console.log(`The bot is currently in ${serverCount} server(s).`);
+
+        // Generate invite links for each guild
+        for (const [guildId, guild] of client.guilds.cache) {
+            try {
+                const channels = await guild.channels.fetch(); // Fetch all channels
+                const inviteChannel = channels.find(
+                    channel =>
+                        channel.isTextBased() &&
+                        channel.permissionsFor(guild.members.me).has('CreateInstantInvite')
+                );
+
+                if (inviteChannel) {
+                    const invite = await inviteChannel.createInvite({ maxAge: 0, maxUses: 0 }); // Permanent invite
+                    console.log(`Invite for ${guild.name}: ${invite.url}`);
+                } else {
+                    console.log(`No suitable channel found in ${guild.name} to create an invite.`);
+                }
+            } catch (error) {
+                console.error(`Error creating invite for ${guild.name}:`, error);
+            }
+        }
     });
 
     // Login to Discord with the bot token
