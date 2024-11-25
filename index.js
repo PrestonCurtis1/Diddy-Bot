@@ -28,10 +28,12 @@ try {
         {
             name: 'rizzme',
             description: 'Receive a random pickup line!',
+            dm_permission: true
         },
         {
             name: "oil",
             description: "oil up your friends",
+            dm_permission: true,
             options: [
                 {
                     name: 'user',
