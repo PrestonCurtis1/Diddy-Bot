@@ -42,6 +42,10 @@ try {
                     required: true, // Again, optional
                 }
             ]
+        },
+        {
+            name: "author",
+            description: "Get the author of this app"
         }
     ];
 
@@ -94,6 +98,13 @@ try {
                 const channelName = interaction.channel ? interaction.channel.name : 'DM';
                 const serverName = interaction.guild ? interaction.guild.name : 'DM';
                 console.log(`[oil] Oiler: ${oiler.tag} (${oiler.id}), Target: ${target.tag} (${target.id}), Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
+            }
+            if (interaction.commandName === 'author') {
+                const response = "the author of <@1305713838775210015> is <@790709753138905129>";
+                await interaction.reply({content: response, fetchReply: true});
+                const channelName = interaction.channel ? interaction.channel.name : 'DM';
+                const serverName = interaction.guild ? interaction.guild.name : 'DM';
+                console.log(`[author] User: ${interaction.user.tag}} (${interaction.user.id}) Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
             }
         } catch (error) {
             console.error('Error handling interaction:', error);
