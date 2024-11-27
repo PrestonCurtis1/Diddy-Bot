@@ -3,4 +3,5 @@ config.json
 discloud.config
 .vscode/
 userMessageLists.json
-announcement
+discordlaunch
+aurasystem

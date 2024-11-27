@@ -4,13 +4,10 @@ try {
     const fs = require('fs');
     const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json'); // Load the bot token and client ID from config.json
-    const aura = require("./aura.js");
-    function calculateExp(userId){
+    const aura = require("./aura.js");//the system used for updating load and saving aura
+    function calculateAura(userId){//function used to calcutate a users aura
         try {
         const MessageList = aura.loadUserMessageLists()[`${userId}`];
-        console.log(`${aura.loadUserMessageLists()}`)
-        console.log(`${MessageList}`);
-        console.log(`${userId}`);
         const MessageTotal = MessageList[0];
         const Multiplier = 1+(MessageList[0]/MessageList[1])/100;
         const totalAura = MessageTotal * Multiplier;
@@ -23,7 +20,7 @@ try {
     // Read pickup lines from the file
     let PICKUP_LINES = [];
     try {
-        const data = fs.readFileSync('./pickup_lines.txt', 'utf8');
+        const data = fs.readFileSync('./pickup_lines.txt', 'utf8');//the file containing all the pickuplines
         PICKUP_LINES = data.split('\n').filter(line => line.trim() !== ''); // Remove empty lines
     } catch (err) {
         console.error('Error reading pickup_lines.txt:', err);
@@ -44,13 +41,14 @@ try {
 
     // Define and register the slash command
     const commands = [
+        //Theres a snake in my boot
         {
-            name: 'rizzme',
+            name: 'rizzme',//deliver random pickup line 
             description: 'Receive a random pickup line!',
             dm_permission: true
         },
         {
-            name: "oil",
+            name: "oil",//oil me up brosquito
             description: "oil up your friends",
             dm_permission: true,
             options: [
@@ -63,12 +61,12 @@ try {
             ]
         },
         {
-            name: "author",
+            name: "author",//prints the author of the bot
             description: "Get the author of this app",
             dm_permission: true
         },
         {
-            name: "announce",
+            name: "announce",//only available for developers of this bot
             description: "Send a dm to server admins",
             dm_permission: true,
             options: [
@@ -81,8 +79,8 @@ try {
             ]
         },
         {
-            name: "getaura",
-            description: "display a users experience",
+            name: "getaura",//getaurea OM NOM
+            description: "display a users aura",
             dm_permission: true,
             options: [
                 {
@@ -95,8 +93,9 @@ try {
         }
     ];
 
+    //idk wtf this does tbh
     const rest = new REST({ version: '10' }).setToken(JSONConfig.token);
-
+    //register the / commands
     (async () => {
         try {
             console.log('Started refreshing application (/) commands.');
@@ -112,7 +111,7 @@ try {
     })();
 
     // Handle the interaction for the slash command
-    client.on('interactionCreate', async (interaction) => {
+    client.on('interactionCreate', async (interaction) => {//handle the / command interactions OMFG im loosing my
         try {
             if (!interaction.isCommand()) return;
 
@@ -156,58 +155,49 @@ try {
                 USER_IDS = ["790709753138905129","1287135434954113104"];
                 const announcementFile = interaction.options.getString("message")
                 const announcementMessage = fs.readFileSync(`./${announcementFile}`,"utf-8");
-                console.log("test1");
                 if (!USER_IDS.includes(interaction.user.id)){
-                    await interaction.reply({content: "You are not authorized to use this command", fetchReply: true, ephemeral : true});
-                    console.log("test2");
+                    await interaction.reply({content: "You are not authorized to use this command", fetchReply: true, ephemeral : false});
                     return;
                 }
                 try {
-                    await interaction.reply({content: "Sending announcement...", fetchReply: true, ephemeral: true});
-                    console.log("test3");
+                    await interaction.reply({content: "Sending announcement...", fetchReply: true, ephemeral: false});
                     let successCount = 0;
                     let failCount = 0;
                     for (const guild of client.guilds.cache.values()){
                         try {
-                            console.log("test4");
                             const members = await guild.members.fetch();
 
                             const admins = members.filter(member =>
                                 member.permissions.has(PermissionsBitField.Flags.Administrator) &&
                                 !member.user.bot
                             );
-                            console.log("test5");
                             for (const admin of admins.values()){
                                 try {
-                                    console.log("test6");
                                     await admin.send(announcementMessage);
                                     console.log(`Message sent to ${admin.user.tag} in ${guild.name}`);
                                     successCount++;
                                 } catch (error){
-                                    console.log("test7");
-                                    console.log(`Failed to message ${admin.user.tag} in ${guild.name}`);
+                                    console.log(`Failed to message ${admin.user.tag} in ${guild.name} error: ${error}`);
                                     failCount++;
                                 }
                             }
-                            console.log("test8");
                             } catch (error) {
                                 console.log(`Failed to fetch members in ${guild.name}`);
                                 failCount++;
                             }
                         }
-                        console.log("test9");
-                        await interaction.followUp({content:`Announcement sent! Success: ${successCount} Failed: ${failCount}`, ephemeral: true})
+                        await interaction.followUp({content:`Announcement sent! Success: ${successCount} Failed: ${failCount}`, ephemeral: false})
                         console.log(`Announcement sent! Success: ${successCount} Failed: ${failCount}`)
                 } catch (error) {
                     console.log('error sending announcements', error)
                 }
-                console.log("test10");
                 console.log(`[announce] user: ${interaction.user.tag} Server: ${interaction.guild.name} Channel: ${interaction.channel.name}`)
             }
             if (interaction.commandName === "getaura") {
-                user = interaction.options.getUser("member")// ?? interaction.user;
+                const user = interaction.options.getUser("member")
                 if (user === undefined || user === null) user = interaction.user;
-                const response = `<@${user.id}> has ${Math.floor(calculateExp(user.id))} aura`;
+                const CalculatedAura = Math.floor(calculateAura(user.id))
+                const response = `<@${user.id}> has ${CalculatedAura} aura and has a sigma level of ${Math.floor(CalculatedAura/150)}`;
                 await interaction.reply({content: response, fetchReply: true});
                 console.log(`[getaura] user: ${interaction.user.tag} Server: ${interaction.guild.name} Channel: ${interaction.channel.name} Response: ${response}`);
             }
