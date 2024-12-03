@@ -29,7 +29,7 @@ try {
             const MessageTotal = MessageList[0];
             const Multiplier = 1+(MessageList[0]/MessageList[1])/100;
             const totalAura = MessageTotal * Multiplier;
-            return totalAura;
+            return totalAura;//(Math.floor(userMessageLists[userId][0]/userMessageLists[userId][1]))
         } catch (error){
             utilities.sendMessage(`error occured calculating aura for${userId}`,error)
             return 0;
@@ -40,8 +40,13 @@ try {
         if (!userMessageLists[userId]){
             userMessageLists[userId] = [0,0];//the equivelent of them sending one message with them having to send a message
         }
-        userMessageLists[userId][0] += amount;
-        userMessageLists[userId][1] += amount/(userMessageLists[0]/[userMessageLists[1]]);//amount divided by average
+        if (amount < 0){
+            userMessageLists[userId][0] += amount/(Math.ceil(userMessageLists[userId][0]/userMessageLists[userId][1]));
+        } else{
+            userMessageLists[userId][0] += amount;
+        }
+        utilities.sendMessage(`GIVEAURA multiplier ${Math.floor(amount/(userMessageLists[userId][0]/Math.abs([userMessageLists[userId][1]])))}`)
+        userMessageLists[userId][1] += Math.floor(amount/(userMessageLists[userId][0]/Math.abs([userMessageLists[userId][1]])));//amount divided by average
         saveUserMessageLists();
     }
 
