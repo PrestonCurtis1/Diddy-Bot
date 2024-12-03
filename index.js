@@ -1,29 +1,20 @@
 const { deserialize } = require('v8');
 
+
 try {
     const fs = require('fs');
     const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json'); // Load the bot token and client ID from config.json
     const aura = require("./aura.js");//the system used for updating load and saving aura
-    function calculateAura(userId){//function used to calcutate a users aura
-        try {
-        const MessageList = aura.loadUserMessageLists()[`${userId}`];
-        const MessageTotal = MessageList[0];
-        const Multiplier = 1+(MessageList[0]/MessageList[1])/100;
-        const totalAura = MessageTotal * Multiplier;
-        return totalAura;
-        } catch (error){
-            console.log(`error occured calculating aura for${userId}`)
-            return 0;
-        }
-    }
+    const shop = require("./shop.js");
+    const utilities = require ("./utilities.js");    
     // Read pickup lines from the file
     let PICKUP_LINES = [];
     try {
         const data = fs.readFileSync('./pickup_lines.txt', 'utf8');//the file containing all the pickuplines
         PICKUP_LINES = data.split('\n').filter(line => line.trim() !== ''); // Remove empty lines
-    } catch (err) {
-        console.error('Error reading pickup_lines.txt:', err);
+    } catch (error) {
+        utilities.sendMessage(`Error reading pickup_lines.txt: ${error}`);
         process.exit(1); // Exit if the file cannot be read
     }
 
@@ -61,7 +52,7 @@ try {
             ]
         },
         {
-            name: "author",//prints the author of the bot
+            name: "authors",//prints the author of the bot
             description: "Get the author of this app",
             dm_permission: true
         },
@@ -87,9 +78,72 @@ try {
                     name: "member",
                     type: 6,
                     description: "User to get aura of",
-                    required: false
+                    required: true
                 }
             ]
+        },
+        {
+            name: "diddle",
+            description: "Diddle your friends",
+            dm_permission: true,
+            options: [
+                {
+                    name: 'user',
+                    type: 6,
+                    description: 'Choose a user to diddle',
+                    required: true
+                }
+            ]
+        },
+        {
+            name: "addShopRole".toLowerCase(),
+            description: "add a role to your servers shop",
+            dm_permission: true,
+            options: [
+                {
+                    name: "role",
+                    type: 8,
+                    description: "role to add",
+                    required: true
+                },
+                {
+                    name: "price",
+                    type: 10,
+                    description: "aura needed for the role",
+                    required: true
+                }
+            ]
+        },
+        {
+            name: "removeShopRole".toLowerCase(),
+            description: "remove a role from your shop",
+            dm_permission: true,
+            options: [
+                {
+                    name: "role",
+                    type: 8,
+                    description: "role to remove",
+                    required: true
+                }
+            ]
+        },
+        {
+            name: "buyShopRole".toLowerCase(),
+            description: "buy a role from shop",
+            dm_permission: true,
+            options: [
+                {
+                    name: "role",
+                    type: 8,
+                    description: "role to buy",
+                    required: true
+                }
+            ]
+        },
+        {
+            name:"shop",
+            description: "list the roles you can buy",
+            dm_permission: true
         }
     ];
 
@@ -98,18 +152,17 @@ try {
     //register the / commands
     (async () => {
         try {
-            console.log('Started refreshing application (/) commands.');
+            utilities.sendMessage('Started refreshing application (/) commands.');
 
             await rest.put(Routes.applicationCommands(JSONConfig.clientId), {
                 body: commands,
             });
 
-            console.log('Successfully reloaded application (/) commands.');
+            utilities.sendMessage('Successfully reloaded application (/) commands.');
         } catch (error) {
-            console.error('Error registering commands:', error);
+            utilities.sendMessage(`Error registering commands: ${error}`);
         }
     })();
-
     // Handle the interaction for the slash command
     client.on('interactionCreate', async (interaction) => {//handle the / command interactions OMFG im loosing my
         try {
@@ -122,7 +175,7 @@ try {
 
                 const channelName = interaction.channel ? interaction.channel.name : 'DM';
                 const serverName = interaction.guild ? interaction.guild.name : 'DM';
-                console.log(`[rizzme] User: ${interaction.user.tag}, Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
+                utilities.sendMessage(`[rizzme] User: ${interaction.user.tag}, Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
             }
             if (interaction.commandName === 'oil') {
                 // Get the user from the command options
@@ -142,14 +195,14 @@ try {
                 // Log details to the console
                 const channelName = interaction.channel ? interaction.channel.name : 'DM';
                 const serverName = interaction.guild ? interaction.guild.name : 'DM';
-                console.log(`[oil] Oiler: ${oiler.tag} (${oiler.id}), Target: ${target.tag} (${target.id}), Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
+                utilities.sendMessage(`[oil] Oiler: ${oiler.tag} (${oiler.id}), Target: ${target.tag} (${target.id}), Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
             }
-            if (interaction.commandName === 'author') {
-                const response = "the author of <@1305713838775210015> is <@790709753138905129>";
+            if (interaction.commandName === 'authors') {
+                const response = "the authors of <@1305713838775210015> are <@790709753138905129> and <@799101657647415337>";
                 await interaction.reply({content: response, fetchReply: true});
                 const channelName = interaction.channel ? interaction.channel.name : 'DM';
                 const serverName = interaction.guild ? interaction.guild.name : 'DM';
-                console.log(`[author] User: ${interaction.user.tag}} (${interaction.user.id}) Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
+                utilities.sendMessage(`[authors] User: ${interaction.user.tag}} (${interaction.user.id}) Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
             }
             if (interaction.commandName === "announce"){
                 USER_IDS = ["790709753138905129","1287135434954113104"];
@@ -165,54 +218,77 @@ try {
                     let failCount = 0;
                     for (const guild of client.guilds.cache.values()){
                         try {
-                            const members = await guild.members.fetch();
-
-                            const admins = members.filter(member =>
-                                member.permissions.has(PermissionsBitField.Flags.Administrator) &&
-                                !member.user.bot
-                            );
-                            for (const admin of admins.values()){
-                                try {
-                                    await admin.send(announcementMessage);
-                                    console.log(`Message sent to ${admin.user.tag} in ${guild.name}`);
-                                    successCount++;
-                                } catch (error){
-                                    console.log(`Failed to message ${admin.user.tag} in ${guild.name} error: ${error}`);
-                                    failCount++;
-                                }
-                            }
+                            const owner = await guild.fetchOwner();
+                            await owner.send(announcementMessage);
+                            utilities.sendMessage(`Message sent to ${owner.user.tag} in ${guild.name}`);
+                            successCount++;
+                            
                             } catch (error) {
-                                console.log(`Failed to fetch members in ${guild.name}`);
+                                utilities.sendMessage(`Failed to message the owner of ${guild.name} error: ${error}`);
                                 failCount++;
                             }
                         }
                         await interaction.followUp({content:`Announcement sent! Success: ${successCount} Failed: ${failCount}`, ephemeral: false})
-                        console.log(`Announcement sent! Success: ${successCount} Failed: ${failCount}`)
+                        utilities.sendMessage(`Announcement sent! Success: ${successCount} Failed: ${failCount}`)
                 } catch (error) {
-                    console.log('error sending announcements', error)
+                    utilities.sendMessage(`error sending announcements, ${error}`)
                 }
-                console.log(`[announce] user: ${interaction.user.tag} Server: ${interaction.guild.name} Channel: ${interaction.channel.name}`)
+                utilities.sendMessage(`[announce] user: ${interaction.user.tag} Server: ${interaction.guild.name} Channel: ${interaction.channel.name}`)
             }
             if (interaction.commandName === "getaura") {
                 const user = interaction.options.getUser("member")
                 if (user === undefined || user === null) user = interaction.user;
-                const CalculatedAura = Math.floor(calculateAura(user.id))
+                const CalculatedAura = Math.floor(aura.calculateAura(user.id))
                 const response = `<@${user.id}> has ${CalculatedAura} aura and has a sigma level of ${Math.floor(CalculatedAura/150)}`;
                 await interaction.reply({content: response, fetchReply: true});
-                console.log(`[getaura] user: ${interaction.user.tag} Server: ${interaction.guild.name} Channel: ${interaction.channel.name} Response: ${response}`);
+                utilities.sendMessage(`[getaura] user: ${interaction.user.tag} Server: ${interaction.guild.name} Channel: ${interaction.channel.name} Response: ${response}`);
+            }
+            if (interaction.commandName === "diddle") {
+                // Get the user from the command options
+                const target = interaction.options.getUser("user");
+
+                if (!target) {
+                    return interaction.reply({ content: "You need to mention someone to diddle!", fetchReply: true, ephemeral: true });
+                }
+
+                // Create the response with proper mention and ID
+                const response = `<@${target.id}> has been diddled`;
+
+                // Send the reply
+                await interaction.reply({ content: response, fetchReply: true });
+
+                const channelName = interaction.channel ? interaction.channel.name : 'DM';
+                const serverName = interaction.guild ? interaction.guild.name : 'DM';
+                utilities.sendMessage(`[diddle] User: ${interaction.user.tag} Target: ${target.tag} (${target.id}), Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
+            }
+            if (interaction.commandName === "addShopRole".toLowerCase()){
+                const response = shop.addShopRole(interaction.member.permissions.has(PermissionsBitField.Flags.Administrator),interaction.options.getRole("role"),interaction.options.getNumber("price"),interaction.guild.id);
+                interaction.reply({content: response, fetchReply: true})
+            }
+            if (interaction.commandName === "removeShopRole".toLowerCase()){
+                const response = shop.removeShopRole(interaction.member.permissions.has(PermissionsBitField.Flags.Administrator),interaction.options.getRole("role"),interaction.guild.id);
+                interaction.reply({content: response, fetchReply: true})
+            }
+            if (interaction.commandName === "buyShopRole".toLowerCase()){
+                const response = await shop.buyShopRole(interaction.options.getRole("role"),interaction.user.id,interaction.guild.id);
+                interaction.reply({content: response, fetchReply: true})
+            }
+            if (interaction.commandName === "shop"){
+                const response = shop.listShopRoles(interaction.guild.id);
+                interaction.reply({content: response, fetchReply: true})
             }
         } catch (error) {
-            console.error('Error handling interaction:', error);
+            utilities.sendMessage(`Error handling interaction:, ${error}`);
         }
     });
 
     // Log in to Discord and handle the ready event
     client.once('ready', async () => {
-        console.log(`Logged in as ${client.user.tag}! index.js`);
+        utilities.sendMessage(`Logged in as ${client.user.tag}! index.js`);
 
         // Log the number of servers the bot is in
         const serverCount = client.guilds.cache.size;
-        console.log(`The bot is currently in ${serverCount} server(s).`);
+        utilities.sendMessage(`The bot is currently in ${serverCount} server(s).`);
         client.user.setPresence({
             activities: [{ name: 'at the Diddy Party', type: 0 }], // Type 0 is "Playing"
             status: 'online', // Status can be 'online', 'idle', 'dnd', or 'invisible'
@@ -220,8 +296,7 @@ try {
     });
 
     // Login to Discord with the bot token
-    
     client.login(JSONConfig.token);
 } catch (err) {
-    console.error('Fatal error in the script: index.js', err);
+    utilities.sendMessage("Fatal error in the script: index.js"+err+"");
 }

@@ -4,14 +4,14 @@ try {
     const path = './userMessageLists.json'; // Path to store the user-specific message lists
     const JSONConfig = require("./config.json");
     const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
-
+    const utilities = require("./utilities.js");
     let userMessageLists = {}; // Object to store message lists for each user
 
     // Function to load the user message lists from the file
     function loadUserMessageLists() {
     if (fs.existsSync(path)) {
         const data = fs.readFileSync(path, 'utf-8');
-        console.log("loaded userMessageLists");
+        utilities.sendMessage("loaded userMessageLists");
         return JSON.parse(data); // Parse the JSON data into an object
     }
     return {}; // Return an empty object if the file doesn't exist
@@ -20,7 +20,29 @@ try {
     // Function to save the user message lists to the file
     function saveUserMessageLists() {
     fs.writeFileSync(path, JSON.stringify(userMessageLists, null, 2), 'utf-8'); // Save as JSON
-    console.log("saved userMessageLists");
+    utilities.sendMessage("saved userMessageLists");
+    }
+
+    function calculateAura(userId){//function used to calcutate a users aura
+        try {
+            const MessageList = loadUserMessageLists()[userId];
+            const MessageTotal = MessageList[0];
+            const Multiplier = 1+(MessageList[0]/MessageList[1])/100;
+            const totalAura = MessageTotal * Multiplier;
+            return totalAura;
+        } catch (error){
+            utilities.sendMessage(`error occured calculating aura for${userId}`,error)
+            return 0;
+        }
+    }
+
+    function giveAura(userId,amount){
+        if (!userMessageLists[userId]){
+            userMessageLists[userId] = [0,0];//the equivelent of them sending one message with them having to send a message
+        }
+        userMessageLists[userId][0] += amount;
+        userMessageLists[userId][1]++;
+        saveUserMessageLists();
     }
 
     // Load the user message lists when the bot starts
@@ -29,7 +51,6 @@ try {
     // Message creation event
     client.on('messageCreate', (message) => {
     if (message.author.bot) return; // Ignore bot messages
-    console.log(`${message.author.tag} sent message in server ${message.guild.name} channel ${message.channel.name}`);
     const userId = message.author.id; // Get the user's ID
 
     // Initialize message list for the user if not already
@@ -49,7 +70,6 @@ try {
 
     // Handle message deletions by the user
     client.on('messageDelete', (message) => {
-        console.log(`${message.author.tag} had message deleted in server ${message.guild.name} channel ${message.channel.name}`);
     if (message.author.bot) return; // Ignore bot messages
 
     const userId = message.author.id; // Get the user's ID
@@ -70,7 +90,6 @@ try {
     if (oldMember.communicationDisabledUntil !== newMember.communicationDisabledUntil) {
         const userId = newMember.id;
         const timeoutDuration = (newMember.communicationDisabledUntil - Date.now()) / 1000 / 3600; // Timeout duration in hours
-        console.log(`${newMember.tag} was timed out for ${timeoutDuration} hours`);
         if (timeoutDuration > 0) {
         const timeoutPunishment = (100 * timeoutDuration)*-1;
 
@@ -87,14 +106,16 @@ try {
     // Optionally, save periodically (every 5 minutes) to ensure the user message lists are updated regularly
     setInterval(saveUserMessageLists, 60 * 1000); // Save every 1 minutes
     client.once("ready", async () => {
-        console.log(`Logged in as ${client.user.tag}! aura.js`);
+        utilities.sendMessage(`Logged in as ${client.user.tag}! aura.js`);
     })
     // Log in to the bot
     module.exports = {
         saveUserMessageLists,
         loadUserMessageLists,
+        calculateAura,
+        giveAura,
     };
     client.login(JSONConfig.token);
-} catch (err) {
-    console.error('Fatal error in the script: aura.js', err);
+} catch (error) {
+    console.error('Fatal error in the script: aura.js', error);
 }
