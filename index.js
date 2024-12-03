@@ -144,6 +144,25 @@ try {
             name:"shop",
             description: "list the roles you can buy",
             dm_permission: true
+        },
+        {
+            name:"giveAura".toLowerCase(),
+            description: "give aura to a user (bot admins only)",
+            dm_permission: true,
+            options: [
+                {
+                    name: "user",
+                    type:6,
+                    description: "user to give aura to",
+                    required:true
+                },
+                {
+                    name: "aura",
+                    type: 10,
+                    description: "amount of aura to give",
+                    required: true
+                }
+            ]
         }
     ];
 
@@ -276,6 +295,20 @@ try {
             if (interaction.commandName === "shop"){
                 const response = shop.listShopRoles(interaction.guild.id);
                 interaction.reply({content: response, fetchReply: true})
+            }
+            if (interaction.commandName === "giveAura".toLowerCase()){
+                admins = ["799101657647415337","1215373521463681147","790709753138905129"];
+                let message;
+                if (admins.includes(interaction.user.id)){
+                    const target = interaction.options.getUser("user");
+                    const auraPrice = interaction.options.getNumber("aura")
+                    aura.giveAura(target.id,auraPrice);
+                    message = `<@${target.id}> has been given ${auraPrice} aura by <@${interaction.user.id}>`;
+                } else {
+                    message = `this command can only be run by bot admins`;
+                }
+                interaction.reply({content: message, fetchReply: true});
+                utilities.sendMessage(`[giveAura] server:\t${interaction.guild.name} channel:\t${interaction.channel.name} target:\t${target.name} user:\t${interaction.user.name} price\t${auraPrice} message:\t${message}`)
             }
         } catch (error) {
             utilities.sendMessage(`Error handling interaction:, ${error}`);

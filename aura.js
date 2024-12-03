@@ -41,7 +41,7 @@ try {
             userMessageLists[userId] = [0,0];//the equivelent of them sending one message with them having to send a message
         }
         userMessageLists[userId][0] += amount;
-        userMessageLists[userId][1]++;
+        userMessageLists[userId][1] += amount/(userMessageLists[0]/[userMessageLists[1]]);//amount divided by average
         saveUserMessageLists();
     }
 

@@ -17,7 +17,6 @@ try {
             GatewayIntentBits.GuildMembers
         ]
     });
-
     function loadShopLists() {
         if (fs.existsSync(path)) {
             const data = fs.readFileSync(path, 'utf-8');
@@ -51,11 +50,11 @@ try {
             } else {// Filter the roles to remove the specified roleId
                 shopLists[guildId] = shopLists[guildId].filter(guildShop => guildShop["roleId"] !== roleId.id);// Check if the role was removed or didn't exist
                 if (shopLists[guildId].length === 0 || !shopLists[guildId].some(guildShop => guildShop["roleId"] === roleId.id)) {
+                    saveShopLists(); // Save the updated shop list
                     return `Role <@&${roleId.id}> removed from shop.`;
                 } else {
                     return `Failed to remove role <@&${roleId.id}> from shop.`;
                 }
-                saveShopLists(); // Save the updated shop list
             }
         } else {
             return `Admin permissions are required in this server to run this command.`;
@@ -77,7 +76,7 @@ try {
                     utilities.sendMessage(`${userId} bought role <@&${roleId.id}> for ${price} in ${guild.id}`);
                     const guildOwner = await guild.ownerId;
                     aura.giveAura(userId,-1*price);
-                    aura.giveAura(guildOwner.id,price);
+                    aura.giveAura(guildOwner,price);
                     return `Bought role <@&${roleId.id}> for ${price} aura`;
                 } else {
                     return `Insufficient Aura\nthe role <@&${roleId.id}> cost ${price} aura\nyou only have ${totalAura} aura`;

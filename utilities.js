@@ -19,6 +19,7 @@ async function sendMessage(logMessage,guildId="1310772622044168275", channelId="
 
         // Check if the channel is text-based and send the message
         if (channel.isTextBased()) {
+            //use console.log instead of sendMessage in this function because other-wise it will loop infinitely
             await channel.send(logMessage);
             console.log(`Message sent to ${channel.name} in guild ${guild.name}: ${logMessage}`);
         } else {
@@ -28,15 +29,25 @@ async function sendMessage(logMessage,guildId="1310772622044168275", channelId="
         console.error('Error sending message:', error);
     }
 }
+async function guildIdToName(guildId){
+    const guild = client.guilds.cache.get(guildId);
+
+    if (guild) {
+        sendMessage(`The name of the guild with ID ${guildId} is: ${guild.name}`);
+    } else {
+        sendMessage(`Guild with ID ${guildId} not found.`);
+    }
+    return guild.name;
+}
 
 // When the client is ready, you can use the sendMessage function
 client.once('ready', () => {
     sendMessage(`Logged in as ${client.user.tag} utilities.js`);
-    
     // Example usage: Send a message to a specific server and channel
 });
 module.exports = {
     sendMessage,
+    guildIdToName,
 }
 // Log in with your bot token
 client.login(JSONConfig.token);
