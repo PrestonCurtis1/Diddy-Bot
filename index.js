@@ -163,6 +163,11 @@ try {
                     required: true
                 }
             ]
+        },
+        {
+            name: "discord",
+            description: "Join our discord server",
+            dm_permission: true
         }
     ];
 
@@ -257,6 +262,7 @@ try {
             if (interaction.commandName === "getaura") {
                 const user = interaction.options.getUser("member")
                 if (user === undefined || user === null) user = interaction.user;
+                utilities.sendMessage(`user index.js ${user.id}`)
                 const CalculatedAura = Math.floor(aura.calculateAura(user.id))
                 const response = `<@${user.id}> has ${CalculatedAura} aura and has a sigma level of ${Math.floor(CalculatedAura/150)}`;
                 await interaction.reply({content: response, fetchReply: true});
@@ -293,7 +299,7 @@ try {
                 interaction.reply({content: response, fetchReply: true})
             }
             if (interaction.commandName === "shop"){
-                const response = shop.listShopRoles(interaction.guild.id);
+                const response = shop.listShopRoles(interaction.guild.id,interaction.user.id);
                 interaction.reply({content: response, fetchReply: true})
             }
             if (interaction.commandName === "giveAura".toLowerCase()){
@@ -309,6 +315,9 @@ try {
                 }
                 interaction.reply({content: message, fetchReply: true});
                 utilities.sendMessage(`[giveAura] server:\t${interaction.guild.name} channel:\t${interaction.channel.name} target:\t${target.name} user:\t${interaction.user.name} price\t${auraPrice} message:\t${message}`)
+            }
+            if (interaction.commandName === "discord"){
+                interaction.reply({content: "Join our diddy-bot community  [discord server](https://discord.gg/u6AVRt7Bgm)",fetchReply:true});
             }
         } catch (error) {
             utilities.sendMessage(`Error handling interaction:, ${error}`);

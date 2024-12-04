@@ -5,7 +5,6 @@ try {
     const JSONConfig = require("./config.json");
     const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
     const utilities = require("./utilities.js");
-    let userMessageLists = {}; // Object to store message lists for each user
 
     // Function to load the user message lists from the file
     function loadUserMessageLists() {
@@ -16,16 +15,23 @@ try {
     }
     return {}; // Return an empty object if the file doesn't exist
     }
+    let userMessageLists = loadUserMessageLists(); // Object to store message lists for each user
 
     // Function to save the user message lists to the file
     function saveUserMessageLists() {
-    fs.writeFileSync(path, JSON.stringify(userMessageLists, null, 2), 'utf-8'); // Save as JSON
-    utilities.sendMessage("saved userMessageLists");
+        for (const messageList in userMessageLists){
+            if (userMessageLists[messageList][1] <= 0){//set to 0 if negative
+                userMessageLists[messageList][1] = 1;
+            }
+        }
+        fs.writeFileSync(path, JSON.stringify(userMessageLists, null, 2), 'utf-8'); // Save as JSON
+        utilities.sendMessage("saved userMessageLists");
     }
 
     function calculateAura(userId){//function used to calcutate a users aura
         try {
             const MessageList = loadUserMessageLists()[userId];
+            utilities.sendMessage("messagelist3"+MessageList)
             const MessageTotal = MessageList[0];
             const Multiplier = 1+(MessageList[0]/MessageList[1])/100;
             const totalAura = MessageTotal * Multiplier;
@@ -35,18 +41,43 @@ try {
             return 0;
         }
     }
-
+    function getMultiplier(userId){
+        const messageList = userMessageLists[userId];
+        const messageTotal = messageList[0];
+        const messageDividend = messageList[1];
+        const messageAverage = (messageTotal/messageDividend);
+        const multiplier = 1+(messageAverage/100);
+        return multiplier
+    }
     function giveAura(userId,amount){
         if (!userMessageLists[userId]){
             userMessageLists[userId] = [0,0];//the equivelent of them sending one message with them having to send a message
         }
-        if (amount < 0){
-            userMessageLists[userId][0] += amount/(Math.ceil(userMessageLists[userId][0]/userMessageLists[userId][1]));
-        } else{
-            userMessageLists[userId][0] += amount;
+        if (amount > 0){//if amount is negative
+            userMessageLists[userId][0] += amount/getMultiplier(userId);
+            userMessageLists[userId][1]--;
+        } else{//if amount is positive
+            userMessageLists[userId][0] += amount/getMultiplier(userId);
+            userMessageLists[userId][1]++;
         }
-        utilities.sendMessage(`GIVEAURA multiplier ${Math.floor(amount/(userMessageLists[userId][0]/Math.abs([userMessageLists[userId][1]])))}`)
-        userMessageLists[userId][1] += Math.floor(amount/(userMessageLists[userId][0]/Math.abs([userMessageLists[userId][1]])));//amount divided by average
+        saveUserMessageLists();
+    }
+    function pay(senderId,receiverId,auraAmount){
+        if (auraAmount <= 0){
+            return "must be positive"
+        }
+        if (userMessageLists[senderId][0] < auraAmount ){
+            return `insufficient funds ${userMessageLists[senderId][0]} < ${auraAmount}`
+        } else{
+            userMessageLists[senderId][0] -= auraAmount;
+            userMessageLists[senderId][1]--;
+            if (!userMessageLists[receiverId]){
+                userMessageLists[receiverId] = [0,0];
+            }
+            userMessageLists[receiverId][0] += auraAmount;
+            userMessageLists[receiverId][1] ++;
+            utilities.sendMessage("om nom");
+        }
         saveUserMessageLists();
     }
 
@@ -119,6 +150,8 @@ try {
         loadUserMessageLists,
         calculateAura,
         giveAura,
+        pay,
+        getMultiplier,
     };
     client.login(JSONConfig.token);
 } catch (error) {

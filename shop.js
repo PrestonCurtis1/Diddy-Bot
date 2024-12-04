@@ -64,6 +64,7 @@ try {
     async function buyShopRole(roleId,userId,guildId){
         try{
             const totalAura = aura.calculateAura(userId);
+            multiplier = aura.getMultiplier(userId);
             const price = shopLists[guildId].filter(role => role["roleId"] === roleId.id)[0]["price"];
             if (!shopLists[guildId].filter(role => role["roleId"] === roleId.id)[0]["roleId"]){
                 return "Role not found in shop";
@@ -74,27 +75,32 @@ try {
                     const role = guild.roles.cache.get(roleId.id);
                     await member.roles.add(role);
                     utilities.sendMessage(`${userId} bought role <@&${roleId.id}> for ${price} in ${guild.id}`);
-                    const guildOwner = await guild.ownerId;
-                    aura.giveAura(userId,-1*price);
-                    aura.giveAura(guildOwner,price);
+                    const guildOwner = guild.ownerId;
+                    utilities.sendMessage("om nom 1"+guildOwner);
+                    // aura.giveAura(userId,-1*price);
+                    // aura.giveAura(guildOwner,price);
+                    aura.pay(userId,guildOwner,price/multiplier);
                     return `Bought role <@&${roleId.id}> for ${price} aura`;
                 } else {
                     return `Insufficient Aura\nthe role <@&${roleId.id}> cost ${price} aura\nyou only have ${totalAura} aura`;
                 }
             }
         } catch(error){
-            utilities.sendMessage(`an error occured apply role shop.js line 100 buyshoprole function ${error}`);
+            console.error(`an error occured apply role shop.js line 100 buyshoprole function ${error}`,error);
             return "an error occured please make sure Diddy-bot has manage roles permissions"
         }
     }
-    function listShopRoles(guildId){
+    function listShopRoles(guildId,userId){
         let message = `Shop Roles for this server\n`;
         if (!shopLists[guildId]){
             shopLists[guildId] = [];
         }
         const roles = shopLists[guildId];
         for (let role = 0; role < roles.length; role++){
-            roleMessage = `role:\t<@&${roles[role]["roleId"]}>,\tprice:\t${roles[role]["price"]}\n`;
+            utilities.sendMessage("userId"+userId);
+            utilities.sendMessage("roles"+roles);
+            utilities.sendMessage("roles[role]"+roles[role]);
+            roleMessage = `role:\t<@&${roles[role]["roleId"]}>,\tprice:\t${Math.floor(roles[role]["price"])}\n`;
             message += roleMessage;
             
         }
