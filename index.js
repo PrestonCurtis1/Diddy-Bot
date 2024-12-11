@@ -5,9 +5,8 @@ try {
     const fs = require('fs');
     const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json'); // Load the bot token and client ID from config.json
-    const aura = require("./aura.js");//the system used for updating load and saving aura
-    const shop = require("./shop.js");
-    const utilities = require ("./utilities.js");    
+    const utilities = require("./utilities.js");
+    const aura = require("./aura.js")    
     // Read pickup lines from the file
     let PICKUP_LINES = [];
     try {
@@ -184,14 +183,15 @@ try {
 
             utilities.sendMessage('Successfully reloaded application (/) commands.');
         } catch (error) {
-            utilities.sendMessage(`Error registering commands: ${error}`);
+            console.error("error registering commands",error);
+            //utilities.sendMessage(`Error registering commands: ${error}`);
         }
     })();
     // Handle the interaction for the slash command
     client.on('interactionCreate', async (interaction) => {//handle the / command interactions OMFG im loosing my
         try {
             if (!interaction.isCommand()) return;
-
+            console.log("commandName",interaction.commandName);
             if (interaction.commandName === 'rizzme') {
                 // Send a random pickup line
                 const response = PICKUP_LINES[Math.floor(Math.random() * PICKUP_LINES.length)];
@@ -263,8 +263,9 @@ try {
                 const user = interaction.options.getUser("member")
                 if (user === undefined || user === null) user = interaction.user;
                 utilities.sendMessage(`user index.js ${user.id}`)
-                const CalculatedAura = Math.floor(aura.calculateAura(user.id))
-                const response = `<@${user.id}> has ${CalculatedAura} aura and has a sigma level of ${Math.floor(CalculatedAura/150)}`;
+                console.log(utilities.User.getUser(interaction.user.id))
+                const CalculatedAura = Math.floor(utilities.User.getUser(interaction.user.id).aura);
+                const response = `<@${user.id}> has ${CalculatedAura} aura and has a sigma level of ${utilities.User.getUser(interaction.user.id).level}`;
                 await interaction.reply({content: response, fetchReply: true});
                 utilities.sendMessage(`[getaura] user: ${interaction.user.tag} Server: ${interaction.guild.name} Channel: ${interaction.channel.name} Response: ${response}`);
             }
@@ -287,19 +288,38 @@ try {
                 utilities.sendMessage(`[diddle] User: ${interaction.user.tag} Target: ${target.tag} (${target.id}), Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
             }
             if (interaction.commandName === "addShopRole".toLowerCase()){
-                const response = shop.addShopRole(interaction.member.permissions.has(PermissionsBitField.Flags.Administrator),interaction.options.getRole("role"),interaction.options.getNumber("price"),interaction.guild.id);
-                interaction.reply({content: response, fetchReply: true})
+                console.log("test1")
+                console.log("permission",(interaction.member.roles.cache.has(utilities.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)))
+                console.log("admin",interaction.member.permissions.has(PermissionsBitField.Flags.Administrator))
+                if (interaction.member.roles.cache.has(utilities.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
+                    console.log("test2")
+                    utilities.Guild.getGuild(interaction.guild.id).shop.addShopItem("role",interaction.options.getRole("role").id,interaction.options.getNumber("price"));//,interaction.options.getRole("role"),interaction.options.getNumber("price"),interaction.guild.id
+                    console.log("test3");
+                    interaction.reply({content: `role <@&${interaction.options.getRole("role").id}> added to shop with price ${interaction.options.getNumber("price")}`,fetchReply: true});
+                    console.log("test4");
+                } else{
+                    console.log("test5")
+                    interaction.reply({content: `invalid perms`, fetchReply: true})
+                    console.log("test6")
+                }   
             }
             if (interaction.commandName === "removeShopRole".toLowerCase()){
-                const response = shop.removeShopRole(interaction.member.permissions.has(PermissionsBitField.Flags.Administrator),interaction.options.getRole("role"),interaction.guild.id);
-                interaction.reply({content: response, fetchReply: true})
+                if (interaction.member.roles.cache.has(utilities.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
+                    utilities.Guild.getGuild(interaction.guild.id).shop.removeShopItem("role",interaction.options.getRole("role").id);
+                    interaction.reply({content: `role <@&${interaction.options.getRole("role").id}> removed from shop`,fetchReply: true});
+                } else{
+                    interaction.reply({content: "invalid perms", fetchReply: true})
+                }
             }
             if (interaction.commandName === "buyShopRole".toLowerCase()){
-                const response = await shop.buyShopRole(interaction.options.getRole("role"),interaction.user.id,interaction.guild.id);
+                //this.items.filter(item => item["itemInfo"] !== info && item["type"] !== type);
+                const response = await utilities.Guild.getGuild(interaction.guild.id).shop.buyShopItem(utilities.Guild.getGuild(interaction.guild.id).shop.items.filter(item => item["type"] === "role" && item["itemInfo" == interaction.options.getRole("role").id])[0],utilities.Guild.getGuild(interaction.guild.id),utilities.User.getUser(interaction.user.id));
                 interaction.reply({content: response, fetchReply: true})
             }
             if (interaction.commandName === "shop"){
-                const response = shop.listShopRoles(interaction.guild.id,interaction.user.id);
+                console.log("thing",utilities.Guild.getGuild(interaction.guild.id));
+                const response = utilities.Guild.getGuild(interaction.guild.id).shop.showShop();
+                console.log("response",response);
                 interaction.reply({content: response, fetchReply: true})
             }
             if (interaction.commandName === "giveAura".toLowerCase()){
@@ -307,20 +327,20 @@ try {
                 let message;
                 if (admins.includes(interaction.user.id)){
                     const target = interaction.options.getUser("user");
-                    const auraPrice = interaction.options.getNumber("aura")
-                    aura.giveAura(target.id,auraPrice);
-                    message = `<@${target.id}> has been given ${auraPrice} aura by <@${interaction.user.id}>`;
+                    const auraAmount = interaction.options.getNumber("aura")
+                    utilities.User.getUser(interaction.user.id).giveAura(auraAmount,false);
+                    message = `<@${target.id}> has been given ${auraAmount} aura by <@${interaction.user.id}>`;
                 } else {
                     message = `this command can only be run by bot admins`;
                 }
                 interaction.reply({content: message, fetchReply: true});
-                utilities.sendMessage(`[giveAura] server:\t${interaction.guild.name} channel:\t${interaction.channel.name} target:\t${target.name} user:\t${interaction.user.name} price\t${auraPrice} message:\t${message}`)
+                utilities.sendMessage(`[giveAura] server:\t${interaction.guild.name} channel:\t${interaction.channel.name} target:\t${target.name} user:\t${interaction.user.name} price\t${auraAmount} message:\t${message}`)
             }
             if (interaction.commandName === "discord"){
                 interaction.reply({content: "Join our diddy-bot community  [discord server](https://discord.gg/u6AVRt7Bgm)",fetchReply:true});
             }
         } catch (error) {
-            utilities.sendMessage(`Error handling interaction:, ${error}`);
+            console.error(`Error handling interaction:`,error);
         }
     });
 
