@@ -19,19 +19,20 @@ try {
     (async () => {
         try {
             util.msg('Started refreshing application (/) commands.');
+            console.log(util.Command.commands)
             await rest.put(Routes.applicationCommands(JSONConfig.clientId), {
                 body: util.Command.commands,
             });
             util.msg('Successfully reloaded application (/) commands.');
         } catch (error) {
-            util.msg(`Error registering commands ${error}`);
+            console.error("Error registering commands",error);
         }
     })();
     client.on('interactionCreate', async (interaction) => {
         try {
             if(!interaction.isCommand()) return;
             if(!util.Guild.exists(interaction.guild.id))util.Guild.register(interaction.guild.id,interaction.guild.name);
-            if(!util.User.exists(interaction.user.id))util.User.register(interaction.user.id,interaction.user.tag,{[interaction.user.id]:0});
+            if(!util.User.exists(interaction.user.id))util.User.register(interaction.user.id,interaction.user.tag,{[interaction.guild.id]:0});
             if(!util.Guild.getGuild(interaction.guild.id).hasUser(interaction.user.id))util.Guild.getGuild(interaction.guild.id).addUser({"user":util.User.getUser(interaction.user.id),"coins":0});
             util.User.getUser(interaction.user.id).name = interaction.user.tag;
             util.Guild.getGuild(interaction.guild.id).name = interaction.guild.name;
@@ -39,14 +40,14 @@ try {
             const command = util.Command.getCommand(interaction.commandName);
             command.runCommand(interaction);
         } catch (error) {
-            util.msg(`Error handling interaction:${error}`);
+            console.error("Error handling interaction:",error);
         }
     });
     client.on('messageCreate', (message) => {
         if (message.author.bot) return; 
         const messagePoints = Math.floor(25 + (message.content.length / 20) + (30 * (message.attachments.size + message.embeds.length)));
         if(!util.Guild.exists(message.guild.id))util.Guild.register(message.guild.id,message.guild.name);
-        if(!util.User.exists(message.author.id))util.User.register(message.author.id,message.author.tag,{[message.author.id]:0});
+        if(!util.User.exists(message.author.id))util.User.register(message.author.id,message.author.tag,{[message.guild.id]:0});
         if(!util.Guild.getGuild(message.guild.id).hasUser(message.author.id))util.Guild.getGuild(message.guild.id).addUser({"user":util.User.getUser(message.author.id),"coins":0});
         util.User.getUser(message.author.id).name = message.author.tag;
         util.Guild.getGuild(message.guild.id).name = message.guild.name;
@@ -81,13 +82,18 @@ try {
     setInterval(() => {
         const currentRam = process.memoryUsage().heapUsed;
         const maxRam = 104857600;
+        //const percentUsed = Math.ceil((process.memoryUsage().heapUsed/104857600)*100);
         const percentUsed = Math.ceil((currentRam/maxRam)*100);
         if (percentUsed > 80){
-            util.msg("Restarting bot to reduce ram usage");
+            if(percentUsed > 100){
+                util.msg(`ran out of ram ${new Date()}`);
+            } else{
+                util.msg("Restarting bot to reduce ram usage");
+            }
         } else {
-            console.log(`Heap Used: ${Math.ceil(currentRam / 1024 / 1024)} %`);
+            console.log(`Heap Used: ${Math.ceil((currentRam/maxRam)*100)} % | ${Math.ceil((currentRam/1024/1024))} MB`);
         }
-    },10000);
+    },15*1000);
     client.login(JSONConfig.token);
 } catch (error) {
     console.error("A fatal error occured in file index.js",error);

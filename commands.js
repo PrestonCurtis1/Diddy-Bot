@@ -20,12 +20,12 @@ try{
             const data = fs.readFileSync('./pickup_lines.txt', 'utf8');//the file containing all the pickuplines
             PICKUP_LINES = data.split('\n').filter(line => line.trim() !== ''); // Remove empty lines
         } catch (error) {
-            util.msg(`Error reading pickup_lines.txt: ${error}`);
+            console.error("Error reading pickup_lines.txt:",error);
             process.exit(1); // Exit if the file cannot be read
         }
         // Send a random pickup line
         const response = PICKUP_LINES[Math.floor(Math.random() * PICKUP_LINES.length)];
-        interaction.reply({content: response, fetchReply: true });
+        await interaction.reply({content: response, fetchReply: true });
         const channelName = interaction.channel ? interaction.channel.name : 'DM';
         const serverName = interaction.guild ? interaction.guild.name : 'DM';
         util.msg(`[rizzme] User: ${interaction.user.tag}, Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
@@ -38,7 +38,7 @@ try{
         const oiler = interaction.user;
 
         if (!target) {
-            return interaction.reply({ content: "You need to mention someone to oil up!", fetchReply: true, ephemeral: true });
+            return await interaction.reply({ content: "You need to mention someone to oil up!", fetchReply: true, ephemeral: true });
         }
 
         // Create the response with proper mentions and IDs
@@ -111,7 +111,7 @@ try{
         const target = interaction.options.getUser("user");
 
         if (!target) {
-            return interaction.reply({ content: "You need to mention someone to diddle!", fetchReply: true, ephemeral: true });
+            return await interaction.reply({ content: "You need to mention someone to diddle!", fetchReply: true, ephemeral: true });
         }
 
         // Create the response with proper mention and ID
@@ -129,9 +129,9 @@ try{
     async function addShopItem(interaction){
         if (interaction.member.roles.cache.has(util.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
             util.Guild.getGuild(interaction.guild.id).shop.addShopItem(interaction.options.getString("type"),interaction.options.getString("id"),interaction.options.getNumber("coins"));
-            interaction.reply({content:`Added ${interaction.options.getString("type")} with id ${interaction.options.getString("id")} to shop for ${interaction.options.getNumber("coins")} coins`, fetchReply: true})
+            await interaction.reply({content:`Added ${interaction.options.getString("type")} with id ${interaction.options.getString("id")} to shop for ${interaction.options.getNumber("coins")} coins`, fetchReply: true})
         } else {
-            interaction.reply({content: "You do not have permission to run this command", fetchReply: true})
+            await interaction.reply({content: "You do not have permission to run this command", fetchReply: true})
         }
     }
     new util.Command({name: "addShopItem".toLowerCase(),description: "add a item to your servers shop",dm_permission: false,options: [{name: "type",type: 3,description: "channel or role",required: true},{name: "id",type: 3,description: "id of channel or role",required: true},{name: "coins",type: 10,description: "price of shop item",required: true}]},addShopItem);
@@ -139,9 +139,9 @@ try{
     async function removeShopItem(interaction){
         if (interaction.member.roles.cache.has(util.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
             util.Guild.getGuild(interaction.guild.id).shop.removeShopItem(interaction.options.getString("type"),interaction.options.getString("id"));
-            interaction.reply({content:`Removed ${interaction.options.getString("type")} with id ${interaction.options.getString("id")} from shop`, fetchReply: true})
+            await interaction.reply({content:`Removed ${interaction.options.getString("type")} with id ${interaction.options.getString("id")} from shop`, fetchReply: true})
         } else {
-            interaction.reply({content: "You do not have permission to run this command", fetchReply: true})
+            await interaction.reply({content: "You do not have permission to run this command", fetchReply: true})
         }
     }
     new util.Command({name: "removeShopItem".toLowerCase(),description: "remove a item from your shop",dm_permission: false,options: [{name: "type",type: 3,description: "channel or role",required: true},{name: "id",type: 3,description: "id of channel ore role",required: true}]},removeShopItem);
@@ -150,12 +150,12 @@ try{
         const guild = util.Guild.getGuild(interaction.guild.id);
         const shopItem = util.Guild.getGuild(interaction.guild.id).shop.items.filter(item => item["type"] === interaction.options.getString("type") && item["itemInfo"] === interaction.options.getString("id"))[0];
         const response = guild.shop.buyShopItem(shopItem,util.Guild.getGuild(interaction.guild.id),util.User.getUser(interaction.user.id))
-        interaction.reply({content: response,fetchReply: true});
+        await interaction.reply({content: response,fetchReply: true});
     }
     new util.Command({name: "buyShopItem".toLowerCase(),description: "buy a item from shop",dm_permission: false,options: [{name: "type",type: 3,description: "channel or role",required: true},{name: "id",type: 3,description: "channel/role to buy",required: true}]},buyShopItem);
     async function shop(interaction){
         const response = util.Guild.getGuild(interaction.guild.id).shop.showShop();
-        interaction.reply({content: response, fetchReply: true})
+        await interaction.reply({content: response, fetchReply: true})
     }
     new util.Command({name:"shop",description: "list the items you can buy",dm_permission: false},shop);
     //giveAura 
@@ -170,16 +170,22 @@ try{
         } else {
             message = `this command can only be run by bot admins`;
         }
-        interaction.reply({content: message, fetchReply: true});
+        await interaction.reply({content: message, fetchReply: true});
         util.msg(`[giveAura] server:\t${interaction.guild.name} channel:\t${interaction.channel.name} target:\t${target.name} user:\t${interaction.user.name} price\t${auraAmount} message:\t${message}`)
     }
     new util.Command({name:"giveAura".toLowerCase(),description: "give aura to a user (bot admins only)",dm_permission: true,options: [{name: "user",type:6,description: "user to give aura to",required:true},{name: "aura",type: 10,description: "amount of aura to give",required: true}]},giveAura);
     //discord
     async function discord(interaction){
-        interaction.reply({content: "Join our diddy-bot community  [discord server](https://discord.gg/u6AVRt7Bgm)",fetchReply:true});
+        await interaction.reply({content: "Join our diddy-bot community  [discord server](https://discord.gg/u6AVRt7Bgm)",fetchReply:true});
     }
     new util.Command({name: "discord",description: "Join our discord server",dm_permission: true},discord);
     //getCoins
+    async function getCoins(interaction){
+        const coins = util.User.getUser(interaction.options.getUser("member"))?.getCoins(util.Guild.getGuild(interaction.guild.id)) ?? 0;
+        let response = `@silent <@${interaction.options.getUser("member")}> has ${coins} coins`
+        interaction.reply({content: response, fetchReply: true});
+    }
+    new util.Command({name: "getCoins".toLowerCase(),description: "get a users coin balance",dm_permission: false,options:[{name: "member", type: 6, description: "member to get the coins of", required: true}]},getCoins);
     //giveCoins
     //coinLeaderboard
     //auraLeaderboard
@@ -194,6 +200,13 @@ try{
     //serverBooster
     //changeServerBooster
     //restartBot
+    //ramUsage
+    async function getRamUsage(interaction){
+        response = `Heap Used: ${Math.ceil((process.memoryUsage().heapUsed/104857600)*100)} % | ${Math.ceil((process.memoryUsage().heapUsed/1024/1024))} MB`
+        await interaction.reply({content: response, fetchReply: true});
+    }
+    new util.Command({name: "getRam".toLowerCase(),description: "Get the current ram usage",dm_permission: true},getRamUsage);
+    //runCode
     //getInvites
     client.once('ready', async () => {
         util.msg(`Logged in as ${client.user.tag}! commands.js`);

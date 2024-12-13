@@ -439,6 +439,7 @@ try{
     }
     // setInterval(() => {saveData();msg("saved data YAY!!!");},60000);
     // Log in with your bot token
+    
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file utilities.js",error);
