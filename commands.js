@@ -3,6 +3,7 @@ try{
     const util = require("./utilities.js");
     const fs = require("fs");
     const JSONConfig = require("./config.json");
+    const {createHash} = require('crypto');
     const client = new Client({
         intents: [
             GatewayIntentBits.Guilds,
@@ -13,6 +14,12 @@ try{
             GatewayIntentBits.GuildMembers
         ]
     });
+    async function underConstruction(interaction){
+        await interaction.reply({content: "command under construction", fetchReply : true});
+    }
+    async function checkPassword(entered){
+        return createHash("sha256").update(entered).digest('hex') === JSONConfig.botAdminPassword;
+    }
     //rizzme
     async function rizzme(interaction){
         let PICKUP_LINES = [];
@@ -26,9 +33,6 @@ try{
         // Send a random pickup line
         const response = PICKUP_LINES[Math.floor(Math.random() * PICKUP_LINES.length)];
         await interaction.reply({content: response, fetchReply: true });
-        const channelName = interaction.channel ? interaction.channel.name : 'DM';
-        const serverName = interaction.guild ? interaction.guild.name : 'DM';
-        util.msg(`[rizzme] User: ${interaction.user.tag}, Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
     }
     new util.Command({name: 'rizzme',description: 'Receive a random pickup line!',dm_permission: true},rizzme);
     //oil
@@ -47,28 +51,21 @@ try{
         // Send the reply
         await interaction.reply({ content: response, fetchReply: true });
 
-        const channelName = interaction.channel ? interaction.channel.name : 'DM';
-        const serverName = interaction.guild ? interaction.guild.name : 'DM';
-        util.msg(`[oil] Oiler: ${oiler.tag} (${oiler.id}), Target: ${target.tag} (${target.id}), Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
     }
     new util.Command({name: "oil",/*oil me up brosquito*/description: "oil up your friends",dm_permission: true,options: [{name: 'user',type: 6, description: 'Choose a user to oil up',required: true}]},oil);
     //authors
     async function authors(interaction){
         const response = "the authors of <@1305713838775210015> are <@790709753138905129> and <@799101657647415337>";
         await interaction.reply({content: response, fetchReply: true});
-        const channelName = interaction.channel ? interaction.channel.name : 'DM';
-        const serverName = interaction.guild ? interaction.guild.name : 'DM';
-        util.msg(`[authors] User: ${interaction.user.tag}} (${interaction.user.id}) Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
     }
     new util.Command({name: "authors",description: "Get the authors of this bot",dm_permission: true},authors);
     //announce 
     async function announce(interaction){
-        USER_IDS = ["790709753138905129","1287135434954113104"];
         const announcementFile = interaction.options.getString("message")
         const announcementMessage = fs.readFileSync(`./${announcementFile}`,"utf-8");
-        if (!USER_IDS.includes(interaction.user.id)){
-            await interaction.reply({content: "You are not authorized to use this command", fetchReply: true, ephemeral : false});
-            return;
+        if (!checkPassword(interaction.options.getString("botAdminPassword".toLowerCase()))){
+            interaction.reply({content: "invalid password", fetchReply: true});
+            return false
         }
         try {
             await interaction.reply({content: "Sending announcement...", fetchReply: true, ephemeral: false});
@@ -87,22 +84,18 @@ try{
                     }
                 }
                 await interaction.followUp({content:`Announcement sent! Success: ${successCount} Failed: ${failCount}`, ephemeral: false})
-                util.msg(`Announcement sent! Success: ${successCount} Failed: ${failCount}`)
         } catch (error) {
             util.msg(`error sending announcements, ${error}`)
         }
-        util.msg(`[announce] user: ${interaction.user.tag} Server: ${interaction.guild.name} Channel: ${interaction.channel.name}`)
     }
-    new util.Command({name: "announce",description: "Send a dm to server owners",dm_permission: true,options: [{name: "message",type: 3,description: "Message file to send",required: true}]},announce);
+    new util.Command({name: "announce",description: "Send a dm to server owners",dm_permission: true,options: [{name: "message",type: 3,description: "Message file to send",required: true},{name:"botAdminPassword".toLowerCase(),type: 3, description: "admin password for bot",required: true}]},announce);
     //getAura 
     async function getAura(interaction){
         const user = interaction.options.getUser("member")
         if (user === undefined || user === null) user = interaction.user;
-        util.msg(`user index.js ${user.id}`)
         const CalculatedAura = Math.floor(util.User.getUser(user.id)?.aura ?? 0);
         const response = `<@${user.id}> has ${CalculatedAura} aura and has a sigma level of ${util.User.getUser(user.id)?.level ?? 0}`;
         await interaction.reply({content: response, fetchReply: true});
-        util.msg(`[getaura] user: ${interaction.user.tag} Server: ${interaction.guild.name} Channel: ${interaction.channel.name} Response: ${response}`);
     }
     new util.Command({name: "getAura".toLowerCase(),description: "display a users aura",dm_permission: true,options: [{name: "member",type: 6,description: "User to get aura of",required: true}]},getAura);
     //diddle
@@ -120,9 +113,6 @@ try{
         // Send the reply
         await interaction.reply({ content: response, fetchReply: true });
 
-        const channelName = interaction.channel ? interaction.channel.name : 'DM';
-        const serverName = interaction.guild ? interaction.guild.name : 'DM';
-        util.msg(`[diddle] User: ${interaction.user.tag} Target: ${target.tag} (${target.id}), Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
     }
     new util.Command({name: "diddle",description: "Diddle your friends",dm_permission: true,options: [{name: 'user',type: 6,description: 'Choose a user to diddle',required: true}]},diddle);
     //addShopItem 
@@ -160,20 +150,19 @@ try{
     new util.Command({name:"shop",description: "list the items you can buy",dm_permission: false},shop);
     //giveAura 
     async function giveAura(interaction){
-        admins = ["799101657647415337","1215373521463681147","790709753138905129"];
         let message;
         const target = interaction.options.getUser("user");
         const auraAmount = interaction.options.getNumber("aura")
-        if (admins.includes(interaction.user.id)){
+        console.log(`Entered:\t${createHash("sha256").update(interaction.options.getString("botadminpassword")).digest('hex')}\nPassword:\t${JSONConfig.botAdminPassword}\nStatus:\t${createHash("sha256").update(interaction.options.getString("botadminpassword")).digest('hex') === JSONConfig.botAdminPassword}`);
+        if (checkPassword(interaction.options.getString("botAdminPassword".toLowerCase()))){
             util.User.getUser(interaction.user.id).giveAura(auraAmount,false);
             message = `<@${target.id}> has been given ${auraAmount} aura by <@${interaction.user.id}>`;
         } else {
-            message = `this command can only be run by bot admins`;
+            message = `invalid password`;
         }
         await interaction.reply({content: message, fetchReply: true});
-        util.msg(`[giveAura] server:\t${interaction.guild.name} channel:\t${interaction.channel.name} target:\t${target.name} user:\t${interaction.user.name} price\t${auraAmount} message:\t${message}`)
     }
-    new util.Command({name:"giveAura".toLowerCase(),description: "give aura to a user (bot admins only)",dm_permission: true,options: [{name: "user",type:6,description: "user to give aura to",required:true},{name: "aura",type: 10,description: "amount of aura to give",required: true}]},giveAura);
+    new util.Command({name:"giveAura".toLowerCase(),description: "give aura to a user (bot admins only)",dm_permission: true,options: [{name: "user",type:6,description: "user to give aura to",required:true},{name: "aura",type: 10,description: "amount of aura to give",required: true},{name:"botAdminPassword".toLowerCase(),type: 3, description: "admin password for bot",required: true}]},giveAura);
     //discord
     async function discord(interaction){
         await interaction.reply({content: "Join our diddy-bot community  [discord server](https://discord.gg/u6AVRt7Bgm)",fetchReply:true});
@@ -181,36 +170,83 @@ try{
     new util.Command({name: "discord",description: "Join our discord server",dm_permission: true},discord);
     //getCoins
     async function getCoins(interaction){
-        const coins = util.User.getUser(interaction.options.getUser("member"))?.getCoins(util.Guild.getGuild(interaction.guild.id)) ?? 0;
-        let response = `@silent <@${interaction.options.getUser("member")}> has ${coins} coins`
+        const coins = util.User.getUser(interaction.options.getUser("member").id)?.getCoins(util.Guild.getGuild(interaction.guild.id)) ?? 0;
+        let response = `@silent ${interaction.options.getUser("member")} has ${coins} coins`
         interaction.reply({content: response, fetchReply: true});
     }
     new util.Command({name: "getCoins".toLowerCase(),description: "get a users coin balance",dm_permission: false,options:[{name: "member", type: 6, description: "member to get the coins of", required: true}]},getCoins);
     //giveCoins
+    async function giveCoins(){
+        let response;
+        if (interaction.member.roles.cache.has(util.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
+            util.User.getUser(interaction.options.getUser("user")).giveCoins(interaction.options.getNumber("coins"),util.Guild.getGuild(interaction.guild.id));
+            response = `gave ${interaction.options.getNumber("coins")} to ${interaction.options.getUser("user")}`;
+            interaction.reply({content: response, fetchReply : true});
+        } else {
+            response = `invalid permissions`;
+        }
+        interaction.reply({content: response, fetchReply: true});
+    }
+    new util.Command({name:"giveCoins".toLowerCase(),description: "give coins to a user",dm_permission: false,options: [{name: "user",type:6,description: "user to give aura to",required:true},{name: "coins",type: 10,description: "amount of aura to give",required: true}]},giveCoins);
     //coinLeaderboard
+    async function coinBoard(interaction){
+        interaction.reply({content: util.Guild.getGuild(interaction.guild.id).leaderboard(),fetchReply: true});
+    }
+    new util.Command({name: "coinLeaderBoard".toLowerCase(),description: "leaderboard for coins", dm_permission : false},coinBoard)
     //auraLeaderboard
+    async function auraBoard(){
+        interaction.reply({content: util.User.leaderboard(),fetchReply: true});
+    }
+    new util.Command({name: "auraLeaderboard".toLowerCase(),description: "Show the global aura leaderboard",dm_permission: true},auraBoard);
     //buyCoins
+    new util.Command({name:"buyCoins".toLowerCase(),description:"buy coins with aura if server has enabled",dm_permission: false, options: [{name: "amount",type: 10, description: "amount of coins to buy", required: true}]},underConstruction);
     //changeServerSetting
     //serverSettings
     //changeShopSetting
     //shopSettings
-    //addShopItem
-    //removeShopItem
-    //buyShopItem
     //serverBooster
+    async function getServerBooster(interaction){
+        interaction.reply({content: `${guild.getGuild(interaction.guild.id).booster}`,fetchReply: true});
+    }
+    new util.Command({name: "getServerBooster".toLowerCase(),description: "get the current booster for the server",dm_permission: false},getServerBooster);
     //changeServerBooster
-    //restartBot
+    async function changeServerBooster(interaction){
+        let response;
+        if (interaction.member.roles.cache.has(util.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
+            util.Guild.getGuild(interaction.guild.id).booster = interaction.options.getNumber("newBooster".toLowerCase());
+            response = `set server booster to ${interaction.options.getNumber("newBooster".toLowerCase())}`
+        } else {
+            response = `invalid permissions`;
+        }
+        interaction.reply({content: response, fetchReply: true});
+    }
+    new util.Command({name: "changeServerBooster".toLowerCase(),description: "change the server booster",dm_permission: false,options: [{name:"newBooster".toLowerCase(),type: 10, description: "new booster for coins on server",required: true}]},changeServerBooster);
+    //restart
+    async function restart(interaction){
+        if (checkPassword(interaction.options.getString("botAdminPassword".toLowerCase()))){
+            interaction.reply({content: "bot restarted",fetchReply: true});
+            util.restartBot(true);
+        } else {
+            interaction.reply({content: "invalid password",fetchReply: true});
+        }
+    }
+    new util.Command({name: "restart".toLowerCase(),description: "restart the bot",dm_permission: true,options: [{name:"botAdminPassword".toLowerCase(),type: 3, description: "admin password for bot",required: true}]},restart);
     //ramUsage
     async function getRamUsage(interaction){
-        response = `Heap Used: ${Math.ceil((process.memoryUsage().heapUsed/104857600)*100)} % | ${Math.ceil((process.memoryUsage().heapUsed/1024/1024))} MB`
-        await interaction.reply({content: response, fetchReply: true});
+        if (checkPassword(interaction.options.getString("botAdminPassword".toLowerCase()))){
+            response = `Heap Used: ${Math.ceil((process.memoryUsage().heapUsed/104857600)*100)} % | ${Math.ceil((process.memoryUsage().heapUsed/1024/1024))} MB`
+            await interaction.reply({content: response, fetchReply: true});
+        } else {
+            interaction.reply({content: "invalid password",fetchReply : true});
+        }
     }
-    new util.Command({name: "getRam".toLowerCase(),description: "Get the current ram usage",dm_permission: true},getRamUsage);
-    //runCode
-    //getInvites
+    new util.Command({name: "getRam".toLowerCase(),description: "Get the current ram usage",dm_permission: true,options: [{name:"botAdminPassword".toLowerCase(),type: 3, description: "admin password for bot",required: true}]},getRamUsage);
+    //getInvite
+    new util.Command({name: "getRandomInvite".toLowerCase(),description: "join a random server that has advertising enabled",dm_permission: true},underConstruction);
     client.once('ready', async () => {
         util.msg(`Logged in as ${client.user.tag}! commands.js`);
     });
+    
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);

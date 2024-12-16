@@ -1,6 +1,7 @@
 try{
     const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json');
+    const { spawn } = require('child_process');
     const fs = require("fs");
     class Guild {
         static all = {};
@@ -129,8 +130,8 @@ try{
             if(guild.hasUser(this.id)){
                 guild.addUser({"user":this,"coins":amount});
             }
-            guild.users[this.id].coins += amount;
-            this.guilds[guild.id] += amount;
+            guild.users[this.id].coins += Math.floor(amount*guild.booster);
+            this.guilds[guild.id] += Math.floor(amount*guild.booster);
             saveData();
         }
         getCoins(guild){
@@ -411,12 +412,29 @@ try{
             }
         }
     }
-    async function restartBot(){
+    function restartBot(force=false) {
         saveData();
         msg(`restarting ${client.user.tag}`);
-        await fetch("https://gw.discloud.com/api/app/1731989981986/restart", {"headers": {"accept": "*/*","accept-language": "en-US,en;q=0.9","authorization": "Bearer 5ae122b9aa31feb39565957495c24253b19008cc7b603f69c1505c3042e94df64094b0252bfb9b41930093cce37487ae67516d3c","cache-control": "no-cache","pragma": "no-cache","priority": "u=1, i","sec-ch-ua": "\"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"","sec-ch-ua-mobile": "?0","sec-ch-ua-platform": "\"Windows\"","sec-fetch-dest": "empty","sec-fetch-mode": "cors","sec-fetch-site": "same-site","Referer": "https://discloud.com/","Referrer-Policy": "strict-origin-when-cross-origin"},"body": null,"method": "PUT"});
+        const memoryUsage = process.memoryUsage();
+        const maxMemory = process.env.NODE_OPTIONS?.match(/--max-old-space-size=(\d+)/)?.[1] ?? 2048; // Default to 2048MB
+        const usedMemoryMB = memoryUsage.heapUsed / 1024 / 1024;
+    
+        console.log(`Memory used: ${usedMemoryMB.toFixed(2)} MB / ${maxMemory} MB`);
+    
+        if (usedMemoryMB > maxMemory * 0.8 || force) {
+            console.log('Memory limit exceeded or force restart triggered. Restarting bot...');
+            
+            // Spawn a new instance of the program
+            spawn(process.argv[0], process.argv.slice(1), {
+                stdio: 'inherit'
+            });
+    
+            // Exit the current process immediately
+            process.exit();
+        } else {
+            console.log('Memory usage is within limits.');
+        }
     }
-
     // When the client is ready, you can use the msg function
     client.once('ready', () => {
         msg(`Logged in as ${client.user.tag} utilities.js`);

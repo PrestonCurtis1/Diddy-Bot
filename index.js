@@ -30,15 +30,18 @@ try {
     })();
     client.on('interactionCreate', async (interaction) => {
         try {
-            if(!interaction.isCommand()) return;
-            if(!util.Guild.exists(interaction.guild.id))util.Guild.register(interaction.guild.id,interaction.guild.name);
-            if(!util.User.exists(interaction.user.id))util.User.register(interaction.user.id,interaction.user.tag,{[interaction.guild.id]:0});
-            if(!util.Guild.getGuild(interaction.guild.id).hasUser(interaction.user.id))util.Guild.getGuild(interaction.guild.id).addUser({"user":util.User.getUser(interaction.user.id),"coins":0});
-            util.User.getUser(interaction.user.id).name = interaction.user.tag;
-            util.Guild.getGuild(interaction.guild.id).name = interaction.guild.name;
-            util.migrate(interaction.user.id);
+                if (interaction.guild){
+                if(!interaction.isCommand()) return;
+                if(!util.Guild.exists(interaction.guild.id))util.Guild.register(interaction.guild.id,interaction.guild.name);
+                if(!util.User.exists(interaction.user.id))util.User.register(interaction.user.id,interaction.user.tag,{[interaction.guild.id]:0});
+                if(!util.Guild.getGuild(interaction.guild.id).hasUser(interaction.user.id))util.Guild.getGuild(interaction.guild.id).addUser({"user":util.User.getUser(interaction.user.id),"coins":0});
+                util.User.getUser(interaction.user.id).name = interaction.user.tag;
+                util.Guild.getGuild(interaction.guild.id).name = interaction.guild.name;
+                util.migrate(interaction.user.id);
+            }
             const command = util.Command.getCommand(interaction.commandName);
             command.runCommand(interaction);
+            util.msg(`[${interaction.commandName}](${interaction.guild?.name ?? "DM"}){${interaction.channel?.name ?? "DM"}}<${interaction.user.tag}>`);
         } catch (error) {
             console.error("Error handling interaction:",error);
         }
