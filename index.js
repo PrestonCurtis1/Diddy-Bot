@@ -18,12 +18,12 @@ try {
     const rest = new REST({ version: '10' }).setToken(JSONConfig.token);
     (async () => {
         try {
-            util.msg('Started refreshing application (/) commands.');
-            console.log(util.Command.commands)
+            await util.msg('Started refreshing application (/) commands.');
+            //console.log(util.Command.commands)
             await rest.put(Routes.applicationCommands(JSONConfig.clientId), {
                 body: util.Command.commands,
             });
-            util.msg('Successfully reloaded application (/) commands.');
+            await util.msg('Successfully reloaded application (/) commands.');
         } catch (error) {
             console.error("Error registering commands",error);
         }
@@ -41,7 +41,7 @@ try {
             }
             const command = util.Command.getCommand(interaction.commandName);
             command.runCommand(interaction);
-            util.msg(`[${interaction.commandName}](${interaction.guild?.name ?? "DM"}){${interaction.channel?.name ?? "DM"}}<${interaction.user.tag}>`);
+            await util.msg(`[${interaction.commandName}](${interaction.guild?.name ?? "DM"}){${interaction.channel?.name ?? "DM"}}<${interaction.user.tag}>`);
         } catch (error) {
             console.error("Error handling interaction:",error);
         }
@@ -60,43 +60,28 @@ try {
         console.log(util.User.getUser(message.author.id).getCoins(util.Guild.getGuild(message.guild.id)));
         util.saveData();
     });
-    client.on('guildCreate', (guild) => {
-        guild.fetchOwner().then((owner) => {owner.send(`Thanks for adding me to your server, ${guild.name}!`);}).catch(util.msg(`Bot was added to server ${guild.name}`));
+    client.on('guildCreate', async (guild) => {
+        guild.fetchOwner().then((owner) => {owner.send(`Thanks for adding me to your server, ${guild.name}!`);}).catch(await util.msg(`Bot was added to server ${guild.name}`));
         new util.Guild.register(guild.id,guild.name);
     });
-    client.on('guildMemberAdd', (member) => {
+    client.on('guildMemberAdd', async (member) => {
         if(!util.Guild.exists(member.guild.id))util.Guild.register(member.guild.id,member.guild.name);
         if(!util.User.exists(member.id))util.User.register(member.user.id,member.user.id,{[member.guild.id]:0});
         if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))util.Guild.getGuild(member.guild.id).addUser({"user":util.User.getUser(member.user.id),"coins":0});
-        util.msg(`user ${member.user.tag} joined server ${member.guild.name}`);
+        await util.msg(`user ${member.user.tag} joined server ${member.guild.name}`);
     });
     client.once('ready', async () => {
-        util.msg(`Logged in as ${client.user.tag}! index.js`);
+        await util.msg(`Logged in as ${client.user.tag}! index.js`);
         const serverCount = client.guilds.cache.size;
-        util.msg(`The bot is currently in ${serverCount} server(s).`);
+        await util.msg(`The bot is currently in ${serverCount} server(s).`);
         client.user.setPresence({
             activities: [{ name: 'at the Diddy Party', type: 0 }],
             status: 'online', 
         });
     });
-    setInterval(() => {
-        util.restartBot();
-    },3*60*60*1000);//every 3 hours
-    setInterval(() => {
-        const currentRam = process.memoryUsage().heapUsed;
-        const maxRam = 104857600;
-        //const percentUsed = Math.ceil((process.memoryUsage().heapUsed/104857600)*100);
-        const percentUsed = Math.ceil((currentRam/maxRam)*100);
-        if (percentUsed > 80){
-            if(percentUsed > 100){
-                util.msg(`ran out of ram ${new Date()}`);
-            } else{
-                util.msg("Restarting bot to reduce ram usage");
-            }
-        } else {
-            console.log(`Heap Used: ${Math.ceil((currentRam/maxRam)*100)} % | ${Math.ceil((currentRam/1024/1024))} MB`);
-        }
-    },15*1000);
+    setInterval(async () => {
+        await util.restartBot();
+    },5*1000);//every 5 seconds check if memory usage is above 80% then restart the bot if so
     client.login(JSONConfig.token);
 } catch (error) {
     console.error("A fatal error occured in file index.js",error);

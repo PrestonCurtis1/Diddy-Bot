@@ -1,7 +1,8 @@
 try{
     const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json');
-    const { spawn } = require('child_process');
+    const pm2 = require('pm2');
+    const path = require ("path");
     const fs = require("fs");
     class Guild {
         static all = {};
@@ -173,13 +174,13 @@ try{
             this.items = this.items.filter(item => (!(item["itemInfo"] === info && item["type"] === type)));
             saveData();
         }
-        buyShopItem(shopItem,guild,user){
+        async buyShopItem(shopItem,guild,user){
             if (!this.items.includes(shopItem)){//item doesn't exist
-                msg(`item ${shopItem} not found in shop`);
+                await msg(`item ${shopItem} not found in shop`);
                 return "item not in shop"
             } else {//item exists
                 if (user.getCoins(guild) < shopItem.price){
-                    msg(`invalid funds to buy ${shopItem} in ${guild} for ${user.name} user has balance:${user.getCoins(Guild.getGuild(guild.id))}`);
+                    await msg(`invalid funds to buy ${shopItem} in ${guild} for ${user.name} user has balance:${user.getCoins(Guild.getGuild(guild.id))}`);
                     return "invalid funds"
                 } else {
                     user.giveCoins(-1*shopItem.price,guild);
@@ -315,7 +316,7 @@ try{
         }
         fs.writeFileSync("./data.json", JSON.stringify(data, null, 2), 'utf-8');
     }
-    function loadData(){
+    async function loadData(){
         if (fs.existsSync("./data.json")) {
             const data = JSON.parse(fs.readFileSync("./data.json", 'utf-8'));
             for (const guild in data.guilds){
@@ -324,7 +325,7 @@ try{
             for (const user in data.users){
                 new User(data.users[user].id,data.users[user].tag,data.users[user].aura,data.users[user].boosters,data.users[user].guilds);
             }
-            msg("Loaded Data");
+            await msg("Loaded Data");
         }; // Return an empty object if the file doesn't exist
     }
     const client = new Client({
@@ -371,9 +372,9 @@ try{
                 throw new Error('Role not found in the guild.');
             }
             await member.roles.add(role);
-            msg(`Added role ${role.name} to user ${member.user.tag}.`);
+            await msg(`Added role ${role.name} to user ${member.user.tag}.`);
         } catch (error) {
-            msg(`Failed to add role: ${error.message}`);
+            await msg(`Failed to add role: ${error.message}`);
         }
     }
     async function addChannel(userId,guildId,channelId){
@@ -385,18 +386,18 @@ try{
                 [PermissionsBitField.Flags.ViewChannel]: true,  // Allow the user to view the channel
                 [PermissionsBitField.Flags.SendMessages]: true,  // Allow the user to send messages
             });
-            msg(`Permissions set for ${member.user.tag} in ${channel.name}.for server ${guild.name}`);
+            await msg(`Permissions set for ${member.user.tag} in ${channel.name}.for server ${guild.name}`);
         } catch (error) {
             console.error('Error assigning permissions:', error);
         }
     }
-    function migrate(userId){
+    async function migrate(userId){
         if (fs.existsSync("./oldData.json")){
             let oldData;
             try {
                 oldData = JSON.parse(fs.readFileSync("./oldData.json", 'utf-8'));
             } catch(error){
-                msg("error reading file \"./oldData.json\"",error);
+                await msg("error reading file \"./oldData.json\"",error);
             }
             let oldAura;
             if(oldData[userId]){
@@ -408,39 +409,54 @@ try{
             try{
                 fs.writeFileSync("./oldData.json", JSON.stringify(oldData, null, 2), 'utf-8');
             } catch(error){
-                msg("error saving file",error);
+                await msg("error saving file",error);
             }
         }
     }
-    function restartBot(force=false) {
-        saveData();
-        msg(`restarting ${client.user.tag}`);
-        const memoryUsage = process.memoryUsage();
-        const maxMemory = process.env.NODE_OPTIONS?.match(/--max-old-space-size=(\d+)/)?.[1] ?? 2048; // Default to 2048MB
-        const usedMemoryMB = memoryUsage.heapUsed / 1024 / 1024;
+    function restartBot(force = false) {
+        // Retrieve the max memory size from the NODE_OPTIONS environment variable
+        let maxMemory = process.env.NODE_OPTIONS?.match(/--max-old-space-size=(\d+)/)?.[1];
+        
+        if (!maxMemory) {
+            console.warn('Max memory size not set, defaulting to 2048MB.');
+            maxMemory = 2048;
+        }
+    
+        const usedMemoryMB = process.memoryUsage().heapUsed / 1024 / 1024;
     
         console.log(`Memory used: ${usedMemoryMB.toFixed(2)} MB / ${maxMemory} MB`);
     
-        if (usedMemoryMB > maxMemory * 0.8 || force) {
-            console.log('Memory limit exceeded or force restart triggered. Restarting bot...');
-            
-            // Spawn a new instance of the program
-            spawn(process.argv[0], process.argv.slice(1), {
-                stdio: 'inherit'
-            });
+        // If force is true or memory exceeds 80% of the max memory, restart the bot
+        if (force || usedMemoryMB > maxMemory * 0.8) {
+            console.log('Restarting bot...');
     
-            // Exit the current process immediately
-            process.exit();
+            // Use pm2 to restart the current process
+            pm2.connect((err) => {
+                if (err) {
+                    console.error('Error connecting to pm2:', err);
+                    process.exit(2);
+                }
+    
+                // Get the current process name
+                pm2.start({
+                    script: path.resolve(__dirname, 'index.js'),  // Path to your bot script
+                    name: 'my-bot',   // Name for the pm2 process
+                    max_memory_restart: `${maxMemory}M`,  // Set the max memory limit
+                }, (err, apps) => {
+                    if (err) {
+                        console.error('Error restarting bot with pm2:', err);
+                        process.exit(2);
+                    }
+                    console.log('Bot restarted successfully!');
+                    process.exit(0); // Exit the current process after restarting
+                });
+            });
         } else {
-            console.log('Memory usage is within limits.');
+            console.log('Memory usage is within limits. No restart needed.');
         }
     }
-    // When the client is ready, you can use the msg function
-    client.once('ready', () => {
-        msg(`Logged in as ${client.user.tag} utilities.js`);
-        loadData();
-
-        // Example usage: Send a message to a specific server and channel
+    client.once('ready', async () => {
+        await msg(`Logged in as ${client.user.tag}! utilities.js`);
     });
     module.exports = {
         msg,

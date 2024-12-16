@@ -17,7 +17,7 @@ try{
     async function underConstruction(interaction){
         await interaction.reply({content: "command under construction", fetchReply : true});
     }
-    async function checkPassword(entered){
+    function checkPassword(entered){
         return createHash("sha256").update(entered).digest('hex') === JSONConfig.botAdminPassword;
     }
     //rizzme
@@ -42,7 +42,7 @@ try{
         const oiler = interaction.user;
 
         if (!target) {
-            return await interaction.reply({ content: "You need to mention someone to oil up!", fetchReply: true, ephemeral: true });
+            await interaction.reply({ content: "You need to mention someone to oil up!", fetchReply: true, ephemeral: true });
         }
 
         // Create the response with proper mentions and IDs
@@ -64,7 +64,7 @@ try{
         const announcementFile = interaction.options.getString("message")
         const announcementMessage = fs.readFileSync(`./${announcementFile}`,"utf-8");
         if (!checkPassword(interaction.options.getString("botAdminPassword".toLowerCase()))){
-            interaction.reply({content: "invalid password", fetchReply: true});
+            await interaction.reply({content: "invalid password", fetchReply: true});
             return false
         }
         try {
@@ -75,17 +75,17 @@ try{
                 try {
                     const owner = await guild.fetchOwner();
                     await owner.send(announcementMessage);
-                    util.msg(`Message sent to ${owner.user.tag} in ${guild.name}`);
+                    await util.msg(`Message sent to ${owner.user.tag} in ${guild.name}`);
                     successCount++;
                     
                     } catch (error) {
-                        util.msg(`Failed to message the owner of ${guild.name} error: ${error}`);
+                        await util.msg(`Failed to message the owner of ${guild.name} error: ${error}`);
                         failCount++;
                     }
                 }
                 await interaction.followUp({content:`Announcement sent! Success: ${successCount} Failed: ${failCount}`, ephemeral: false})
         } catch (error) {
-            util.msg(`error sending announcements, ${error}`)
+            await util.msg(`error sending announcements, ${error}`)
         }
     }
     new util.Command({name: "announce",description: "Send a dm to server owners",dm_permission: true,options: [{name: "message",type: 3,description: "Message file to send",required: true},{name:"botAdminPassword".toLowerCase(),type: 3, description: "admin password for bot",required: true}]},announce);
@@ -152,8 +152,8 @@ try{
     async function giveAura(interaction){
         let message;
         const target = interaction.options.getUser("user");
-        const auraAmount = interaction.options.getNumber("aura")
-        console.log(`Entered:\t${createHash("sha256").update(interaction.options.getString("botadminpassword")).digest('hex')}\nPassword:\t${JSONConfig.botAdminPassword}\nStatus:\t${createHash("sha256").update(interaction.options.getString("botadminpassword")).digest('hex') === JSONConfig.botAdminPassword}`);
+        const auraAmount = interaction.options.getNumber("aura");
+        console.log(checkPassword(interaction.options.getString("botAdminPassword".toLowerCase())))
         if (checkPassword(interaction.options.getString("botAdminPassword".toLowerCase()))){
             util.User.getUser(interaction.user.id).giveAura(auraAmount,false);
             message = `<@${target.id}> has been given ${auraAmount} aura by <@${interaction.user.id}>`;
@@ -172,7 +172,7 @@ try{
     async function getCoins(interaction){
         const coins = util.User.getUser(interaction.options.getUser("member").id)?.getCoins(util.Guild.getGuild(interaction.guild.id)) ?? 0;
         let response = `@silent ${interaction.options.getUser("member")} has ${coins} coins`
-        interaction.reply({content: response, fetchReply: true});
+        await interaction.reply({content: response, fetchReply: true});
     }
     new util.Command({name: "getCoins".toLowerCase(),description: "get a users coin balance",dm_permission: false,options:[{name: "member", type: 6, description: "member to get the coins of", required: true}]},getCoins);
     //giveCoins
@@ -181,21 +181,20 @@ try{
         if (interaction.member.roles.cache.has(util.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
             util.User.getUser(interaction.options.getUser("user")).giveCoins(interaction.options.getNumber("coins"),util.Guild.getGuild(interaction.guild.id));
             response = `gave ${interaction.options.getNumber("coins")} to ${interaction.options.getUser("user")}`;
-            interaction.reply({content: response, fetchReply : true});
         } else {
             response = `invalid permissions`;
         }
-        interaction.reply({content: response, fetchReply: true});
+        await interaction.reply({content: response, fetchReply: true});
     }
     new util.Command({name:"giveCoins".toLowerCase(),description: "give coins to a user",dm_permission: false,options: [{name: "user",type:6,description: "user to give aura to",required:true},{name: "coins",type: 10,description: "amount of aura to give",required: true}]},giveCoins);
     //coinLeaderboard
     async function coinBoard(interaction){
-        interaction.reply({content: util.Guild.getGuild(interaction.guild.id).leaderboard(),fetchReply: true});
+        await interaction.reply({content: util.Guild.getGuild(interaction.guild.id).leaderboard(),fetchReply: true});
     }
     new util.Command({name: "coinLeaderBoard".toLowerCase(),description: "leaderboard for coins", dm_permission : false},coinBoard)
     //auraLeaderboard
     async function auraBoard(){
-        interaction.reply({content: util.User.leaderboard(),fetchReply: true});
+        await interaction.reply({content: util.User.leaderboard(),fetchReply: true});
     }
     new util.Command({name: "auraLeaderboard".toLowerCase(),description: "Show the global aura leaderboard",dm_permission: true},auraBoard);
     //buyCoins
@@ -206,7 +205,7 @@ try{
     //shopSettings
     //serverBooster
     async function getServerBooster(interaction){
-        interaction.reply({content: `${guild.getGuild(interaction.guild.id).booster}`,fetchReply: true});
+        await interaction.reply({content: `${guild.getGuild(interaction.guild.id).booster}`,fetchReply: true});
     }
     new util.Command({name: "getServerBooster".toLowerCase(),description: "get the current booster for the server",dm_permission: false},getServerBooster);
     //changeServerBooster
@@ -218,16 +217,16 @@ try{
         } else {
             response = `invalid permissions`;
         }
-        interaction.reply({content: response, fetchReply: true});
+        await interaction.reply({content: response, fetchReply: true});
     }
     new util.Command({name: "changeServerBooster".toLowerCase(),description: "change the server booster",dm_permission: false,options: [{name:"newBooster".toLowerCase(),type: 10, description: "new booster for coins on server",required: true}]},changeServerBooster);
     //restart
     async function restart(interaction){
         if (checkPassword(interaction.options.getString("botAdminPassword".toLowerCase()))){
-            interaction.reply({content: "bot restarted",fetchReply: true});
-            util.restartBot(true);
+            await interaction.reply({content: "bot restarted",fetchReply: true});
+            await util.restartBot(true);
         } else {
-            interaction.reply({content: "invalid password",fetchReply: true});
+            await interaction.reply({content: "invalid password",fetchReply: true});
         }
     }
     new util.Command({name: "restart".toLowerCase(),description: "restart the bot",dm_permission: true,options: [{name:"botAdminPassword".toLowerCase(),type: 3, description: "admin password for bot",required: true}]},restart);
@@ -237,14 +236,14 @@ try{
             response = `Heap Used: ${Math.ceil((process.memoryUsage().heapUsed/104857600)*100)} % | ${Math.ceil((process.memoryUsage().heapUsed/1024/1024))} MB`
             await interaction.reply({content: response, fetchReply: true});
         } else {
-            interaction.reply({content: "invalid password",fetchReply : true});
+            await interaction.reply({content: "invalid password",fetchReply : true});
         }
     }
     new util.Command({name: "getRam".toLowerCase(),description: "Get the current ram usage",dm_permission: true,options: [{name:"botAdminPassword".toLowerCase(),type: 3, description: "admin password for bot",required: true}]},getRamUsage);
     //getInvite
     new util.Command({name: "getRandomInvite".toLowerCase(),description: "join a random server that has advertising enabled",dm_permission: true},underConstruction);
     client.once('ready', async () => {
-        util.msg(`Logged in as ${client.user.tag}! commands.js`);
+        await util.msg(`Logged in as ${client.user.tag}! commands.js`);
     });
     
     client.login(JSONConfig.token);
