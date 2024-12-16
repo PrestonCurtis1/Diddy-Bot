@@ -198,7 +198,10 @@ try{
     }
     new util.Command({name: "auraLeaderboard".toLowerCase(),description: "Show the global aura leaderboard",dm_permission: true},auraBoard);
     //buyCoins
-    new util.Command({name:"buyCoins".toLowerCase(),description:"buy coins with aura if server has enabled",dm_permission: false, options: [{name: "amount",type: 10, description: "amount of coins to buy", required: true}]},underConstruction);
+    async function buycoins(interaction){
+        interaction.reply({content: util.Guild.getGuild(interaction.guild.id).shop.buyCoins(interaction.options.getNumber("amount"),util.Guild.getGuild(interaction.guild.id),util.User.getUser(interaction.user.id)), fetchReply: true});
+    }
+    new util.Command({name:"buyCoins".toLowerCase(),description:"buy coins with aura if server has enabled",dm_permission: false, options: [{name: "amount",type: 10, description: "amount of coins to buy", required: true}]},buycoins);
     //changeServerSetting
     //serverSettings
     //changeShopSetting
