@@ -35,4 +35,4 @@ Your `config.json` file should look like this
 }
 ```
 ***
-If you encounter any *__Errors__* or *__Problems__* You can join the  [Diddy Bot Community]([]) Discord Server for support
+If you encounter any *__Errors__* or *__Problems__* You can join the  [Diddy Bot Community](https://discord.com/invite/u6AVRt7Bgm) Discord Server for support
