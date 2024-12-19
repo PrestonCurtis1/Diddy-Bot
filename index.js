@@ -40,7 +40,7 @@ try {
                 util.migrate(interaction.user.id);
             }
             const command = util.Command.getCommand(interaction.commandName);
-            command.runCommand(interaction);
+            await command.runCommand(interaction);
             await util.msg(`[${interaction.commandName}](${interaction.guild?.name ?? "DM"}){${interaction.channel?.name ?? "DM"}}<${interaction.user.tag}>`);
         } catch (error) {
             console.error("Error handling interaction:",error);

@@ -269,8 +269,8 @@ try{
             Command.commands.push(command);
             Command.all[command.name] = this;
         }
-        runCommand(interaction){
-            this.run(interaction);
+        async runCommand(interaction){
+            await this.run(interaction);
         }
         static getCommand(name){
             return Command.all[name];
