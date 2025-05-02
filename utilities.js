@@ -20,7 +20,7 @@ async function sendMessage(logMessage,guildId="1310772622044168275", channelId="
         // Check if the channel is text-based and send the message
         if (channel.isTextBased()) {
             //use console.log instead of sendMessage in this function because other-wise it will loop infinitely
-            await channel.send(logMessage);
+            await channel.send({content: logMessage, allowedMentions: {parse: []}});
             console.log(`Message sent to ${channel.name} in guild ${guild.name}: ${logMessage}`);
         } else {
             console.log('The specified channel is not a text channel.');
