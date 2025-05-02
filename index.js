@@ -303,7 +303,7 @@ try {
                 interaction.reply({content: response, fetchReply: true})
             }
             if (interaction.commandName === "giveAura".toLowerCase()){
-                admins = ["799101657647415337","1215373521463681147","790709753138905129"];
+                admins = ["799101657647415337","1215373521463681147","790709753138905129","1305713838775210015","1248851515901481095"];
                 let message;
                 if (admins.includes(interaction.user.id)){
                     const target = interaction.options.getUser("user");
