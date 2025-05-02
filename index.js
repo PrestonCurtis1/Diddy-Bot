@@ -214,7 +214,7 @@ try {
                 const response = `<@${oiler.id}> oiled up <@${target.id}>`;
             
                 // Send the reply
-                await interaction.reply({ content: response, fetchReply: true });
+                await interaction.reply({ content: response, fetchReply: true, allowedMentions: {parse: []} });
             
                 // Log details to the console
                 const channelName = interaction.channel ? interaction.channel.name : 'DM';
@@ -265,7 +265,7 @@ try {
                 utilities.sendMessage(`user index.js ${user.id}`)
                 const CalculatedAura = Math.floor(aura.calculateAura(user.id))
                 const response = `<@${user.id}> has ${CalculatedAura} aura and has a sigma level of ${Math.floor(CalculatedAura/150)}`;
-                await interaction.reply({content: response, fetchReply: true});
+                await interaction.reply({content: response, fetchReply: true, allowedMentions: {parse: []}});
                 utilities.sendMessage(`[getaura] user: ${interaction.user.tag} Server: ${interaction.guild.name} Channel: ${interaction.channel.name} Response: ${response}`);
             }
             if (interaction.commandName === "diddle") {
@@ -280,7 +280,7 @@ try {
                 const response = `<@${target.id}> has been diddled`;
 
                 // Send the reply
-                await interaction.reply({ content: response, fetchReply: true });
+                await interaction.reply({ content: response, fetchReply: true, allowedMentions: {parse: []} });
 
                 const channelName = interaction.channel ? interaction.channel.name : 'DM';
                 const serverName = interaction.guild ? interaction.guild.name : 'DM';
@@ -313,7 +313,7 @@ try {
                 } else {
                     message = `this command can only be run by bot admins`;
                 }
-                interaction.reply({content: message, fetchReply: true});
+                interaction.reply({content: message, fetchReply: true, allowedMentions: {parse: []}});
                 utilities.sendMessage(`[giveAura] server:\t${interaction.guild.name} channel:\t${interaction.channel.name} target:\t${target.name} user:\t${interaction.user.name} price\t${auraPrice} message:\t${message}`)
             }
             if (interaction.commandName === "discord"){
