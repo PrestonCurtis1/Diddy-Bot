@@ -25,7 +25,6 @@ try {
             }
         }
         fs.writeFileSync(path, JSON.stringify(userMessageLists, null, 2), 'utf-8'); // Save as JSON
-        utilities.sendMessage("saved userMessageLists");
     }
 
     function calculateAura(userId){//function used to calcutate a users aura
