@@ -168,6 +168,11 @@ try {
             name: "discord",
             description: "Join our discord server",
             dm_permission: true
+        },
+        {
+            name: "rizzlers",
+            description: "people who contributed pickup-lines",
+            dm_permission: true
         }
     ];
 
@@ -319,6 +324,9 @@ try {
             if (interaction.commandName === "discord"){
                 interaction.reply({content: "Join our diddy-bot community  [discord server](https://discord.gg/u6AVRt7Bgm)",fetchReply:true});
             }
+            if (interaction.commandName === 'rizzlers') {
+                interaction.reply({content: "@unprankable01\n@houdert6",fetchReply: true,allowedMentions: {parse: []}})
+            }
         } catch (error) {
             utilities.sendMessage(`Error handling interaction:, ${error}`);
         }
@@ -340,5 +348,6 @@ try {
     // Login to Discord with the bot token
     client.login(JSONConfig.token);
 } catch (err) {
-    utilities.sendMessage("Fatal error in the script: index.js"+err+"");
+    console.log("fatal error occured",err)
+    //utilities.sendMessage("Fatal error in the script: index.js"+err+"");
 }
