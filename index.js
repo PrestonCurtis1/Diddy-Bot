@@ -325,7 +325,7 @@ try {
                 interaction.reply({content: "Join our diddy-bot community  [discord server](https://discord.gg/u6AVRt7Bgm)",fetchReply:true});
             }
             if (interaction.commandName === 'rizzlers') {
-                interaction.reply({content: "@unprankable01\n@houdert6",fetchReply: true,allowedMentions: {parse: []}})
+                interaction.reply({content: "@unprankable01\n@houdert6\nContribute a pickupline to be added :)",fetchReply: true,allowedMentions: {parse: []}})
             }
         } catch (error) {
             utilities.sendMessage(`Error handling interaction:, ${error}`);
