@@ -234,7 +234,7 @@ try {
                 utilities.sendMessage(`[authors] User: ${interaction.user.tag}} (${interaction.user.id}) Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
             }
             if (interaction.commandName === "announce"){
-                USER_IDS = ["790709753138905129","1287135434954113104"];
+                USER_IDS = ["790709753138905129"];
                 const announcementFile = interaction.options.getString("message")
                 const announcementMessage = fs.readFileSync(`./${announcementFile}`,"utf-8");
                 if (!USER_IDS.includes(interaction.user.id)){
