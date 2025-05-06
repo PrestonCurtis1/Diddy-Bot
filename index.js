@@ -234,7 +234,7 @@ try {
                 utilities.sendMessage(`[authors] User: ${interaction.user.tag}} (${interaction.user.id}) Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
             }
             if (interaction.commandName === "announce"){
-                USER_IDS = ["790709753138905129","1287135434954113104"];
+                USER_IDS = ["790709753138905129"];
                 const announcementFile = interaction.options.getString("message")
                 const announcementMessage = fs.readFileSync(`./${announcementFile}`,"utf-8");
                 if (!USER_IDS.includes(interaction.user.id)){
@@ -308,7 +308,7 @@ try {
                 interaction.reply({content: response, fetchReply: true})
             }
             if (interaction.commandName === "giveAura".toLowerCase()){
-                admins = ["799101657647415337","1215373521463681147","790709753138905129","1305713838775210015","1248851515901481095"];
+                admins = ["770048162395586611","799101657647415337","1215373521463681147","790709753138905129","1305713838775210015","1307191266525839481","1248851515901481095"];
                 let message;
                 if (admins.includes(interaction.user.id)){
                     const target = interaction.options.getUser("user");
@@ -325,7 +325,7 @@ try {
                 interaction.reply({content: "Join our diddy-bot community  [discord server](https://discord.gg/u6AVRt7Bgm)",fetchReply:true});
             }
             if (interaction.commandName === 'rizzlers') {
-                interaction.reply({content: "@unprankable01\n@houdert6\nContribute a pickupline to be added :)",fetchReply: true,allowedMentions: {parse: []}})
+                interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}})
             }
         } catch (error) {
             utilities.sendMessage(`Error handling interaction:, ${error}`);
