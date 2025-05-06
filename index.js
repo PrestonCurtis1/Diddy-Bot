@@ -227,7 +227,7 @@ try {
                 utilities.sendMessage(`[oil] Oiler: ${oiler.tag} (${oiler.id}), Target: ${target.tag} (${target.id}), Server: ${serverName}, Channel: ${channelName}, Message: ${response}`);
             }
             if (interaction.commandName === 'authors') {
-                const response = "the authors of <@1305713838775210015> are <@790709753138905129> and <@799101657647415337>";
+                const response = "the authors of <@1305713838775210015> \n **Founder**: <@790709753138905129> \n **Developer**: <@799101657647415337>,<@1005413712536023100>\n **Admin**:<@1307191266525839481>,<@1215373521463681147>,<@1248851515901481095>";
                 await interaction.reply({content: response, fetchReply: true});
                 const channelName = interaction.channel ? interaction.channel.name : 'DM';
                 const serverName = interaction.guild ? interaction.guild.name : 'DM';
