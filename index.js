@@ -309,7 +309,7 @@ try {
             }
             if (interaction.commandName === "giveAura".toLowerCase()){
                 const communityServer = await client.guilds.fetch("1310772622044168275");
-                const member = communityServer.members.fetch(interaction.user.id);
+                const member = await communityServer.members.fetch(interaction.user.id);
                 //admins = ["770048162395586611","799101657647415337","1215373521463681147","790709753138905129","1305713838775210015","1307191266525839481","1248851515901481095"];
                 let message;
                 if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
