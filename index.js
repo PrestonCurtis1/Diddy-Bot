@@ -308,9 +308,12 @@ try {
                 interaction.reply({content: response, fetchReply: true})
             }
             if (interaction.commandName === "giveAura".toLowerCase()){
-                admins = ["770048162395586611","799101657647415337","1215373521463681147","790709753138905129","1305713838775210015","1307191266525839481","1248851515901481095"];
+                const communityServer = await client.guilds.fetch("");
+                const member = guild.members.fetch(interaction.user.id);
+                //admins = ["770048162395586611","799101657647415337","1215373521463681147","790709753138905129","1305713838775210015","1307191266525839481","1248851515901481095"];
                 let message;
-                if (admins.includes(interaction.user.id)){
+                if (member.permission.has(PermissionsBitField.Flags.Administrator)){
+                //if (admins.includes(interaction.user.id)){
                     const target = interaction.options.getUser("user");
                     const auraPrice = interaction.options.getNumber("aura")
                     aura.giveAura(target.id,auraPrice);
