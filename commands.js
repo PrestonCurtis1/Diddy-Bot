@@ -354,6 +354,17 @@ try{
      * @returns {Promise<Void>}
      */ 
     new util.Command({name: "getRandomInvite".toLowerCase(),description: "join a random server that has advertising enabled",dm_permission: true},underConstruction);
+    //rizzlers
+    /**
+    * show the current rizzlers and pickupline form
+    * function created by unprankable
+    * @param {Interaction} interaction The interaction passed by the client
+    * @returns {Promise<void>}
+    */
+    async function rizzlers(interaction){
+        interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}});
+    }
+    new util.Command({name: "rizzlers",description: "people who contributed pickup-lines",dm_permission: true},rizzlers);
     client.once('ready', async () => {
         await util.msg(`Logged in as ${client.user.tag}! commands.js`);
     });
