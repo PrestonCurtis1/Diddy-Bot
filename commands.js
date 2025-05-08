@@ -304,7 +304,6 @@ try{
         interaction.reply({content: util.Guild.getGuild(interaction.guild.id).shop.buyCoins(interaction.options.getNumber("amount"),util.Guild.getGuild(interaction.guild.id),util.User.getUser(interaction.user.id)), fetchReply: true});
     }
     new util.Command({name:"buyCoins".toLowerCase(),description:"buy coins with aura if server has enabled",dm_permission: false, options: [{name: "amount",type: 10, description: "amount of coins to buy", required: true}]},buycoins);
-    //changeServerSetting
     //ShowServerSettings
     /**
      * display the current server settings
@@ -316,9 +315,6 @@ try{
         response = 
         interaction.reply({content: response, fetchReply: true});
     }
-    //changeServerSetting
-    //changeShopSetting
-    //showShopSettings
     //getServerBooster
     /**
      * retrieve the current server booster
@@ -348,38 +344,8 @@ try{
         await interaction.reply({content: response, fetchReply: true});
     }
     new util.Command({name: "changeServerBooster".toLowerCase(),description: "change the server booster",dm_permission: false,options: [{name:"newBooster".toLowerCase(),type: 10, description: "new booster for coins on server",required: true}]},changeServerBooster);
-    //restart
-    /**
-     * restart the bot
-     * function created by unprankable
-     * @param {Interaction} interaction - The interaction passed by the client.
-     * @returns {Promise<Void>}
-     */ 
-    async function restart(interaction){
-        if (checkPassword(interaction.options.getString("botAdminPassword".toLowerCase()))){
-            await interaction.reply({content: "bot restarted",fetchReply: true});
-            await util.restartBot(true);
-        } else {
-            await interaction.reply({content: "invalid password",fetchReply: true});
-        }
-    }
-    new util.Command({name: "restart".toLowerCase(),description: "restart the bot",dm_permission: true,options: [{name:"botAdminPassword".toLowerCase(),type: 3, description: "admin password for bot",required: true}]},restart);
-    //ramUsage
-    /**
-     * retrieve the current ram usage of the bot
-     * function created by unprankable
-     * @param {Interaction} interaction - The interaction passed by the client.
-     * @returns {Promise<Void>}
-     */ 
-    async function getRamUsage(interaction){
-        if (checkPassword(interaction.options.getString("botAdminPassword".toLowerCase()))){
-            response = `Heap Used: ${Math.ceil((process.memoryUsage().heapUsed/104857600)*100)} % | ${Math.ceil((process.memoryUsage().heapUsed/1024/1024))} MB`
-            await interaction.reply({content: response, fetchReply: true});
-        } else {
-            await interaction.reply({content: "invalid password",fetchReply : true});
-        }
-    }
-    new util.Command({name: "getRam".toLowerCase(),description: "Get the current ram usage",dm_permission: true,options: [{name:"botAdminPassword".toLowerCase(),type: 3, description: "admin password for bot",required: true}]},getRamUsage);
+    
+    
     //getInvite
     /**
      * sends an invite to a random server
