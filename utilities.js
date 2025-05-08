@@ -455,6 +455,16 @@ try{
             console.log('Memory usage is within limits. No restart needed.');
         }
     }
+    /**
+     * add a shop to the guilds shop
+     * function created by unprankable
+     * @param {mem} userId - The interaction passed by the client.
+     * @returns {Promise<Void>}
+     */ 
+    async function guildHasUser(Guild,User){
+        guild.members.cache.has(userId);
+        guild.members
+    }
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
     });

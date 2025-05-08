@@ -305,7 +305,7 @@ try{
     }
     new util.Command({name:"buyCoins".toLowerCase(),description:"buy coins with aura if server has enabled",dm_permission: false, options: [{name: "amount",type: 10, description: "amount of coins to buy", required: true}]},buycoins);
     //changeServerSetting
-    //serverSettings
+    //ShowServerSettings
     /**
      * display the current server settings
      * function created by unprankable
@@ -316,9 +316,10 @@ try{
         response = 
         interaction.reply({content: response, fetchReply: true});
     }
+    //changeServerSetting
     //changeShopSetting
-    //shopSettings
-    //serverBooster
+    //showShopSettings
+    //getServerBooster
     /**
      * retrieve the current server booster
      * function created by unprankable
@@ -395,3 +396,7 @@ try{
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
 }
+//changeServerSetting
+//changeShopSetting
+//showShopSettings
+//getInvite
