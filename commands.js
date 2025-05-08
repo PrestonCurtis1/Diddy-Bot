@@ -374,6 +374,7 @@ try{
     console.error("A fatal error occured in file commands.js",error);
 }
 //changeServerSetting
+//showServerSettings
 //changeShopSetting
 //showShopSettings
 //getInvite
