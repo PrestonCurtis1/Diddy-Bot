@@ -27,7 +27,8 @@ try {
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.DirectMessages,
             GatewayIntentBits.GuildMembers
-        ]
+        ],
+        partials: [Partials.Channel]
     });
 
     // Define and register the slash command
@@ -458,7 +459,7 @@ try {
                 const userMessage = interaction.options.getString('message');
                 await interaction.channel.send(userMessage);
                 await interaction.reply({content: "Message Sent",ephemeral: true, fetchReply: true});
-  }
+            }
         } catch (error) {
             utilities.sendMessage(`Error handling interaction:, ${error}`);
         }
