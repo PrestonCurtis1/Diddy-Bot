@@ -3,7 +3,7 @@ const { deserialize } = require('v8');
 
 try {
     const fs = require('fs');
-    const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField } = require('discord.js');
+    const { Client, GatewayIntentBits, REST, Partials ,Routes, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json'); // Load the bot token and client ID from config.json
     const aura = require("./aura.js");//the system used for updating load and saving aura
     const shop = require("./shop.js");
