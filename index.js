@@ -277,6 +277,18 @@ try {
                 1, // bot dms
                 2 // other dms
             ]
+        },{
+            name:"echo",
+            description: "echo a message",
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ]
         }
     ];
 
@@ -434,6 +446,10 @@ try {
             if (interaction.commandName === 'rizzlers') {
                 interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}})
             }
+            if (interaction.commandName === 'echo') {
+                const userMessage = interaction.options.getString('message');
+                await interaction.reply({content: userMessage,ephemeral: true, fetchReply: true});
+  }
         } catch (error) {
             utilities.sendMessage(`Error handling interaction:, ${error}`);
         }
