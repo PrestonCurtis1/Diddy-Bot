@@ -463,6 +463,8 @@ try {
                     const userMessage = interaction.options.getString('message');
                     await interaction.reply({content: "message sent (UWU)" ,ephemeral: true, fetchReply: false});
                     await interaction.followUp({content:userMessage, ephemeral: false});
+                } else {
+                    await interaction.reply({content: "invalid perms", ephemeral: true, fetchReply: false})
                 }
             }
         } catch (error) {
