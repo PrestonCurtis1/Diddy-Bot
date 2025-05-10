@@ -433,10 +433,10 @@ try {
                 interaction.reply({content: response, fetchReply: true})
             }
             if (interaction.commandName === "giveAura".toLowerCase()){
+                let message;
                 const communityServer = await client.guilds.fetch("1310772622044168275");
                 const member = await communityServer.members.fetch(interaction.user.id);
                 //admins = ["770048162395586611","799101657647415337","1215373521463681147","790709753138905129","1305713838775210015","1307191266525839481","1248851515901481095"];
-                let message;
                 if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
                 //if (admins.includes(interaction.user.id)){
                     const target = interaction.options.getUser("user");
@@ -456,9 +456,14 @@ try {
                 interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}})
             }
             if (interaction.commandName === 'echo') {
-                const userMessage = interaction.options.getString('message');
-                await interaction.reply({content: "message sent (UWU)" ,ephemeral: true, fetchReply: false});
-                await interaction.followUp({content:userMessage, ephemeral: false});
+                const communityServer = await client.guilds.fetch("1310772622044168275");
+                const member = await communityServer.members.fetch(interaction.user.id);
+                //admins = ["770048162395586611","799101657647415337","1215373521463681147","790709753138905129","1305713838775210015","1307191266525839481","1248851515901481095"];
+                if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
+                    const userMessage = interaction.options.getString('message');
+                    await interaction.reply({content: "message sent (UWU)" ,ephemeral: true, fetchReply: false});
+                    await interaction.followUp({content:userMessage, ephemeral: false});
+                }
             }
         } catch (error) {
             utilities.sendMessage(`Error handling interaction:, ${error}`);
