@@ -36,12 +36,28 @@ try {
         {
             name: 'rizzme',//deliver random pickup line 
             description: 'Receive a random pickup line!',
-            dm_permission: true
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ]
         },
         {
             name: "oil",//oil me up brosquito
             description: "oil up your friends",
-            dm_permission: true,
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ],
             options: [
                 {
                     name: 'user',
@@ -54,12 +70,28 @@ try {
         {
             name: "authors",//prints the author of the bot
             description: "Get the author of this app",
-            dm_permission: true
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ]
         },
         {
             name: "announce",//only available for developers of this bot
             description: "Send a dm to server admins",
-            dm_permission: true,
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ],
             options: [
                 {
                     name: "message",
@@ -72,7 +104,15 @@ try {
         {
             name: "getaura",//getaurea OM NOM
             description: "display a users aura",
-            dm_permission: true,
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ],
             options: [
                 {
                     name: "member",
@@ -85,7 +125,15 @@ try {
         {
             name: "diddle",
             description: "Diddle your friends",
-            dm_permission: true,
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ],
             options: [
                 {
                     name: 'user',
@@ -98,7 +146,15 @@ try {
         {
             name: "addShopRole".toLowerCase(),
             description: "add a role to your servers shop",
-            dm_permission: true,
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ],
             options: [
                 {
                     name: "role",
@@ -117,7 +173,15 @@ try {
         {
             name: "removeShopRole".toLowerCase(),
             description: "remove a role from your shop",
-            dm_permission: true,
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ],
             options: [
                 {
                     name: "role",
@@ -130,7 +194,15 @@ try {
         {
             name: "buyShopRole".toLowerCase(),
             description: "buy a role from shop",
-            dm_permission: true,
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ],
             options: [
                 {
                     name: "role",
@@ -143,12 +215,28 @@ try {
         {
             name:"shop",
             description: "list the roles you can buy",
-            dm_permission: true
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ],
         },
         {
             name:"giveAura".toLowerCase(),
             description: "give aura to a user (bot admins only)",
-            dm_permission: true,
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ],
             options: [
                 {
                     name: "user",
@@ -167,12 +255,28 @@ try {
         {
             name: "discord",
             description: "Join our discord server",
-            dm_permission: true
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ]
         },
         {
             name: "rizzlers",
             description: "people who contributed pickup-lines",
-            dm_permission: true
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ]
         }
     ];
 
