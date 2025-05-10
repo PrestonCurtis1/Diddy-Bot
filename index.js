@@ -280,6 +280,14 @@ try {
         },{
             name:"echo",
             description: "echo a message",
+            options: [
+                {
+                    name: 'message',
+                    type: 3, // STRING
+                    description: 'The message you want me to say back to you',
+                    required: true,
+                }
+                    ],
             integration_types: [
                 0, // GUILD_INSTALL
                 1 // USER_INSTALL
