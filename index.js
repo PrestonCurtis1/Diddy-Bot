@@ -457,7 +457,8 @@ try {
             }
             if (interaction.commandName === 'echo') {
                 const userMessage = interaction.options.getString('message');
-                await interaction.reply({content: userMessage ,ephemeral: true, fetchReply: false});
+                await interaction.reply({content: "message sent (UWU)" ,ephemeral: true, fetchReply: false});
+                await interaction.followUp({content:userMessage, ephemeral: false});
             }
         } catch (error) {
             utilities.sendMessage(`Error handling interaction:, ${error}`);
