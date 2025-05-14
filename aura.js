@@ -3,7 +3,7 @@ try {
     const fs = require('fs');
     const path = './userMessageLists.json'; // Path to store the user-specific message lists
     const JSONConfig = require("./config.json");
-    const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+    const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages] });
     const utilities = require("./utilities.js");
 
     // Function to load the user message lists from the file
@@ -30,9 +30,8 @@ try {
     function calculateAura(userId){//function used to calcutate a users aura
         try {
             const MessageList = loadUserMessageLists()[userId];
-            utilities.sendMessage("messagelist3"+MessageList)
             const MessageTotal = MessageList[0];
-            const Multiplier = 1+(MessageList[0]/MessageList[1])/100;
+            const Multiplier = getMultiplier(userId);
             const totalAura = MessageTotal * Multiplier;
             return totalAura;//(Math.floor(userMessageLists[userId][0]/userMessageLists[userId][1]))
         } catch (error){
@@ -41,23 +40,17 @@ try {
         }
     }
     function getMultiplier(userId){
-        const messageList = userMessageLists[userId];
-        const messageTotal = messageList[0];
-        const messageDividend = messageList[1];
-        const messageAverage = (messageTotal/messageDividend);
-        const multiplier = 1+(messageAverage/100);
-        return multiplier
+        //2x if they are boosting the server and another 2x if they are boosting the diddy server
+        return 1;
     }
     function giveAura(userId,amount){
         if (!userMessageLists[userId]){
             userMessageLists[userId] = [0,0];//the equivelent of them sending one message with them having to send a message
         }
-        if (amount > 0){//if amount is negative
-            userMessageLists[userId][0] += amount/getMultiplier(userId);
-            userMessageLists[userId][1]--;
-        } else{//if amount is positive
-            userMessageLists[userId][0] += amount/getMultiplier(userId);
-            userMessageLists[userId][1]++;
+        if (amount > 0){//if amount is positive
+            userMessageLists[userId][0] += amount;
+        } else{//if amount is negative
+            userMessageLists[userId][0] += amount;
         }
         saveUserMessageLists();
     }
@@ -69,13 +62,11 @@ try {
             return `insufficient funds ${userMessageLists[senderId][0]} < ${auraAmount}`
         } else{
             userMessageLists[senderId][0] -= auraAmount;
-            userMessageLists[senderId][1]--;
             if (!userMessageLists[receiverId]){
                 userMessageLists[receiverId] = [0,0];
             }
             userMessageLists[receiverId][0] += auraAmount;
-            userMessageLists[receiverId][1] ++;
-            utilities.sendMessage("om nom");
+            utilities.sendMessage(`${senderId} payed ${receiverId}: ${auraAmount} aura`);
         }
         saveUserMessageLists();
     }
@@ -87,18 +78,18 @@ try {
     client.on('messageCreate', (message) => {
     if (message.author.bot) return; // Ignore bot messages
     const userId = message.author.id; // Get the user's ID
-
     // Initialize message list for the user if not already
     if (!userMessageLists[userId]) {
+        utilities.sendMessage(`initializing user ${message.author.username}|${message.author.id}`);
         userMessageLists[userId] = [0,0]; // Create a new message list for the user
     }
 
     // Calculate points for the message
-    const messagePoints = 25 + (message.content.length / 20) + (30 * (message.attachments.size + message.embeds.length));
+    const messagePoints = Math.floor(Math.random() * (50 - 15 + 1) + 15);
+    utilities.sendMessage(`${message.author.username} sent a message in server ${message.guild.name} channel ${message.channel.name} worth ${messagePoints}`);
 
     // Add the calculated points to the user's message list
-    userMessageLists[userId][0] += messagePoints;
-    userMessageLists[userId][1]++;
+    giveAura(userId,messagePoints);
 
     // Save the updated user message lists to the file
     });
@@ -111,9 +102,8 @@ try {
 
     // Check if the user has a message list
     if (userMessageLists[userId]) {
-        const messagePoints = (25 + (message.content.length / 20) + (30 * (message.attachments.size + message.embeds.length)))*2;
+        const messagePoints = 25;
         userMessageLists[userId][0] -= messagePoints;
-        userMessageLists[userId][1]++;
         
 
         // Save the updated user message lists to the file
@@ -126,7 +116,7 @@ try {
         const userId = newMember.id;
         const timeoutDuration = (newMember.communicationDisabledUntil - Date.now()) / 1000 / 3600; // Timeout duration in hours
         if (timeoutDuration > 0) {
-        const timeoutPunishment = (100 * timeoutDuration)*-1;
+        const timeoutPunishment = (25 * timeoutDuration)*-1;
 
         // If the user has a message list, apply punishment
         if (userMessageLists[userId]) {

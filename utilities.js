@@ -4,7 +4,6 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds, 
         GatewayIntentBits.GuildMessages, 
-        GatewayIntentBits.MessageContent
     ] // Ensure the necessary intents are enabled
 });
 

@@ -1,17 +1,16 @@
+const utilities = require("./utilities.js");
 try {
     const fs = require('fs');
     const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json'); // Load the bot token and client ID from config.json
     const aura = require("./aura.js");
     const path = "./shop.json";
-    const utilities = require("./utilities.js");
     let shopLists = loadShopLists();
 
     const client = new Client({
         intents: [
             GatewayIntentBits.Guilds,
             GatewayIntentBits.GuildMessages,
-            GatewayIntentBits.MessageContent,
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.DirectMessages,
             GatewayIntentBits.GuildMembers
@@ -64,7 +63,6 @@ try {
     async function buyShopRole(roleId,userId,guildId){
         try{
             const totalAura = aura.calculateAura(userId);
-            multiplier = aura.getMultiplier(userId);
             const price = shopLists[guildId].filter(role => role["roleId"] === roleId.id)[0]["price"];
             if (!shopLists[guildId].filter(role => role["roleId"] === roleId.id)[0]["roleId"]){
                 return "Role not found in shop";
@@ -76,10 +74,9 @@ try {
                     await member.roles.add(role);
                     utilities.sendMessage(`${userId} bought role <@&${roleId.id}> for ${price} in ${guild.id}`);
                     const guildOwner = guild.ownerId;
-                    utilities.sendMessage("om nom 1"+guildOwner);
                     // aura.giveAura(userId,-1*price);
                     // aura.giveAura(guildOwner,price);
-                    aura.pay(userId,guildOwner,price/multiplier);
+                    aura.pay(userId,guildOwner,price);
                     return `Bought role <@&${roleId.id}> for ${price} aura`;
                 } else {
                     return `Insufficient Aura\nthe role <@&${roleId.id}> cost ${price} aura\nyou only have ${totalAura} aura`;
@@ -97,9 +94,6 @@ try {
         }
         const roles = shopLists[guildId];
         for (let role = 0; role < roles.length; role++){
-            utilities.sendMessage("userId"+userId);
-            utilities.sendMessage("roles"+roles);
-            utilities.sendMessage("roles[role]"+roles[role]);
             roleMessage = `role:\t<@&${roles[role]["roleId"]}>,\tprice:\t${Math.floor(roles[role]["price"])}\n`;
             message += roleMessage;
             
@@ -123,5 +117,6 @@ try {
     client.login(JSONConfig.token);
     
 } catch(error){
+    console.log(`Error occured in shop.js ${error}`);
     utilities.sendMessage(`Error occured in shop.js ${error}`);
 }

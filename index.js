@@ -23,7 +23,6 @@ try {
         intents: [
             GatewayIntentBits.Guilds,
             GatewayIntentBits.GuildMessages,
-            GatewayIntentBits.MessageContent,
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.DirectMessages,
             GatewayIntentBits.GuildMembers
@@ -392,7 +391,6 @@ try {
             if (interaction.commandName === "getaura") {
                 const user = interaction.options.getUser("member")
                 if (user === undefined || user === null) user = interaction.user;
-                utilities.sendMessage(`user index.js ${user.id}`)
                 const CalculatedAura = Math.floor(aura.calculateAura(user.id))
                 const response = `<@${user.id}> has ${CalculatedAura} aura and has a sigma level of ${Math.floor(CalculatedAura/150)}`;
                 await interaction.reply({content: response, fetchReply: true, allowedMentions: {parse: []}});
