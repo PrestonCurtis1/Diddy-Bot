@@ -38,7 +38,18 @@ async function guildIdToName(guildId){
     }
     return guild.name;
 }
-
+async function sendDM(content,userId) {
+    //const userId = '790709753138905129';//unprankable
+    //const userId = '1273153837699563565';//chibubbles
+    //const userId = '799101657647415337';//houdert6
+    try {
+        const user = await client.users.fetch(userId);
+        await user.send(content);
+        sendMessage(`DM sent to ${user.name}: ${content}`);
+    } catch (err) {
+        sendMessage(`Failed to send DM to ${user.name}: ${err.message}`);
+    }
+}
 // When the client is ready, you can use the sendMessage function
 client.once('ready', () => {
     sendMessage(`Logged in as ${client.user.tag} utilities.js`);
@@ -47,6 +58,7 @@ client.once('ready', () => {
 module.exports = {
     sendMessage,
     guildIdToName,
+    sendDM,
 }
 // Log in with your bot token
 client.login(JSONConfig.token);

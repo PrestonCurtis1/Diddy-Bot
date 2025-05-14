@@ -86,7 +86,7 @@ try {
 
     // Calculate points for the message
     const messagePoints = Math.floor(Math.random() * (50 - 15 + 1) + 15);
-    utilities.sendMessage(`${message.author.username} sent a message in server ${message.guild.name} channel ${message.channel.name} worth ${messagePoints}`,"1138285033501773904","1372334310765498439");
+    utilities.sendMessage(`${message.author.username} sent a message in server ${message.guild.name} channel ${message.channel.name} worth ${messagePoints}`,"1310772622044168275","1372357343224008734");
 
     // Add the calculated points to the user's message list
     giveAura(userId,messagePoints);

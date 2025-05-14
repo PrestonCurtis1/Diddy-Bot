@@ -277,9 +277,10 @@ try {
                 1, // bot dms
                 2 // other dms
             ]
-        },{
+        },
+        {
             name:"echo",
-            description: "echo a message",
+            description: "echo a message (for bot admins)",
             options: [
                 {
                     name: 'message',
@@ -287,7 +288,34 @@ try {
                     description: 'The message you want me to say back to you',
                     required: true,
                 }
-                    ],
+            ],
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ]
+        },
+        {
+            name:"dm",
+            description: "Send a message to a user as Diddy (for bot admins)",
+            options: [
+                {
+                    name: "id",
+                    type: 3,
+                    description: "users user id",
+                    required: true
+                },
+                {
+                    name: "message",
+                    type: 3,
+                    description: "message to send user",
+                    required: true
+                }
+            ],
             integration_types: [
                 0, // GUILD_INSTALL
                 1 // USER_INSTALL
@@ -454,15 +482,34 @@ try {
                 interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\n@Royalknight0\n@nexuscageoil\n@buldakislovebuldakislife\n@def_not_vexx\n@chi56567899\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}})
             }
             if (interaction.commandName === 'echo') {
+                //admins = ["770048162395586611","799101657647415337","1215373521463681147","790709753138905129","1305713838775210015","1307191266525839481","1248851515901481095"];
+                const channelId = interaction.channel ? interaction.channel.id : 'DM';
+                const serverId = interaction.guild ? interaction.guild.id : 'DM';
+                const userMessage = interaction.options.getString('message');
+                if (!(channelId == "DM") && !(serverId == "DM")){//in a server
+                    const server = await client.guilds.fetch(serverId);
+                    const member = await server.members.fetch(interaction.user.id);
+                    if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
+                        utilities.sendMessage(userMessage + `\nMessage Sent by: <@${interaction.user.id}> using echo`,interaction.guild.id,interaction.channel.id);
+                        await interaction.reply({content: `message sent!!` ,ephemeral: true, fetchReply: false});
+                    } else {
+                        await interaction.reply({content: "invalid perms", ephemeral: true, fetchReply: false})
+                    }
+                } else {// in a DM
+                    await interaction.reply({content: "message sent!!" ,ephemeral: true, fetchReply: false});
+                    await interaction.followUp({content: userMessage + `\nMessage Sent by: <@${interaction.user.id}> using echo`,ephemeral: false, allowedMentions: {parse: []}});
+                }
+                
+            }
+            if (interaction.commandName === "dm"){
                 const communityServer = await client.guilds.fetch("1310772622044168275");
                 const member = await communityServer.members.fetch(interaction.user.id);
                 //admins = ["770048162395586611","799101657647415337","1215373521463681147","790709753138905129","1305713838775210015","1307191266525839481","1248851515901481095"];
                 if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
-                    const userMessage = interaction.options.getString('message');
-                    await interaction.reply({content: "message sent (UWU)" ,ephemeral: true, fetchReply: false});
-                    await interaction.followUp({content:userMessage, ephemeral: false});
+                    utilities.sendDM(interaction.options.getString('message'),interaction.options.getString('id'));
+                    await interaction.reply({content: "Direct Message Sent!!",fetchReply: true, ephemeral: true});
                 } else {
-                    await interaction.reply({content: "invalid perms", ephemeral: true, fetchReply: false})
+                    await interaction.reply({content: "this command can only be run by bot admins",fetchReply: true, ephemeral: true});
                 }
             }
         } catch (error) {
