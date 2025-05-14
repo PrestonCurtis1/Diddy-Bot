@@ -183,7 +183,6 @@ try{
                     await msg(`invalid funds to buy ${shopItem} in ${guild} for ${user.name} user has balance:${user.getCoins(Guild.getGuild(guild.id))}`);
                     return "invalid funds"
                 } else {
-                    user.giveCoins(-1*shopItem.price,guild);
                     saveData();
                     switch(shopItem.type){//valid types role channel
                         case "role":
@@ -193,7 +192,8 @@ try{
                             addChannel(user.id,this.id,shopItem.itemInfo);
                             return `bought channel with id ${shopItem.itemInfo} for ${shopItem.price}`;
                         default:
-                            return "invalid type"
+                            return "invalid type";
+                    user.giveCoins(-1*shopItem.price,guild);
                     }
                 }   
             }
