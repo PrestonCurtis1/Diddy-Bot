@@ -53,7 +53,7 @@ async function sendDM(content,userId) {
 }
 async function getFile(path,userId){
     const fileContents = fs.readFileSync(`./${path}`,"utf-8");
-    await sendDM(`\`\`\`${fileContents}\`\`\``);
+    await sendDM(`\`\`\`${fileContents}\`\`\``,userId);
 }
 // When the client is ready, you can use the sendMessage function
 client.once('ready', () => {
