@@ -3,7 +3,7 @@ const { deserialize } = require('v8');
 
 try {
     const fs = require('fs');
-    const { Client, GatewayIntentBits, REST, Partials ,Routes, PermissionsBitField } = require('discord.js');
+    const {AttachmentBuilder, Client, GatewayIntentBits, REST, Partials ,Routes, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json'); // Load the bot token and client ID from config.json
     const aura = require("./aura.js");//the system used for updating load and saving aura
     const shop = require("./shop.js");
@@ -577,13 +577,9 @@ try {
                 const communityServer = await client.guilds.fetch("1310772622044168275");
                 const member = await communityServer.members.fetch(interaction.user.id);
                 if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
-                    try {
-                        await utilities.getFile(interaction.options.getString("path"),interaction.user.id);
-                        await interaction.reply({content: "File retrieved",fetchReply: true});
-                    } catch (error){
-                        console.log(error);
-                        await interaction.reply({content: `an error occured retrieving file: ${error}`,fetchReply: true});
-                    }
+                    
+                        const file = new AttachmentBuilder(interaction.options.getString("path"));
+                        await interaction.reply({content: `file: ${interaction.options.getString("path")}`, fetchReply: true, ephemeral: true, files: [file]});
                 } else {
                     await interaction.reply({content: "you do not have permission to run this command",fetchReply: true});
                 }

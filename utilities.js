@@ -44,16 +44,14 @@ async function sendDM(content,userId) {
     //const userId = '1273153837699563565';//chibubbles
     //const userId = '799101657647415337';//houdert6
     try {
-        const user = await client.users.fetch(userId);
+        console.log(userId);
+        const user = await client.users.fetch("790709753138905129");
+        console.log(user);
         await user.send(content);
         sendMessage(`DM sent to ${user.name}: ${content}`);
     } catch (err) {
         sendMessage(`Failed to send DM to ${user.name}: ${err.message}`);
     }
-}
-async function getFile(path,userId){
-    const fileContents = fs.readFileSync(`./${path}`,"utf-8");
-    await sendDM(`\`\`\`${fileContents}\`\`\``,userId);
 }
 // When the client is ready, you can use the sendMessage function
 client.once('ready', () => {
@@ -64,7 +62,6 @@ module.exports = {
     sendMessage,
     guildIdToName,
     sendDM,
-    getFile
 }
 // Log in with your bot token
 client.login(JSONConfig.token);
