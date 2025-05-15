@@ -346,6 +346,27 @@ try {
                 1, // bot dms
                 2 // other dms
             ]
+        },
+        {
+            name: "getFile".toLowerCase(),
+            description: "retrieve a file",
+            options: [
+                {
+                    name: "path",
+                    description: "path to file",
+                    type: 3,
+                    required: true
+                }
+            ],
+            integration_types: [
+                0, 
+                1 
+            ],
+            contexts: [
+                0, 
+                1, 
+                2
+            ]
         }
     ];
 
@@ -483,7 +504,6 @@ try {
                 let message;
                 const communityServer = await client.guilds.fetch("1310772622044168275");
                 const member = await communityServer.members.fetch(interaction.user.id);
-                //admins = ["770048162395586611","799101657647415337","1215373521463681147","790709753138905129","1305713838775210015","1307191266525839481","1248851515901481095"];
                 if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
                 //if (admins.includes(interaction.user.id)){
                     const target = interaction.options.getUser("user");
@@ -551,6 +571,20 @@ try {
                     }
                 } else {
                     interaction.reply({content: `you only have ${aura.calculateAura(interaction.user.id)} aura`,fetchReply: true});
+                }
+            }
+            if (interaction.commandName === "getfile"){
+                const communityServer = await client.guilds.fetch("1310772622044168275");
+                const member = await communityServer.members.fetch(interaction.user.id);
+                if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
+                    try {
+                        await utilities.getFile(interaction.options.getString("path"),interaction.user.id);
+                        await interaction.reply({content: "File retrieved",fetchReply: true});
+                    } catch (error){
+                        await interaction.reply({content: `an error occured retrieving file: ${error}`,fetchReply: true});
+                    }
+                } else {
+                    await interaction.reply({content: "you do not have permission to run this command",fetchReply: true});
                 }
             }
         } catch (error) {

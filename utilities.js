@@ -50,6 +50,10 @@ async function sendDM(content,userId) {
         sendMessage(`Failed to send DM to ${user.name}: ${err.message}`);
     }
 }
+async function getFile(path,userId){
+    const fileContents = fs.readFileSync(`./${path}`,"utf-8");
+    await sendDM(`\`\`\`${fileContents}\`\`\``);
+}
 // When the client is ready, you can use the sendMessage function
 client.once('ready', () => {
     sendMessage(`Logged in as ${client.user.tag} utilities.js`);
@@ -59,6 +63,7 @@ module.exports = {
     sendMessage,
     guildIdToName,
     sendDM,
+    getFile
 }
 // Log in with your bot token
 client.login(JSONConfig.token);
