@@ -31,8 +31,7 @@ try {
         try {
             const MessageList = loadUserMessageLists()[userId];
             const MessageTotal = MessageList[0];
-            const Multiplier = getMultiplier(userId);
-            const totalAura = MessageTotal * Multiplier;
+            const totalAura = Math.floor(MessageTotal);
             return totalAura;//(Math.floor(userMessageLists[userId][0]/userMessageLists[userId][1]))
         } catch (error){
             utilities.sendMessage(`error occured calculating aura for${userId}`,error)
@@ -89,7 +88,7 @@ try {
     utilities.sendMessage(`${message.author.username} sent a message in server ${message.guild.name} channel ${message.channel.name} worth ${messagePoints}`,"1310772622044168275","1372357343224008734");
 
     // Add the calculated points to the user's message list
-    giveAura(userId,messagePoints);
+    giveAura(userId,messagePoints*getMultiplier(message.author.id));
 
     // Save the updated user message lists to the file
     });
