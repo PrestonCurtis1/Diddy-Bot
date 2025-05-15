@@ -325,6 +325,27 @@ try {
                 1, // bot dms
                 2 // other dms
             ]
+        },
+        {
+            name: "gamble",
+            description: "gamble your money",
+            options: [
+                {
+                    name: "amount",
+                    description: "how much to gamble",
+                    type: 10,
+                    required: true
+                }
+            ],
+            integration_types: [
+                0, // GUILD_INSTALL
+                1 // USER_INSTALL
+            ],
+            contexts: [
+                0, // discord servers
+                1, // bot dms
+                2 // other dms
+            ]
         }
     ];
 
@@ -510,6 +531,24 @@ try {
                     await interaction.reply({content: "Direct Message Sent!!",fetchReply: true, ephemeral: true});
                 } else {
                     await interaction.reply({content: "this command can only be run by bot admins",fetchReply: true, ephemeral: true});
+                }
+            }
+            if (interaction.commandName === "gamble"){
+                let amount = interaction.options.getInteger("amount");
+                let hasAura = amount > aura.calculateAura(interaction.user.id);
+                if (hasAura){
+                    let percent = Math.floor(Math.random()*101);
+                    let win = Math.floor(Math.random()*2);
+                    let result;
+                    if (win == 1){
+                        result = amount*(1+(percent/100));
+                        aura.giveAura(interaction.user.id,amount);
+                        interaction.reply({content: `You gained ${result-amount} aura`,fetchReply:true});
+                    } else {
+                        result = -1*(amount*(1+(percent/100)));
+                        aura.giveAura(interaction.user.id,amount);
+                        interaction.reply({content: `You lost ${(-1*(result+amount))}`});
+                    }
                 }
             }
         } catch (error) {
