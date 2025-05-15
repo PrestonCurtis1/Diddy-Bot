@@ -543,11 +543,11 @@ try {
                     if (win == 1){
                         result = Math.floor(amount*percent);
                         aura.giveAura(interaction.user.id,result);
-                        interaction.reply({content: `You gained ${result-amount} aura`,fetchReply:true});
+                        interaction.reply({content: `You gained ${result} aura`,fetchReply:true});
                     } else {
                         result = Math.floor(-1*(amount*percent));
                         aura.giveAura(interaction.user.id,result);
-                        interaction.reply({content: `You lost ${(-1*(result+amount))} aura`, fetchReply: true});
+                        interaction.reply({content: `You lost ${(-1*(result))} aura`, fetchReply: true});
                     }
                 }
             }
