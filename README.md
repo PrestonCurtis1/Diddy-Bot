@@ -1,6 +1,5 @@
 # How to install Diddy-Bot
 ***
-# Install the official Diddy-Bot
 - First open the `Discord Desktop App`
 - Open the *__App Directory__* in `Discover Tab`
 - Search for *__Diddy__*
