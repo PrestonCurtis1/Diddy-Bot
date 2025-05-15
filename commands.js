@@ -1,3 +1,5 @@
+const { describe } = require('pm2');
+
 try{
     //if u need help with a certain function please contact the person who created it. 
     // it should show the author of each function above the function
@@ -10,7 +12,6 @@ try{
         intents: [
             GatewayIntentBits.Guilds,
             GatewayIntentBits.GuildMessages,
-            GatewayIntentBits.MessageContent,
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.DirectMessages,
             GatewayIntentBits.GuildMembers
@@ -19,9 +20,7 @@ try{
     async function underConstruction(interaction){
         await interaction.reply({content: "command under construction", fetchReply : true, allowedMentions: {parse: []}});
     }
-    function checkPassword(entered){
-        return createHash("sha256").update(entered).digest('hex') === JSONConfig.botAdminPassword;
-    }
+
     //rizzme
     /**
      * Sends a random pickup line
@@ -42,7 +41,7 @@ try{
         const response = PICKUP_LINES[Math.floor(Math.random() * PICKUP_LINES.length)];
         await interaction.reply({content: response, fetchReply: true , allowedMentions: {parse: []}});
     }
-    new util.Command({name: 'rizzme',description: 'Receive a random pickup line!',dm_permission: true},rizzme);
+    new util.Command({name: 'rizzme',description: 'Receive a random pickup line!',integration_types: [0, 1], contexts: [0, 1, 2] },rizzme);
     //oil
     /**
      * Sends a message that the user has been oiled
@@ -63,7 +62,7 @@ try{
         await interaction.reply({ content: response, fetchReply: true , allowedMentions: {parse: []}});
 
     }
-    new util.Command({name: "oil",/*oil me up brosquito*/description: "oil up your friends",dm_permission: true,options: [{name: 'user',type: 6, description: 'Choose a user to oil up',required: true}]},oil);
+    new util.Command({name: "oil",/*oil me up brosquito*/description: "oil up your friends",integration_types: [0, 1], contexts: [0, 1, 2], options: [{name: 'user',type: 6, description: 'Choose a user to oil up',required: true}]},oil);
     //authors
     /**
      * Displays the author of the bot.
@@ -75,7 +74,7 @@ try{
         const response = "the authors of <@1305713838775210015> \n **Founder**: <@790709753138905129> \n **Developer**: <@799101657647415337>,<@1005413712536023100>\n **Admin**:<@1307191266525839481>,<@1215373521463681147>,<@1248851515901481095>";
         await interaction.reply({content: response, fetchReply: true});
     }
-    new util.Command({name: "authors",description: "Get the authors of this bot",dm_permission: true},authors);
+    new util.Command({name: "authors",description: "Get the authors of this bot",integration_types: [0, 1], contexts: [0, 1, 2] },authors);
     //announce
     /**
      * Sends an announcement to server admins
@@ -86,7 +85,9 @@ try{
     async function announce(interaction){
         const announcementFile = interaction.options.getString("message")
         const announcementMessage = fs.readFileSync(`./${announcementFile}`,"utf-8");
-        if (!checkPassword(interaction.options.getString("botAdminPassword".toLowerCase()))){
+        const communityServer = await client.guilds.fetch("1310772622044168275");
+        const member = await communityServer.members.fetch(interaction.user.id);
+        if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
             await interaction.reply({content: "invalid password", fetchReply: true});
             return false
         }
@@ -111,7 +112,7 @@ try{
             await util.msg(`error sending announcements, ${error}`)
         }
     }
-    new util.Command({name: "announce",description: "Send a dm to server owners",dm_permission: true,options: [{name: "message",type: 3,description: "Message file to send",required: true},{name:"botAdminPassword".toLowerCase(),type: 3, description: "admin password for bot",required: true}]},announce);
+    new util.Command({name: "announce",description: "Send a dm to server owners",integration_types: [0, 1], contexts: [0, 1, 2], options: [{name: "message",type: 3,description: "Message file to send",required: true}]},announce);
     //getAura
     /**
      * sends the aura of the given user
@@ -126,7 +127,7 @@ try{
         const response = `<@${user.id}> has ${CalculatedAura} aura and has a sigma level of ${util.User.getUser(user.id)?.level ?? 0}`;
         await interaction.reply({content: response, fetchReply: true, allowedMentions: {parse: []}});
     }
-    new util.Command({name: "getAura".toLowerCase(),description: "display a users aura",dm_permission: true,options: [{name: "member",type: 6,description: "User to get aura of",required: true}]},getAura);
+    new util.Command({name: "getAura".toLowerCase(),description: "display a users aura",integration_types: [0, 1], contexts: [0, 1, 2], options: [{name: "member",type: 6,description: "User to get aura of",required: true}]},getAura);
     //diddle
     /**
      * Allows users to diddle other users
@@ -149,7 +150,7 @@ try{
         await interaction.reply({ content: response, fetchReply: true , allowedMentions: {parse: []}});
 
     }
-    new util.Command({name: "diddle",description: "Diddle your friends",dm_permission: true,options: [{name: 'user',type: 6,description: 'Choose a user to diddle',required: true}]},diddle);
+    new util.Command({name: "diddle",description: "Diddle your friends",integration_types: [0, 1], contexts: [0, 1, 2], options: [{name: 'user',type: 6,description: 'Choose a user to diddle',required: true}]},diddle);
     //addShopItem
     /**
      * add a shop to the guilds shop
@@ -219,8 +220,9 @@ try{
         let message;
         const target = interaction.options.getUser("user");
         const auraAmount = interaction.options.getNumber("aura");
-        console.log(checkPassword(interaction.options.getString("botAdminPassword".toLowerCase())))
-        if (checkPassword(interaction.options.getString("botAdminPassword".toLowerCase()))){
+        const communityServer = await client.guilds.fetch("1310772622044168275");
+        const member = await communityServer.members.fetch(interaction.user.id);
+        if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
             util.User.getUser(interaction.user.id).giveAura(auraAmount,false);
             message = `<@${target.id}> has been given ${auraAmount} aura by <@${interaction.user.id}>`;
         } else {
@@ -228,7 +230,7 @@ try{
         }
         await interaction.reply({content: message, fetchReply: true, allowedMentions: {parse: []}});
     }
-    new util.Command({name:"giveAura".toLowerCase(),description: "give aura to a user (bot admins only)",dm_permission: true,options: [{name: "user",type:6,description: "user to give aura to",required:true},{name: "aura",type: 10,description: "amount of aura to give",required: true},{name:"botAdminPassword".toLowerCase(),type: 3, description: "admin password for bot",required: true}]},giveAura);
+    new util.Command({name:"giveAura".toLowerCase(),description: "give aura to a user (bot admins only)",integration_types: [0, 1], contexts: [0, 1, 2], options: [{name: "user",type:6,description: "user to give aura to",required:true},{name: "aura",type: 10,description: "amount of aura to give",required: true}]},giveAura);
     //discord
     /**
      * sends and invite link to the diddy bot server
@@ -239,7 +241,7 @@ try{
     async function discord(interaction){
         await interaction.reply({content: "Join our diddy-bot community  [discord server](https://discord.gg/u6AVRt7Bgm)",fetchReply:true, allowedMentions: {parse: []}});
     }
-    new util.Command({name: "discord",description: "Join our discord server",dm_permission: true},discord);
+    new util.Command({name: "discord",description: "Join our discord server",integration_types: [0, 1], contexts: [0, 1, 2]},discord);
     //getCoins
     /**
      * sends the coins of the given user
@@ -292,7 +294,7 @@ try{
     async function auraBoard(){
         await interaction.reply({content: util.User.leaderboard(),fetchReply: true, allowedMentions: {parse: []}});
     }
-    new util.Command({name: "auraLeaderboard".toLowerCase(),description: "Show the global aura leaderboard",dm_permission: true},auraBoard);
+    new util.Command({name: "auraLeaderboard".toLowerCase(),description: "Show the global aura leaderboard",integration_types: [0, 1], contexts: [0, 1, 2]},auraBoard);
     //buyCoins
     /**
      * gives coins to the given user
@@ -312,9 +314,60 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function ShowServerSettings(interaction){
-        response = "";
+        response = util.Guild.getGuild(interaction.guild.id).showSettings();
         interaction.reply({content: response, fetchReply: true, allowedMentions: {parse: []}});
     }
+    new util.Command({name: "showServerSettings".toLowerCase(),description: "show the settings of the server"},ShowServerSettings);
+    //changeServerSettings
+    /**
+     * change the settings of the server
+     * function created by unprankable
+     * @param {Interaction} interaction - The interaction passed by the client.
+     * @returns {Promise<Void>}
+     */ 
+    async function changeServerSettings(interaction){
+        setting =  interaction.options.getString("setting");
+        value  = interaction.options.getString("value");
+        if (interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
+            util.Guild.getGuild(interaction.user.id).changeSetting(setting,value);
+            interaction.reply({content: `changed settings ${setting} to ${value}`,fetchReply: true});
+        } else {
+            interaction.reply({content: "you do not have permission to run this command",fetchReply: true});
+        }
+        
+    }
+    new util.Command({name: "changeServerSettings".toLowerCase(),description: "change the settings of the server",options: [{name:"setting",description: "settings to change",type: 3, required: true}, {name:"value",description: "value to change it to", type: 3, required: true}]},changeServerSettings)
+    //showShopSettings
+    /**
+     * show the shop settings
+     * function created by unprankable
+     * @param {Interaction} interaction - The interaction passed by the client.
+     * @returns {Promise<Void>}
+     */ 
+    async function showShopSettings(interaction){
+        response = util.Guild.getGuild(interaction.guild.id).shop.showSettings();
+        interaction.reply({content: response, fetchReply: true, allowedMentions: {parse: []}});
+    }
+    new util.Command({name: "showShopSettings".toLowerCase(),description: "show the settings of the servers shop"},showShopSettings);
+    //changeShopSettings
+    /**
+     * change the settings of the server
+     * function created by unprankable
+     * @param {Interaction} interaction - The interaction passed by the client.
+     * @returns {Promise<Void>}
+     */ 
+    async function changeShopSettings(interaction){
+        setting =  interaction.options.getString("setting");
+        value  = interaction.options.getString("value");
+        if (interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
+            util.Guild.getGuild(interaction.user.id).shop.changeSetting(setting,value,true)
+            interaction.reply({content: `changed settings ${setting} to ${value}`,fetchReply: true});
+        } else {
+            interaction.reply({content: "you do not have permission to run this command",fetchReply: true});
+        }
+        
+    }
+    new util.Command({name: "changeShopSettings".toLowerCase(),description: "change the settings of the server shop",options: [{name:"setting",description: "settings to change",type: 3, required: true}, {name:"value",description: "value to change it to", type: 3, required: true}]},changeShopSettings)
     //getServerBooster
     /**
      * retrieve the current server booster
@@ -344,8 +397,6 @@ try{
         await interaction.reply({content: response, fetchReply: true, allowedMentions: {parse: []}});
     }
     new util.Command({name: "changeServerBooster".toLowerCase(),description: "change the server booster",dm_permission: false,options: [{name:"newBooster".toLowerCase(),type: 10, description: "new booster for coins on server",required: true}]},changeServerBooster);
-    
-    
     //getInvite
     /**
      * sends an invite to a random server
@@ -353,7 +404,25 @@ try{
      * @param {Interaction} interaction - The interaction passed by the client.
      * @returns {Promise<Void>}
      */ 
-    new util.Command({name: "getRandomInvite".toLowerCase(),description: "join a random server that has advertising enabled",dm_permission: true},underConstruction);
+    async function getInvite(interaction){
+        let invites = []
+        client.guilds.cache.forEach(guild => {
+            guild = util.Guild.getGuild(guild.id);
+            if (guild.settings["showAdInDiddyBotServer"]){
+                if(guild.settings["invite-code"] != ""){
+                    invites.push(guild.settings["invite-code"]);
+                }
+            }
+        });
+        if (invites.length != 0){
+            let randomInvite = Math.floor(Math.random() * (invites.length + 1));
+            interaction.reply({content: `https://discord.gg/${invites[randomInvite]}`,fetchReply: true});
+        } else {
+            interaction.reply({content: "couldn't find a valid server",fetchReply: true})
+        }
+
+    }
+    new util.Command({name: "getRandomInvite".toLowerCase(),description: "join a random server that has advertising enabled",integration_types: [0, 1], contexts: [0, 1, 2]},getInvite);
     //rizzlers
     /**
     * show the current rizzlers and pickupline form
@@ -364,17 +433,56 @@ try{
     async function rizzlers(interaction){
         interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\n@Royalknight0\n@nexuscageoil\n@buldakislovebuldakislife\n@def_not_vexx\n@chi56567899\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}});
     }
-    new util.Command({name: "rizzlers",description: "people who contributed pickup-lines",dm_permission: true},rizzlers);
+    new util.Command({name: "rizzlers",description: "people who contributed pickup-lines",integration_types: [0, 1], contexts: [0, 1, 2]},rizzlers);
     client.once('ready', async () => {
         await util.msg(`Logged in as ${client.user.tag}! commands.js`);
     });
-    
+    //echo
+    /**
+     * echo a message
+     * function created by unprankable
+     * @param {Interaction} interaction The interaction passed by the client
+     * @returns {Promise<void>}
+     */
+    async function echo(interaction){
+        const channelId = interaction.channel ? interaction.channel.id : 'DM';
+        const serverId = interaction.guild ? interaction.guild.id : 'DM';
+        const userMessage = interaction.options.getString('message');
+        if (!(channelId == "DM") && !(serverId == "DM")){//in a server
+            const server = await client.guilds.fetch(serverId);
+            const member = await server.members.fetch(interaction.user.id);
+            if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
+                utilities.sendMessage(userMessage + `\nMessage Sent by: <@${interaction.user.id}> using echo`,interaction.guild.id,interaction.channel.id);
+                await interaction.reply({content: `message sent!!` ,ephemeral: true, fetchReply: false});
+            } else {
+                await interaction.reply({content: "invalid perms", ephemeral: true, fetchReply: false})
+            }
+        } else {// in a DM
+            await interaction.reply({content: "message sent!!" ,ephemeral: true, fetchReply: false});
+            await interaction.followUp({content: userMessage + `\nMessage Sent by: <@${interaction.user.id}> using echo`,ephemeral: false, allowedMentions: {parse: []}});
+        }
+    }
+    new util.Command({name:"echo", description: "echo a message (for bot admins)", options: [{name: 'message', type: 3, description: 'The message you want me to say back to you', required: true}], integration_types: [0, 1], contexts: [0, 1, 2]},echo);
+    //dm
+    /**
+     * send a message to user
+     * function created by unprankable
+     * @param {Interaction} interaction The interaction passed by the client
+     * @returns {Promise<void>}
+     */
+    async function dm(interaction){
+        const communityServer = await client.guilds.fetch("1310772622044168275");
+        const member = await communityServer.members.fetch(interaction.user.id);
+        if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
+            utilities.sendDM(interaction.options.getString('message'),interaction.options.getString('id'));
+            await interaction.reply({content: "Direct Message Sent!!",fetchReply: true, ephemeral: true});
+        } else {
+            await interaction.reply({content: "this command can only be run by bot admins",fetchReply: true, ephemeral: true});
+        }
+    }
+    new util.Command({name:"dm", description: "Send a message to a user as Diddy (for bot admins)", options: [{name: "id", type: 3, description: "users user id", required: true}, {name: "message", type: 3, description: "message to send user", required: true}], integration_types: [0, 1], contexts: [0, 1, 2]},dm);
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
 }
-//changeServerSetting
-//showServerSettings
-//changeShopSetting
-//showShopSettings
 //getInvite

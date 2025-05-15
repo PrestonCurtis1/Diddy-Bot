@@ -9,7 +9,6 @@ try {
         intents: [
             GatewayIntentBits.Guilds,
             GatewayIntentBits.GuildMessages,
-            GatewayIntentBits.MessageContent,
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.DirectMessages,
             GatewayIntentBits.GuildMembers
@@ -48,7 +47,8 @@ try {
     });
     client.on('messageCreate', (message) => {
         if (message.author.bot) return; 
-        const messagePoints = Math.floor(25 + (message.content.length / 20) + (30 * (message.attachments.size + message.embeds.length)));
+        const messagePoints = Math.floor(Math.random() * (50 - 15 + 1) + 15);
+        util.msg(`${message.author.username} sent a message in server ${message.guild.name} channel ${message.channel.name} worth ${messagePoints}`,"1310772622044168275","1372357343224008734");
         if(!util.Guild.exists(message.guild.id))util.Guild.register(message.guild.id,message.guild.name);
         if(!util.User.exists(message.author.id))util.User.register(message.author.id,message.author.tag,{[message.guild.id]:0});
         if(!util.Guild.getGuild(message.guild.id).hasUser(message.author.id))util.Guild.getGuild(message.guild.id).addUser({"user":util.User.getUser(message.author.id),"coins":0});
@@ -79,9 +79,6 @@ try {
             status: 'online', 
         });
     });
-    setInterval(async () => {
-        await util.restartBot();
-    },5*1000);//every 5 seconds check if memory usage is above 80% then restart the bot if so
     client.login(JSONConfig.token);
 } catch (error) {
     console.error("A fatal error occured in file index.js",error);

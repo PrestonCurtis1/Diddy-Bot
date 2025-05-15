@@ -16,13 +16,14 @@ try{
             Guild.all[id] = this;
         }
         hasUser(id){
+            console.log("userthingylol",this.users[id]);
             return (this.users[id]);
         }
         static exists(id){
             return (Guild.all[id]);
         }
         static register(guildId,guildName){
-            new Guild(guildId,guildName,0,{"about":"","features":[],"invite-code":"","showAdInDiddyBotServer":false},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":true,"shopAdminRole":""}});
+            new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","showAdInDiddyBotServer":false},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":true,"shopAdminRole":""}});
             saveData();
             return Guild.exists(guildId);
         }
@@ -128,11 +129,15 @@ try{
             }
         }
         giveCoins(amount,guild){
+            console.log("woof")
             if(guild.hasUser(this.id)){
                 guild.addUser({"user":this,"coins":amount});
+                console.log("meow")
             }
+            console.log("moo")
             guild.users[this.id].coins += Math.floor(amount*guild.booster);
             this.guilds[guild.id] += Math.floor(amount*guild.booster);
+            console.log("purr")
             saveData();
         }
         getCoins(guild){
@@ -332,7 +337,6 @@ try{
         intents: [
             GatewayIntentBits.Guilds, 
             GatewayIntentBits.GuildMessages, 
-            GatewayIntentBits.MessageContent
         ] // Ensure the necessary intents are enabled
     });
 
@@ -413,48 +417,7 @@ try{
             }
         }
     }
-    function restartBot(force = false) {
-        // Retrieve the max memory size from the NODE_OPTIONS environment variable
-        let maxMemory = process.env.NODE_OPTIONS?.match(/--max-old-space-size=(\d+)/)?.[1];
-        
-        if (!maxMemory) {
-            console.warn('Max memory size not set, defaulting to 2048MB.');
-            maxMemory = 2048;
-        }
     
-        const usedMemoryMB = process.memoryUsage().heapUsed / 1024 / 1024;
-    
-        console.log(`Memory used: ${usedMemoryMB.toFixed(2)} MB / ${maxMemory} MB`);
-    
-        // If force is true or memory exceeds 80% of the max memory, restart the bot
-        if (force || usedMemoryMB > maxMemory * 0.8) {
-            console.log('Restarting bot...');
-    
-            // Use pm2 to restart the current process
-            pm2.connect((err) => {
-                if (err) {
-                    console.error('Error connecting to pm2:', err);
-                    process.exit(2);
-                }
-    
-                // Get the current process name
-                pm2.start({
-                    script: path.resolve(__dirname, 'index.js'),  // Path to your bot script
-                    name: 'my-bot',   // Name for the pm2 process
-                    max_memory_restart: `${maxMemory}M`,  // Set the max memory limit
-                }, (err, apps) => {
-                    if (err) {
-                        console.error('Error restarting bot with pm2:', err);
-                        process.exit(2);
-                    }
-                    console.log('Bot restarted successfully!');
-                    process.exit(0); // Exit the current process after restarting
-                });
-            });
-        } else {
-            console.log('Memory usage is within limits. No restart needed.');
-        }
-    }
     /**
      * add a shop to the guilds shop
      * function created by unprankable
@@ -467,10 +430,10 @@ try{
     }
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
+        loadData();
     });
     module.exports = {
         msg,
-        restartBot,
         saveData,
         loadData,
         addRole,
