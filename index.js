@@ -534,7 +534,7 @@ try {
                 }
             }
             if (interaction.commandName === "gamble"){
-                let amount = interaction.options.getInteger("amount");
+                let amount = interaction.options.getNumber("amount");
                 let hasAura = amount > aura.calculateAura(interaction.user.id);
                 if (hasAura){
                     let percent = Math.floor(Math.random()*101);
