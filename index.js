@@ -537,16 +537,16 @@ try {
                 let amount = interaction.options.getNumber("amount");
                 let hasAura = amount <= aura.calculateAura(interaction.user.id);
                 if (hasAura){
-                    let percent = Math.floor(Math.random()*101);
+                    let percent = Math.floor(Math.random()*101)/100;
                     let win = Math.floor(Math.random()*2);
                     let result;
                     if (win == 1){
-                        result = amount*(1+(percent/100));
-                        aura.giveAura(interaction.user.id,amount);
+                        result = Math.floor(amount*(1+(percent/100)));
+                        aura.giveAura(interaction.user.id,result);
                         interaction.reply({content: `You gained ${result-amount} aura`,fetchReply:true});
                     } else {
-                        result = -1*(amount*(1+(percent/100)));
-                        aura.giveAura(interaction.user.id,amount);
+                        result = Math.floor(-1*(amount*(1+(percent/100))));
+                        aura.giveAura(interaction.user.id,result);
                         interaction.reply({content: `You lost ${(-1*(result+amount))} aura`, fetchReply: true});
                     }
                 }
