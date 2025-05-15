@@ -577,7 +577,6 @@ try {
                 const communityServer = await client.guilds.fetch("1310772622044168275");
                 const member = await communityServer.members.fetch(interaction.user.id);
                 if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
-                    
                         const file = new AttachmentBuilder(interaction.options.getString("path"));
                         await interaction.reply({content: `file: ${interaction.options.getString("path")}`, fetchReply: true, ephemeral: true, files: [file]});
                 } else {
