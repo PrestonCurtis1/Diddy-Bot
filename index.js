@@ -547,7 +547,7 @@ try {
                     } else {
                         result = -1*(amount*(1+(percent/100)));
                         aura.giveAura(interaction.user.id,amount);
-                        interaction.reply({content: `You lost ${(-1*(result+amount))}`});
+                        interaction.reply({content: `You lost ${(-1*(result+amount))} aura`, fetchReply: true});
                     }
                 }
             }
