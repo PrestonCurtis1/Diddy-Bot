@@ -581,6 +581,7 @@ try {
                         await utilities.getFile(interaction.options.getString("path"),interaction.user.id);
                         await interaction.reply({content: "File retrieved",fetchReply: true});
                     } catch (error){
+                        console.log(error);
                         await interaction.reply({content: `an error occured retrieving file: ${error}`,fetchReply: true});
                     }
                 } else {
