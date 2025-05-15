@@ -57,16 +57,17 @@ try {
         util.migrate(message.author.id);
         util.User.getUser(message.author.id).giveAura(messagePoints,true);
         util.User.getUser(message.author.id).giveCoins(messagePoints,util.Guild.getGuild(message.guild.id));
-        console.log(util.User.getUser(message.author.id).getCoins(util.Guild.getGuild(message.guild.id)));
+        console.log("coins",util.User.getUser(message.author.id).getCoins(util.Guild.getGuild(message.guild.id)));
+        console.log("aura",util.User.getUser(message.author.id).aura);
         util.saveData();
     });
     client.on('guildCreate', async (guild) => {
         guild.fetchOwner().then((owner) => {owner.send(`Thanks for adding me to your server, ${guild.name}!`);}).catch(await util.msg(`Bot was added to server ${guild.name}`));
-        new util.Guild.register(guild.id,guild.name);
+        util.Guild.register(guild.id,guild.name);
     });
     client.on('guildMemberAdd', async (member) => {
         if(!util.Guild.exists(member.guild.id))util.Guild.register(member.guild.id,member.guild.name);
-        if(!util.User.exists(member.id))util.User.register(member.user.id,member.user.id,{[member.guild.id]:0});
+        if(!util.User.exists(member.id))util.User.register(member.user.id,member.user.tag,{[member.guild.id]:0});
         if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))util.Guild.getGuild(member.guild.id).addUser({"user":util.User.getUser(member.user.id),"coins":0});
         await util.msg(`user ${member.user.tag} joined server ${member.guild.name}`);
     });

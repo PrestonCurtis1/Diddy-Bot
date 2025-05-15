@@ -194,8 +194,6 @@ try{
         const guild = util.Guild.getGuild(interaction.guild.id);
         const shopItem = util.Guild.getGuild(interaction.guild.id).shop.items.filter(item => item["type"] === interaction.options.getString("type") && item["itemInfo"] === interaction.options.getString("id"))[0];
         const response = await guild.shop.buyShopItem(shopItem,util.Guild.getGuild(interaction.guild.id),util.User.getUser(interaction.user.id))
-        console.log("buyshopitemtype",typeof response);
-        console.log("buyshopitem", response);
 
         await interaction.reply({content: response,fetchReply: true, allowedMentions: {parse: []}});
     }

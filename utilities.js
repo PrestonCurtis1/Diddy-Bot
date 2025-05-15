@@ -82,6 +82,7 @@ try{
             this.id = id;//string
             this.name = tag;//string
             this.aura = aura;//int
+            console.log("aura",this.aura);
             this.level = Math.floor((this.aura/2)**(1/2.25));
             this.boosters = boosters;//object
             this.serverMulti = {};
@@ -92,9 +93,10 @@ try{
             };
         }
         static exists(id){
-            return (User.all[id]);
+            return id in this.all;
         }
         static register(userId,userTag,guilds={}){
+            console.log(`registering user ${userTag}`);
             new User(userId,userTag,0,{"temp":{"multi":0,"endTime": new Date()},"perm":0},guilds);
             saveData();
             return User.exists(userId);
@@ -424,10 +426,8 @@ try{
                 await msg("error reading file \"./oldData.json\"",error);
             }
             let oldAura;
-            if(oldData[userId]){
-                oldAura = oldData[userId]?.[0] ?? 0;
-                oldData[userId][0] = 0;
-            }
+            oldAura = oldData[userId]?.[0] ?? 0;
+            oldData[userId] = [0,0];
             User.getUser(userId).giveAura(oldAura,false);
             saveData();
             try{
