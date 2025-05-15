@@ -10,20 +10,19 @@ try{
             this.id = id;
             this.name = name;
             this.booster = booster;
-            this.settings = settings;//about features invite-link showAdInDiddyBotServer
+            this.settings = settings;//about features invite-link randomInviteEnabled
             this.users = {};
             this.shop = new Shop(shop.id,shop.items,shop.balance,shop.config);
             Guild.all[id] = this;
         }
         hasUser(id){
-            console.log("userthingylol",this.users[id]);
             return (this.users[id]);
         }
         static exists(id){
             return (Guild.all[id]);
         }
         static register(guildId,guildName){
-            new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","showAdInDiddyBotServer":false},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":true,"shopAdminRole":""}});
+            new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","randomInviteEnabled":false},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}});
             saveData();
             return Guild.exists(guildId);
         }
@@ -48,6 +47,16 @@ try{
             return message
         }
         changeSetting(setting,value){ 
+            if (setting == "randomInviteEnabled"){
+                if (value.toLowerCase() == "true"){
+                    value = true
+                } else {
+                    value = false;
+                }
+            }
+            if (setting == "features"){
+                value = value.split(",")
+            }
             this.settings[setting] = value;
             saveData();
         }
@@ -129,15 +138,11 @@ try{
             }
         }
         giveCoins(amount,guild){
-            console.log("woof")
             if(guild.hasUser(this.id)){
                 guild.addUser({"user":this,"coins":amount});
-                console.log("meow")
             }
-            console.log("moo")
             guild.users[this.id].coins += Math.floor(amount*guild.booster);
             this.guilds[guild.id] += Math.floor(amount*guild.booster);
-            console.log("purr")
             saveData();
         }
         getCoins(guild){
@@ -192,7 +197,7 @@ try{
                     switch(shopItem.type){//valid types role channel
                         case "role":
                             addRole(user.id,this.id,shopItem.itemInfo);
-                            return `bought role with id ${shopItem.itemFnfo} for ${shopItem.price}`;
+                            return `bought role with id ${shopItem.itemInfo} for ${shopItem.price}`;
                         case "channel":
                             addChannel(user.id,this.id,shopItem.itemInfo);
                             return `bought channel with id ${shopItem.itemInfo} for ${shopItem.price}`;
@@ -202,12 +207,16 @@ try{
                     }
                 }   
             }
+            return "error occured";
         }
         buyCoins(amount,guild,user){
             if (!this.config.buyCoins){
                 return `buying coins with aura is disabled in this server`;
             } else {
-                const price = amount * this.config.buyCoinCost;
+                let price = amount * this.config.buyCoinCost;
+                if (typeof price === 'string') {
+                    price = parseInt(value, 10);
+                }
                 if (price > user.aura){
                     return `insufficient funds ${amount} coins costs ${price} aura you only have ${user.aura} aura`;
                 } else {
@@ -228,6 +237,16 @@ try{
         }
         changeSetting(setting,value,allowed){ 
             if (allowed){//if user has shop admin role
+                if (setting == "buyCoinCost"){
+                    value = parseInt(value,10);
+                    console.log(typeof value);
+                } else if (setting == "buyCoins"){
+                    if(value.toLowerCase() == "true"){
+                        value = true;
+                    } else{
+                        value = false;
+                    }
+                }  
                 this.config[setting] = value;
             } else {
                 return `you must have <@&${this.config.shopAdminRole}> or have admin perms to edit config `
@@ -236,6 +255,7 @@ try{
         }
         showShop(){
             let message = `Shop items for ${Guild.getGuild(this.id).name}\n`;
+            message += `**Balance**: ${this.balance}\n`
             this.items.forEach(({type, itemInfo, price}) => {
                 switch (type){
                     case "role":
@@ -352,7 +372,7 @@ try{
             // Check if the channel is text-based and send the message
             if (channel.isTextBased()) {
                 //use console.log instead of msg in this function because other-wise it will loop infinitely
-                await channel.send(`\`${logMessage}\``);
+                await channel.send({content:`${logMessage}`, allowedMentions: {parse: []}});
                 console.log(`Message sent to ${channel.name} in guild ${guild.name}: ${logMessage}`);
             } else {
                 console.log('The specified channel is not a text channel.');

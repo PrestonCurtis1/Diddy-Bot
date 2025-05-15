@@ -193,7 +193,10 @@ try{
     async function buyShopItem(interaction){
         const guild = util.Guild.getGuild(interaction.guild.id);
         const shopItem = util.Guild.getGuild(interaction.guild.id).shop.items.filter(item => item["type"] === interaction.options.getString("type") && item["itemInfo"] === interaction.options.getString("id"))[0];
-        const response = guild.shop.buyShopItem(shopItem,util.Guild.getGuild(interaction.guild.id),util.User.getUser(interaction.user.id))
+        const response = await guild.shop.buyShopItem(shopItem,util.Guild.getGuild(interaction.guild.id),util.User.getUser(interaction.user.id))
+        console.log("buyshopitemtype",typeof response);
+        console.log("buyshopitem", response);
+
         await interaction.reply({content: response,fetchReply: true, allowedMentions: {parse: []}});
     }
     new util.Command({name: "buyShopItem".toLowerCase(),description: "buy a item from shop",dm_permission: false,options: [{name: "type",type: 3,description: "channel or role",required: true},{name: "id",type: 3,description: "channel/role to buy",required: true}]},buyShopItem);
@@ -251,7 +254,7 @@ try{
      */ 
     async function getCoins(interaction){
         const coins = util.User.getUser(interaction.options.getUser("member").id)?.getCoins(util.Guild.getGuild(interaction.guild.id)) ?? 0;
-        let response = `@silent ${interaction.options.getUser("member")} has ${coins} coins`
+        let response = `${interaction.options.getUser("member")} has ${coins} coins`
         await interaction.reply({content: response, fetchReply: true, allowedMentions: {parse: []}});
     }
     new util.Command({name: "getCoins".toLowerCase(),description: "get a users coin balance",dm_permission: false,options:[{name: "member", type: 6, description: "member to get the coins of", required: true}]},getCoins);
@@ -262,10 +265,10 @@ try{
      * @param {Interaction} interaction - The interaction passed by the client.
      * @returns {Promise<Void>}
      */ 
-    async function giveCoins(){
+    async function giveCoins(interaction){
         let response;
         if (interaction.member.roles.cache.has(util.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
-            util.User.getUser(interaction.options.getUser("user")).giveCoins(interaction.options.getNumber("coins"),util.Guild.getGuild(interaction.guild.id));
+            util.User.getUser(interaction.options.getUser("user").id).giveCoins(interaction.options.getNumber("coins"),util.Guild.getGuild(interaction.guild.id));
             response = `gave ${interaction.options.getNumber("coins")} to ${interaction.options.getUser("user")}`;
         } else {
             response = `invalid permissions`;
@@ -291,7 +294,7 @@ try{
      * @param {Interaction} interaction - The interaction passed by the client.
      * @returns {Promise<Void>}
      */ 
-    async function auraBoard(){
+    async function auraBoard(interaction){
         await interaction.reply({content: util.User.leaderboard(),fetchReply: true, allowedMentions: {parse: []}});
     }
     new util.Command({name: "auraLeaderboard".toLowerCase(),description: "Show the global aura leaderboard",integration_types: [0, 1], contexts: [0, 1, 2]},auraBoard);
@@ -329,8 +332,8 @@ try{
         setting =  interaction.options.getString("setting");
         value  = interaction.options.getString("value");
         if (interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
-            util.Guild.getGuild(interaction.user.id).changeSetting(setting,value);
-            interaction.reply({content: `changed settings ${setting} to ${value}`,fetchReply: true});
+            util.Guild.getGuild(interaction.guild.id).changeSetting(setting,value);
+            interaction.reply({content: `changed setting ${setting} to ${value}`,fetchReply: true});
         } else {
             interaction.reply({content: "you do not have permission to run this command",fetchReply: true});
         }
@@ -360,8 +363,8 @@ try{
         setting =  interaction.options.getString("setting");
         value  = interaction.options.getString("value");
         if (interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
-            util.Guild.getGuild(interaction.user.id).shop.changeSetting(setting,value,true)
-            interaction.reply({content: `changed settings ${setting} to ${value}`,fetchReply: true});
+            util.Guild.getGuild(interaction.guild.id).shop.changeSetting(setting,value,true)
+            interaction.reply({content: `changed setting ${setting} to ${value}`,fetchReply: true});
         } else {
             interaction.reply({content: "you do not have permission to run this command",fetchReply: true});
         }
@@ -376,7 +379,7 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function getServerBooster(interaction){
-        await interaction.reply({content: `${guild.getGuild(interaction.guild.id).booster}`,fetchReply: true, allowedMentions: {parse: []}});
+        await interaction.reply({content: `${util.Guild.getGuild(interaction.guild.id).booster}`,fetchReply: true, allowedMentions: {parse: []}});
     }
     new util.Command({name: "getServerBooster".toLowerCase(),description: "get the current booster for the server",dm_permission: false},getServerBooster);
     //changeServerBooster
@@ -408,15 +411,15 @@ try{
         let invites = []
         client.guilds.cache.forEach(guild => {
             guild = util.Guild.getGuild(guild.id);
-            if (guild.settings["showAdInDiddyBotServer"]){
-                if(guild.settings["invite-code"] != ""){
+            if (guild.settings["randomInviteEnabled"]){
+                if(guild.settings["invite-code"] != "" && guild.settings["invite-code"] != undefined){
                     invites.push(guild.settings["invite-code"]);
-                }
+                } 
             }
         });
         if (invites.length != 0){
-            let randomInvite = Math.floor(Math.random() * (invites.length + 1));
-            interaction.reply({content: `https://discord.gg/${invites[randomInvite]}`,fetchReply: true});
+            let randomInvite = Math.floor(Math.random() * (invites.length));
+            interaction.reply({content: `https://discord.gg/${invites[randomInvite]} |${invites}|${randomInvite}`,fetchReply: true});
         } else {
             interaction.reply({content: "couldn't find a valid server",fetchReply: true})
         }
@@ -452,7 +455,7 @@ try{
             const server = await client.guilds.fetch(serverId);
             const member = await server.members.fetch(interaction.user.id);
             if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
-                utilities.sendMessage(userMessage + `\nMessage Sent by: <@${interaction.user.id}> using echo`,interaction.guild.id,interaction.channel.id);
+                util.msg(userMessage + `\nMessage Sent by: <@${interaction.user.id}> using echo`,interaction.guild.id,interaction.channel.id);
                 await interaction.reply({content: `message sent!!` ,ephemeral: true, fetchReply: false});
             } else {
                 await interaction.reply({content: "invalid perms", ephemeral: true, fetchReply: false})
@@ -474,7 +477,7 @@ try{
         const communityServer = await client.guilds.fetch("1310772622044168275");
         const member = await communityServer.members.fetch(interaction.user.id);
         if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
-            utilities.sendDM(interaction.options.getString('message'),interaction.options.getString('id'));
+            util.sendDM(interaction.options.getString('message'),interaction.options.getString('id'));
             await interaction.reply({content: "Direct Message Sent!!",fetchReply: true, ephemeral: true});
         } else {
             await interaction.reply({content: "this command can only be run by bot admins",fetchReply: true, ephemeral: true});
@@ -485,4 +488,3 @@ try{
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
 }
-//getInvite
