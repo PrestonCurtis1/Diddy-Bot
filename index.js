@@ -549,6 +549,8 @@ try {
                         aura.giveAura(interaction.user.id,result);
                         interaction.reply({content: `You lost ${(-1*(result))} aura`, fetchReply: true});
                     }
+                } else {
+                    interaction.reply({content: `you only have ${aura.calculateAura} aura`,fetchReply: true});
                 }
             }
         } catch (error) {
