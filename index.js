@@ -550,7 +550,7 @@ try {
                         interaction.reply({content: `You lost ${(-1*(result))} aura`, fetchReply: true});
                     }
                 } else {
-                    interaction.reply({content: `you only have ${aura.calculateAura} aura`,fetchReply: true});
+                    interaction.reply({content: `you only have ${aura.calculateAura(interaction.user.id)} aura`,fetchReply: true});
                 }
             }
         } catch (error) {
