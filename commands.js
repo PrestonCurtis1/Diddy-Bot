@@ -430,7 +430,7 @@ try{
         let invites = [];
     
         client.guilds.cache.forEach(guild => {
-            const guildData = util.Guild.getGuild(guild.id);
+            const guildData = util.Guild.getGuild(guild.id.toString());
             console.log(guildData);
             if (guildData && guildData.settings) {
                 if (guildData.settings["randomInviteEnabled"]) {
