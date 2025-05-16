@@ -415,9 +415,9 @@ try{
         try {
             const user = await client.users.fetch(userId);
             await user.send(content);
-            sendMessage(`DM sent to ${user.name}: ${content}`);
+            msg(`DM sent to ${user.name}: ${content}`);
         } catch (err) {
-            sendMessage(`Failed to send DM to ${user.name}: ${err.message}`);
+            msg(`Failed to send DM to ${user.name}: ${err.message}`);
         }
     }
     async function userHasRole(client, guildId, userId, roleId) {
