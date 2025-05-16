@@ -82,7 +82,6 @@ try{
             this.id = id;//string
             this.name = tag;//string
             this.aura = aura;//int
-            console.log("aura",this.aura);
             this.level = Math.floor((this.aura/2)**(1/2.25));
             this.boosters = boosters;//object
             this.serverMulti = {};
@@ -96,7 +95,7 @@ try{
             return id in this.all;
         }
         static register(userId,userTag,guilds={}){
-            console.log(`registering user ${userTag}`);
+            msg(`registering user ${userTag}`);
             new User(userId,userTag,0,{"temp":{"multi":0,"endTime": new Date()},"perm":0},guilds);
             saveData();
             return User.exists(userId);
@@ -143,8 +142,8 @@ try{
             if(guild.hasUser(this.id)){
                 guild.addUser({"user":this,"coins":amount});
             }
-            guild.users[this.id].coins += Math.floor(amount*guild.booster);
-            this.guilds[guild.id] += Math.floor(amount*guild.booster);
+            guild.users[this.id].coins += Math.floor(amount);
+            this.guilds[guild.id] += Math.floor(amount);
             saveData();
         }
         getCoins(guild){
@@ -187,29 +186,55 @@ try{
             saveData();
         }
         async buyShopItem(shopItem,guild,user){
+            let message;
             if (!this.items.includes(shopItem)){//item doesn't exist
                 await msg(`item ${shopItem} not found in shop`);
-                return "item not in shop"
+                message = "item not in shop"
             } else {//item exists
-                if (user.getCoins(guild) < shopItem.price){
+                if (user.getCoins(guild) < shopItem.price){//invalid funds
                     await msg(`invalid funds to buy ${shopItem} in ${guild} for ${user.name} user has balance:${user.getCoins(Guild.getGuild(guild.id))}`);
-                    return "invalid funds"
-                } else {
+                    message = "invalid funds"
+                } else {//sufficient funds
                     saveData();
                     switch(shopItem.type){//valid types role channel
                         case "role":
-                            addRole(user.id,this.id,shopItem.itemInfo);
-                            return `bought role with id ${shopItem.itemInfo} for ${shopItem.price}`;
+                            if (!(await userHasRole(client,this.id,user.id,shopItem.itemInfo))){
+                                await addRole(user.id,this.id,shopItem.itemInfo);
+                                if (await userHasRole(client,this.id,user.id,shopItem.itemInfo)){
+                                    message = `bought role with id ${shopItem.itemInfo} for ${shopItem.price}`;
+                                    user.giveCoins(-1*shopItem.price,guild);
+                                    break
+                                } else {
+                                    message = "an error occured applying the role";
+                                    break
+                                }
+                            } else {
+                                message = "you already have that role"
+                                break
+                            }
                         case "channel":
-                            addChannel(user.id,this.id,shopItem.itemInfo);
-                            return `bought channel with id ${shopItem.itemInfo} for ${shopItem.price}`;
+                            if (!(await userHasChannel(user.id,this.id,shopItem.itemInfo))){
+                                await addChannel(user.id,this.id,shopItem.itemInfo);
+                                if(await userHasChannel(user.id,this.id,shopItem.itemInfo)){
+                                    message = `bought channel with id ${shopItem.itemInfo} for ${shopItem.price}`;
+                                    user.giveCoins(-1*shopItem.price,guild);
+                                    break
+                                } else {
+                                    message = "an error occured giving the channel";
+                                    break
+                                }
+                            } else {
+                                message = "you already have that channel"
+                                break
+                            }
                         default:
-                            return "invalid type";
-                    user.giveCoins(-1*shopItem.price,guild);
+                            message = "invalid type";
+                            break
                     }
+                    
                 }   
             }
-            return "error occured";
+            return message
         }
         buyCoins(amount,guild,user){
             if (!this.config.buyCoins){
@@ -241,7 +266,6 @@ try{
             if (allowed){//if user has shop admin role
                 if (setting == "buyCoinCost"){
                     value = parseInt(value,10);
-                    console.log(typeof value);
                 } else if (setting == "buyCoins"){
                     if(value.toLowerCase() == "true"){
                         value = true;
@@ -257,7 +281,7 @@ try{
         }
         showShop(){
             let message = `Shop items for ${Guild.getGuild(this.id).name}\n`;
-            message += `**Balance**: ${this.balance}\n`
+            message += `**Bank**: ${this.balance}:\tAura\n`
             this.items.forEach(({type, itemInfo, price}) => {
                 switch (type){
                     case "role":
@@ -359,6 +383,8 @@ try{
         intents: [
             GatewayIntentBits.Guilds, 
             GatewayIntentBits.GuildMessages, 
+            GatewayIntentBits.DirectMessages,
+            GatewayIntentBits.GuildMembers
         ] // Ensure the necessary intents are enabled
     });
 
@@ -383,6 +409,29 @@ try{
             console.error('Error sending message:', error);
         }
     }
+    async function sendDM(content,userId) {
+        //const userId = '790709753138905129';//unprankable
+        //const userId = '1273153837699563565';//chibubbles
+        //const userId = '799101657647415337';//houdert6
+        try {
+            const user = await client.users.fetch(userId);
+            await user.send(content);
+            sendMessage(`DM sent to ${user.name}: ${content}`);
+        } catch (err) {
+            sendMessage(`Failed to send DM to ${user.name}: ${err.message}`);
+        }
+    }
+    async function userHasRole(client, guildId, userId, roleId) {
+        try {
+            const guild = await client.guilds.fetch(guildId);
+            const member = await guild.members.fetch(userId);
+            return member.roles.cache.has(roleId);
+        } catch (err) {
+            msg(`Failed to fetch member: ${err}`);
+            return false;
+        }
+    }
+
     async function addRole(userId,guildId, roleId){
         try {
             const guild = await client.guilds.fetch(guildId);
@@ -414,10 +463,50 @@ try{
             });
             await msg(`Permissions set for ${member.user.tag} in ${channel.name}.for server ${guild.name}`);
         } catch (error) {
-            console.error('Error assigning permissions:', error);
+            msg('Error assigning permissions:', error);
         }
     }
-    async function migrate(userId){
+    async function userHasChannel(userId, guildId, channelId) {
+        try {
+            const guild = await client.guilds.fetch(guildId);
+            const channel = await guild.channels.fetch(channelId);
+            const member = await channel.guild.members.fetch(userId);
+            const permissions = channel.permissionsFor(member);
+
+            return permissions.has(['ViewChannel', 'SendMessages']);
+        } catch (err) {
+            msg(`Failed to check permissions: ${err}`);
+            return false;
+        }
+    }
+    async function migrateShop(shopId){//shop id just use the guild id
+        if(fs.existsSync("./shop.json")){
+            let oldShops;
+            try{
+                oldShops = JSON.parse(fs.readFileSync("./shop.json","utf-8"));
+            } catch(error){
+                await msg("error reading file \"./shop.json\"",error);
+            }
+            let oldShop
+            if(shopId in oldShops){
+                oldShop = oldShops[shopId]
+            } else {
+                oldShop = [];
+            }
+            let GuildShop = Guild.getGuild(shopId).shop
+            for (let shop of oldShop){
+                GuildShop.addShopItem("role",shop["roleId"],shop["price"]);
+            }
+            oldShops[shopId] = [];
+            saveData();
+            try{
+                fs.writeFileSync("./shop.json", JSON.stringify(oldShops,null,2), 'utf-8');
+            } catch(error){
+                await msg("error saving file",error);
+            }
+        }
+    }
+    async function migrateUser(userId){
         if (fs.existsSync("./oldData.json")){
             let oldData;
             try {
@@ -450,14 +539,20 @@ try{
     }
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
-        loadData();
+        await loadData();
+        for (let guild in Guild.all){
+            await migrateShop(guild);
+        }
     });
     module.exports = {
         msg,
         saveData,
         loadData,
         addRole,
-        migrate,
+        migrateUser,
+        sendDM,
+        userHasRole,
+        userHasChannel,
         addChannel,
         Guild,
         User,

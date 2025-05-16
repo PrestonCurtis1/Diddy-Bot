@@ -3,7 +3,7 @@ const { describe } = require('pm2');
 try{
     //if u need help with a certain function please contact the person who created it. 
     // it should show the author of each function above the function
-    const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField } = require('discord.js');
+    const { AttachmentBuilder, Client, GatewayIntentBits, REST, Routes, PermissionsBitField } = require('discord.js');
     const util = require("./utilities.js");
     const fs = require("fs");
     const JSONConfig = require("./config.json");
@@ -87,7 +87,7 @@ try{
         const announcementMessage = fs.readFileSync(`./${announcementFile}`,"utf-8");
         const communityServer = await client.guilds.fetch("1310772622044168275");
         const member = await communityServer.members.fetch(interaction.user.id);
-        if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
+        if (!member.permissions.has(PermissionsBitField.Flags.Administrator)){
             await interaction.reply({content: "invalid password", fetchReply: true});
             return false
         }
@@ -267,7 +267,7 @@ try{
         let response;
         if (interaction.member.roles.cache.has(util.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
             util.User.getUser(interaction.options.getUser("user").id).giveCoins(interaction.options.getNumber("coins"),util.Guild.getGuild(interaction.guild.id));
-            response = `gave ${interaction.options.getNumber("coins")} to ${interaction.options.getUser("user")}`;
+            response = `gave ${interaction.options.getNumber("coins")} coins to ${interaction.options.getUser("user")}`;
         } else {
             response = `invalid permissions`;
         }
@@ -360,7 +360,7 @@ try{
     async function changeShopSettings(interaction){
         setting =  interaction.options.getString("setting");
         value  = interaction.options.getString("value");
-        if (interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
+        if (interaction.member.roles.cache.has(util.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
             util.Guild.getGuild(interaction.guild.id).shop.changeSetting(setting,value,true)
             interaction.reply({content: `changed setting ${setting} to ${value}`,fetchReply: true});
         } else {
@@ -369,6 +369,29 @@ try{
         
     }
     new util.Command({name: "changeShopSettings".toLowerCase(),description: "change the settings of the server shop",options: [{name:"setting",description: "settings to change",type: 3, required: true}, {name:"value",description: "value to change it to", type: 3, required: true}]},changeShopSettings)
+    //withdraw
+    /**
+     * withdraw aura from shop bank
+     * function create by unprankable
+     * @param {Interaction} interaction
+     * @returns {Promise<void>}
+     */
+    async function withdraw(interaction){
+        amount = interaction.options.getNumber("amount");
+        if (interaction.member.roles.cache.has(util.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
+            let shop = util.Guild.getGuild(interaction.guild.id).shop;
+            if (amount <= shop.balance){
+                shop.balance -= amount;
+                util.User.getUser(interaction.user.id).giveAura(amount,false);
+                interaction.reply({content: `withdrew ${amount} from shop bank`,fetchReply: true});
+            } else {
+                interaction.reply({content: `shop bank only has ${shop.balance} aura`,fetchReply: true});
+            }
+        } else {
+            interaction.reply({content: `invalid permissions`,fetchReply: true});
+        }
+    }
+    new util.Command({name: "withdraw", description: "withdraw aura from shop bank", options: [{name: "amount",description: "amount to withdraw",type: 10, required: true}]},withdraw);
     //getServerBooster
     /**
      * retrieve the current server booster
@@ -432,7 +455,7 @@ try{
     * @returns {Promise<void>}
     */
     async function rizzlers(interaction){
-        interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\n@Royalknight0\n@nexuscageoil\n@buldakislovebuldakislife\n@def_not_vexx\n@chi56567899\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}});
+        interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\n@royalknight0\n@nexuscageoil\n@buldakislovebuldakislife\n@def_not_vexx\n@chi56567899\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}});
     }
     new util.Command({name: "rizzlers",description: "people who contributed pickup-lines",integration_types: [0, 1], contexts: [0, 1, 2]},rizzlers);
     client.once('ready', async () => {
@@ -482,6 +505,53 @@ try{
         }
     }
     new util.Command({name:"dm", description: "Send a message to a user as Diddy (for bot admins)", options: [{name: "id", type: 3, description: "users user id", required: true}, {name: "message", type: 3, description: "message to send user", required: true}], integration_types: [0, 1], contexts: [0, 1, 2]},dm);
+    //gamble
+    /**
+     * gamble your aura.
+     * function created by unprankable.inspired by (discord:@royalknight0)
+     * @param {Interaction} interaction
+     * @returns {Promise<void>}
+     */
+    async function gamble(interaction){
+        let amount = interaction.options.getNumber("amount");
+        let user = util.User.getUser(interaction.user.id)
+        let hasAura = amount <= user.aura;
+        if (hasAura){
+            let percent = Math.floor(Math.random()*101)/100;
+            let win = Math.floor(Math.random()*2);
+            let result;
+            if (win == 1){
+                result = Math.floor(amount*percent);
+                user.giveAura(interaction.user.id,result);
+                interaction.reply({content: `You gained ${result} aura`,fetchReply:true});
+            } else {
+                result = Math.floor(-1*(amount*percent));
+                user.giveAura(interaction.user.id,result);
+                interaction.reply({content: `You lost ${(-1*(result))} aura`, fetchReply: true});
+            }
+        } else {
+            interaction.reply({content: `you only have ${aura.calculateAura(interaction.user.id)} aura`,fetchReply: true});
+        }
+    }
+    new util.Command({name: "gamble", description: "gamble your money", options: [{name: "amount", description: "how much to gamble", type: 10, required: true}], integration_types: [0, 1], contexts: [0, 1, 2]},gamble);
+    //getFile
+    /**
+     * Retrieve a file if your a bot admin
+     * function created by unprankable
+     * @param {Interaction} interaction
+     * @returns {Promise<void>}
+     */
+    async function getFile(interaction) {
+        const communityServer = await client.guilds.fetch("1310772622044168275");
+        const member = await communityServer.members.fetch(interaction.user.id);
+        if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
+                const file = new AttachmentBuilder(interaction.options.getString("path"));
+                await interaction.reply({content: `file: ${interaction.options.getString("path")}`, fetchReply: true, ephemeral: true, files: [file]});
+        } else {
+            await interaction.reply({content: "you do not have permission to run this command",fetchReply: true});
+        }
+    }
+    new util.Command({name: "getFile".toLowerCase(), description: "retrieve a file (bot admins only)", options: [{name: "path",description: "path to file",type: 3,required: true}],integration_types: [0, 1],contexts: [0, 1, 2]},getFile)
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);

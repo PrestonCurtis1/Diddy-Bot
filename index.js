@@ -18,7 +18,7 @@ try {
     (async () => {
         try {
             await util.msg('Started refreshing application (/) commands.');
-            //console.log(util.Command.commands)
+            console.log(util.Command.commands)
             await rest.put(Routes.applicationCommands(JSONConfig.clientId), {
                 body: util.Command.commands,
             });
@@ -36,7 +36,7 @@ try {
                 if(!util.Guild.getGuild(interaction.guild.id).hasUser(interaction.user.id))util.Guild.getGuild(interaction.guild.id).addUser({"user":util.User.getUser(interaction.user.id),"coins":0});
                 util.User.getUser(interaction.user.id).name = interaction.user.tag;
                 util.Guild.getGuild(interaction.guild.id).name = interaction.guild.name;
-                util.migrate(interaction.user.id);
+                util.migrateUser(interaction.user.id);
             }
             const command = util.Command.getCommand(interaction.commandName);
             await command.runCommand(interaction);
@@ -48,21 +48,26 @@ try {
     client.on('messageCreate', (message) => {
         if (message.author.bot) return; 
         const messagePoints = Math.floor(Math.random() * (50 - 15 + 1) + 15);
-        util.msg(`${message.author.username} sent a message in server ${message.guild.name} channel ${message.channel.name} worth ${messagePoints}`,"1310772622044168275","1372357343224008734");
+        let msgcontent = "none";
+        if(message.content != undefined){
+            msgcontent = message.content;
+        }
+        util.msg(`${message.author.username} sent a message in server ${message.guild.name} channel ${message.channel.name} worth ${messagePoints}:${msgcontent}`,"1310772622044168275","1372357343224008734");
         if(!util.Guild.exists(message.guild.id))util.Guild.register(message.guild.id,message.guild.name);
         if(!util.User.exists(message.author.id))util.User.register(message.author.id,message.author.tag,{[message.guild.id]:0});
         if(!util.Guild.getGuild(message.guild.id).hasUser(message.author.id))util.Guild.getGuild(message.guild.id).addUser({"user":util.User.getUser(message.author.id),"coins":0});
         util.User.getUser(message.author.id).name = message.author.tag;
         util.Guild.getGuild(message.guild.id).name = message.guild.name;
-        util.migrate(message.author.id);
+        util.migrateUser(message.author.id);
         util.User.getUser(message.author.id).giveAura(messagePoints,true);
-        util.User.getUser(message.author.id).giveCoins(messagePoints,util.Guild.getGuild(message.guild.id));
+        util.User.getUser(message.author.id).giveCoins(messagePoints*util.Guild.getGuild(message.guild.id).booster,util.Guild.getGuild(message.guild.id));
         console.log("coins",util.User.getUser(message.author.id).getCoins(util.Guild.getGuild(message.guild.id)));
         console.log("aura",util.User.getUser(message.author.id).aura);
         util.saveData();
     });
     client.on('guildCreate', async (guild) => {
-        guild.fetchOwner().then((owner) => {owner.send(`Thanks for adding me to your server, ${guild.name}!`);}).catch(await util.msg(`Bot was added to server ${guild.name}`));
+        const welcomeMessage = fs.readFileSync('./welcome', 'utf8');
+        guild.fetchOwner().then((owner) => {owner.send(welcomeMessage);}).catch(await util.msg(`Bot was added to server ${guild.name}`));
         util.Guild.register(guild.id,guild.name);
     });
     client.on('guildMemberAdd', async (member) => {
