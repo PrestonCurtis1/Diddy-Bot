@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "discord.js": "^14.16.3",
+    "pm2": "^5.4.3",
+    "undici": "^7.1.1"
+  },
+  "name": "diddy",
+  "version": "1.0.0",
+  "description": "get rizzed",
+  "main": "index.js",
+  "scripts": {
+    "test": "help"
+  },
+  "repository": {
+    "type": "git",
+    "url": "Diddy-Bot"
+  },
+  "keywords": [
+    "Diddy",
+    "Rizz",
+    "Bot"
+  ],
+  "author": "Unprankable",
+  "license": "ISC"
+}

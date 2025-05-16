@@ -2,10 +2,6 @@ node_modules
 config.json
 discloud.config
 .vscode/
-userMessageLists.json
-discordlaunch
-aurasystem
+data.json
 shop.json
-package.json
-package-lock.json
-backup/
+oldData.json

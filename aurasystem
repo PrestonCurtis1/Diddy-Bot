@@ -1,0 +1,35 @@
+### 🌟 **Introducing the Aura System – Powered by Diddy-Bot!** 🌟  
+
+We’re excited to unveil **Diddy-Bot's Aura System**, a feature that tracks and rewards your engagement based on activity. Your **Aura** reflects your influence in the server. Here's how it works:
+
+---
+
+### ⚙️ **How Aura is Calculated** ⚙️  
+
+1️⃣ **Message Score:**  
+Every message earns a score:  
+> `25 + (Message Length / 20) + 30 for each image, link, GIF, or attachment.`  
+
+2️⃣ **Every Minute:**  
+Diddy-Bot updates your Aura based on:  
+> **Aura** = `Message Total × Multiplier`  
+> **Sigma Level** = `Aura / 150`  
+
+3️⃣ **Timeout Penalties:**  
+Timeouts reduce your Aura:  
+> `100 × Timeout Hours × Multiplier`  
+
+4️⃣ **Message Deletion:**  
+Deleting messages lowers your Aura:  
+> `Message Score × Multiplier × 2`
+
+---
+
+### 🌌 **Why the Aura System?**  
+The Aura System encourages meaningful interactions and highlights your contributions.  
+
+💬 **Check your Aura with** `/getaura` and climb the ranks!  
+
+Have feedback? Share it in #suggestions in the [diddy bot community server](https://discord.gg/u6AVRt7Bgm)!  
+
+— **The Diddy-Bot Team**
