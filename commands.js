@@ -426,24 +426,37 @@ try{
      * @param {Interaction} interaction - The interaction passed by the client.
      * @returns {Promise<Void>}
      */ 
-    async function getInvite(interaction){
-        let invites = []
-        client.guilds.cache.forEach(guild => {
-            guild = util.Guild.getGuild(guild.id);
-            if (guild.settings["randomInviteEnabled"]){
-                if(guild.settings["invite-code"] != "" && guild.settings["invite-code"] != undefined){
-                    invites.push(guild.settings["invite-code"]);
-                } 
+    async function getInvite(interaction) {
+        let invites = [];
+
+        client.guilds.cache.forEach(g => {
+            const guildData = util.Guild.getGuild(g.id);
+
+            if (guildData && guildData.settings) {
+                if (
+                    guildData.settings["randomInviteEnabled"] &&
+                    guildData.settings["invite-code"] &&
+                    guildData.settings["invite-code"] !== ""
+                ) {
+                    invites.push(guildData.settings["invite-code"]);
+                }
             }
         });
-        if (invites.length != 0){
-            let randomInvite = Math.floor(Math.random() * (invites.length));
-            interaction.reply({content: `https://discord.gg/${invites[randomInvite]} |${invites}|${randomInvite}`,fetchReply: true});
-        } else {
-            interaction.reply({content: "couldn't find a valid server",fetchReply: true})
-        }
 
+        if (invites.length !== 0) {
+            let randomInvite = Math.floor(Math.random() * invites.length);
+            await interaction.reply({
+                content: `https://discord.gg/${invites[randomInvite]}`,
+                fetchReply: true
+            });
+        } else {
+            await interaction.reply({
+                content: "Couldn't find a valid server.",
+                fetchReply: true
+            });
+        }
     }
+
     new util.Command({name: "getRandomInvite".toLowerCase(),description: "join a random server that has advertising enabled",integration_types: [0, 1], contexts: [0, 1, 2]},getInvite);
     //rizzlers
     /**
