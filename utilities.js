@@ -1,7 +1,6 @@
 try{
     const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json');
-    const pm2 = require('pm2');
     const path = require ("path");
     const fs = require("fs");
     class Guild {
