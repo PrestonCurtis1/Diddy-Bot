@@ -460,11 +460,9 @@ try{
             const randomIndex = Math.floor(Math.random() * invites.length);
             const randomInvite = invites[randomIndex];
             await interaction.reply({ content: `https://discord.gg/${randomInvite} | [${invites.join(", ")}] | ${randomIndex}`, fetchReply: true });
->>>>>>> 21cddf22cee1ac853bc937453dce2d31e4d8f74f
         } else {
             await interaction.reply({ content: "Couldn't find a valid server invite.", fetchReply: true });
         }
-<<<<<<< HEAD
     
         // let invites = []
         // client.guilds.cache.forEach(guild => {
