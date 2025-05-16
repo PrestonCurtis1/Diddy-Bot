@@ -431,6 +431,7 @@ try{
     
         client.guilds.cache.forEach(guild => {
             const guildData = util.Guild.getGuild(guild.id);
+            console.log(guildData);
             if (guildData && guildData.settings) {
                 if (guildData.settings["randomInviteEnabled"]) {
                     const inviteCode = guildData.settings["invite-code"];
