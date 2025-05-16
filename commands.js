@@ -429,21 +429,37 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function getInvite(interaction){
-        let invites = []
-        client.guilds.cache.forEach(guild => {
-            guild = util.Guild.getGuild(guild.id);
-            if (guild.settings["randomInviteEnabled"]){
-                if(guild.settings["invite-code"] != "" && guild.settings["invite-code"] != undefined){
-                    invites.push(guild.settings["invite-code"]);
-                } 
+        let invites [];
+        for (await guild in util.Guild.all){
+            if(guild.settings["randomInviteEnabled"]){
+                if(guild.settings["invite-code"] != ""){
+                    invites.push(guild.settings["invite-code"])
+                }
             }
-        });
+        }
         if (invites.length != 0){
             let randomInvite = Math.floor(Math.random() * (invites.length));
             interaction.reply({content: `https://discord.gg/${invites[randomInvite]} |${invites}|${randomInvite}`,fetchReply: true});
         } else {
             interaction.reply({content: "couldn't find a valid server",fetchReply: true})
         }
+    
+        // let invites = []
+        // client.guilds.cache.forEach(guild => {
+        //     guild = util.Guild.getGuild(guild.id.toString());
+        //     console.log(guild)
+        //     if (guild.settings["randomInviteEnabled"]){
+        //         if(guild.settings["invite-code"] != "" && guild.settings["invite-code"] != undefined){
+        //             invites.push(guild.settings["invite-code"]);
+        //         } 
+        //     }
+        // });
+        // if (invites.length != 0){
+        //     let randomInvite = Math.floor(Math.random() * (invites.length));
+        //     interaction.reply({content: `https://discord.gg/${invites[randomInvite]} |${invites}|${randomInvite}`,fetchReply: true});
+        // } else {
+        //     interaction.reply({content: "couldn't find a valid server",fetchReply: true})
+        // }
 
     }
     new util.Command({name: "getRandomInvite".toLowerCase(),description: "join a random server that has advertising enabled",integration_types: [0, 1], contexts: [0, 1, 2]},getInvite);
