@@ -1,3 +1,5 @@
+const { describe } = require('pm2');
+
 try{
     //if u need help with a certain function please contact the person who created it. 
     // it should show the author of each function above the function
@@ -426,7 +428,6 @@ try{
      * @param {Interaction} interaction - The interaction passed by the client.
      * @returns {Promise<Void>}
      */ 
-<<<<<<< HEAD
     async function getInvite(interaction){
         let invites [];
         for (await guild in util.Guild.all){
@@ -439,29 +440,8 @@ try{
         if (invites.length != 0){
             let randomInvite = Math.floor(Math.random() * (invites.length));
             interaction.reply({content: `https://discord.gg/${invites[randomInvite]} |${invites}|${randomInvite}`,fetchReply: true});
-=======
-    async function getInvite(interaction) {
-        let invites = [];
-    
-        client.guilds.cache.forEach(guild => {
-            const guildData = util.Guild.getGuild(guild.id.toString());
-            console.log(guildData);
-            if (guildData && guildData.settings) {
-                if (guildData.settings["randomInviteEnabled"]) {
-                    const inviteCode = guildData.settings["invite-code"];
-                    if (inviteCode && inviteCode !== "") {
-                        invites.push(inviteCode);
-                    }
-                }
-            }
-        });
-    
-        if (invites.length > 0) {
-            const randomIndex = Math.floor(Math.random() * invites.length);
-            const randomInvite = invites[randomIndex];
-            await interaction.reply({ content: `https://discord.gg/${randomInvite} | [${invites.join(", ")}] | ${randomIndex}`, fetchReply: true });
         } else {
-            await interaction.reply({ content: "Couldn't find a valid server invite.", fetchReply: true });
+            interaction.reply({content: "couldn't find a valid server",fetchReply: true})
         }
     
         // let invites = []
@@ -481,10 +461,7 @@ try{
         //     interaction.reply({content: "couldn't find a valid server",fetchReply: true})
         // }
 
-=======
->>>>>>> 21cddf22cee1ac853bc937453dce2d31e4d8f74f
     }
-
     new util.Command({name: "getRandomInvite".toLowerCase(),description: "join a random server that has advertising enabled",integration_types: [0, 1], contexts: [0, 1, 2]},getInvite);
     //rizzlers
     /**
