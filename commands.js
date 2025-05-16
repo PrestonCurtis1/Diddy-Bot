@@ -428,7 +428,9 @@ try{
      */ 
     async function getInvite(interaction){
         let invites = [];
-        for (let guild in util.Guild.all){
+        for (let guildId in util.Guild.all){
+            let guild  = util.Guild.all[guildId];
+            
             let enabled = await guild.settings["randomInviteEnabled"];
             if(enabled){
                 if(guild.settings["invite-code"] != ""){
