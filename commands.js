@@ -427,39 +427,21 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function getInvite(interaction){
-        let invites = [];
-        for (let guildId in util.Guild.all){
-            let guild  = util.Guild.all[guildId];
-            console.log(guild);
-            let enabled = await guild.settings["randomInviteEnabled"];
-            if(enabled){
-                if(guild.settings["invite-code"] != ""){
-                    invites.push(guild.settings["invite-code"])
-                }
+        let invites = []
+        client.guilds.cache.forEach(guild => {
+            guild = util.Guild.getGuild(guild.id);
+            if (guild.settings["randomInviteEnabled"]){
+                if(guild.settings["invite-code"] != "" && guild.settings["invite-code"] != undefined){
+                    invites.push(guild.settings["invite-code"]);
+                } 
             }
-        }
+        });
         if (invites.length != 0){
             let randomInvite = Math.floor(Math.random() * (invites.length));
             interaction.reply({content: `https://discord.gg/${invites[randomInvite]} |${invites}|${randomInvite}`,fetchReply: true});
         } else {
             interaction.reply({content: "couldn't find a valid server",fetchReply: true})
         }
-        // let invites = []
-        // client.guilds.cache.forEach(guild => {
-        //     guild = util.Guild.getGuild(guild.id.toString());
-        //     console.log(guild)
-        //     if (guild.settings["randomInviteEnabled"]){
-        //         if(guild.settings["invite-code"] != "" && guild.settings["invite-code"] != undefined){
-        //             invites.push(guild.settings["invite-code"]);
-        //         } 
-        //     }
-        // });
-        // if (invites.length != 0){
-        //     let randomInvite = Math.floor(Math.random() * (invites.length));
-        //     interaction.reply({content: `https://discord.gg/${invites[randomInvite]} |${invites}|${randomInvite}`,fetchReply: true});
-        // } else {
-        //     interaction.reply({content: "couldn't find a valid server",fetchReply: true})
-        // }
 
     }
     new util.Command({name: "getRandomInvite".toLowerCase(),description: "join a random server that has advertising enabled",integration_types: [0, 1], contexts: [0, 1, 2]},getInvite);
