@@ -430,7 +430,7 @@ try{
         let invites = [];
         for (let guildId in util.Guild.all){
             let guild  = util.Guild.all[guildId];
-            
+            console.log(guild);
             let enabled = await guild.settings["randomInviteEnabled"];
             if(enabled){
                 if(guild.settings["invite-code"] != ""){
