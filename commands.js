@@ -432,18 +432,29 @@ try{
         client.guilds.cache.forEach(g => {
             const guildData = util.Guild.getGuild(g.id);
 
-            if (guildData && guildData.settings) {
-                if (
-                    guildData.settings["randomInviteEnabled"] &&
-                    guildData.settings["invite-code"] &&
-                    guildData.settings["invite-code"] !== ""
-                ) {
-                    invites.push(guildData.settings["invite-code"]);
-                }
+            if (!guildData) {
+                console.log(`❌ No guild data for ID: ${g.id}`);
+                return;
+            }
+
+            if (!guildData.settings) {
+                console.log(`❌ No settings for guild ID: ${g.id}`);
+                return;
+            }
+
+            const { settings } = guildData;
+            const enabled = settings["randomInviteEnabled"];
+            const inviteCode = settings["invite-code"];
+
+            console.log(`🔍 Checking guild ${g.name} (${g.id}): enabled=${enabled}, code=${inviteCode}`);
+
+            if (enabled && inviteCode && inviteCode.trim() !== "") {
+                invites.push(inviteCode);
+                console.log(`✅ Added invite: ${inviteCode}`);
             }
         });
 
-        if (invites.length !== 0) {
+        if (invites.length > 0) {
             let randomInvite = Math.floor(Math.random() * invites.length);
             await interaction.reply({
                 content: `https://discord.gg/${invites[randomInvite]}`,
@@ -456,6 +467,7 @@ try{
             });
         }
     }
+
 
     new util.Command({name: "getRandomInvite".toLowerCase(),description: "join a random server that has advertising enabled",integration_types: [0, 1], contexts: [0, 1, 2]},getInvite);
     //rizzlers
