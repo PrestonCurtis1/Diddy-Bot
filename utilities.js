@@ -461,7 +461,8 @@ try{
                 user.guilds
             );
         }
-        await msg("Loaded", Object.keys(Guild.all).length, "guilds and", Object.keys(User.all).length, "users.");
+        msg(`Loaded ${Object.keys(Guild.all).length} Guilds and ${Object.keys(User.all).length} Users`);
+        //msg("Loaded" + Object.keys(Guild.all).length + "guilds and" + Object.keys(User.all).length + "users.");
         // if (fs.existsSync("./data.json")) {
         //     const data = JSON.parse(fs.readFileSync("./data.json", 'utf-8'));
         //     for (const guild in data.guilds){
