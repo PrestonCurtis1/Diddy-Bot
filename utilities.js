@@ -207,7 +207,7 @@ try{
                 });
             }
 
-            userAuraList.sort((a, b) => b.getAura() - a.getAura());
+            userAuraList.sort((a, b) => b.aura - a.aura);
 
             const totalPages = Math.ceil(userAuraList.length / perPage);
             const pageIndex = Math.max(0, Math.min(page - 1, totalPages - 1)); // Clamp page
