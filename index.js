@@ -35,8 +35,8 @@ try {
                 if(!util.Guild.exists(interaction.guild.id))util.Guild.register(interaction.guild.id,interaction.guild.name);
                 if(!util.User.exists(interaction.user.id))util.User.register(interaction.user.id,interaction.user.tag,{[interaction.guild.id]:0});
                 if(!util.Guild.getGuild(interaction.guild.id).hasUser(interaction.user.id))util.Guild.getGuild(interaction.guild.id).addUser({"user":util.User.getUser(interaction.user.id),"coins":0});
-                util.User.getUser(interaction.user.id).name = interaction.user.tag;
-                util.Guild.getGuild(interaction.guild.id).name = interaction.guild.name;
+                util.User.getUser(interaction.user.id).setName(interaction.user.tag);
+                util.Guild.getGuild(interaction.guild.id).setName(interaction.guild.name);
                 util.migrateUser(interaction.user.id);
             }
             const command = util.Command.getCommand(interaction.commandName);
@@ -57,14 +57,13 @@ try {
         if(!util.Guild.exists(message.guild.id))util.Guild.register(message.guild.id,message.guild.name);
         if(!util.User.exists(message.author.id))util.User.register(message.author.id,message.author.tag,{[message.guild.id]:0});
         if(!util.Guild.getGuild(message.guild.id).hasUser(message.author.id))util.Guild.getGuild(message.guild.id).addUser({"user":util.User.getUser(message.author.id),"coins":0});
-        util.User.getUser(message.author.id).name = message.author.tag;
-        util.Guild.getGuild(message.guild.id).name = message.guild.name;
+        util.User.getUser(message.author.id).setName(message.author.tag);
+        util.Guild.getGuild(message.guild.id).setName(message.guild.name);
         util.migrateUser(message.author.id);
         util.User.getUser(message.author.id).giveAura(messagePoints,true);
         util.User.getUser(message.author.id).giveCoins(messagePoints*util.Guild.getGuild(message.guild.id).booster,util.Guild.getGuild(message.guild.id));
         console.log("coins",util.User.getUser(message.author.id).getCoins(util.Guild.getGuild(message.guild.id)));
         console.log("aura",util.User.getUser(message.author.id).aura);
-        util.saveData();
     });
     client.on('guildCreate', async (guild) => {
         const welcomeMessage = fs.readFileSync('./welcome', 'utf8');

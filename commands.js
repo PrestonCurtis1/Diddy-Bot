@@ -400,7 +400,7 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function getServerBooster(interaction){
-        await interaction.reply({content: `${util.Guild.getGuild(interaction.guild.id).booster}`,fetchReply: true, allowedMentions: {parse: []}});
+        await interaction.reply({content: `${util.Guild.getGuild(interaction.guild.id).getBooster()}`,fetchReply: true, allowedMentions: {parse: []}});
     }
     new util.Command({name: "getServerBooster".toLowerCase(),description: "get the current booster for the server",dm_permission: false},getServerBooster);
     //changeServerBooster
@@ -413,7 +413,7 @@ try{
     async function changeServerBooster(interaction){
         let response;
         if (interaction.member.roles.cache.has(util.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
-            util.Guild.getGuild(interaction.guild.id).booster = interaction.options.getNumber("newBooster".toLowerCase());
+            util.Guild.getGuild(interaction.guild.id).setBooster(interaction.options.getNumber("newBooster".toLowerCase()));
             response = `set server booster to ${interaction.options.getNumber("newBooster".toLowerCase())}`
         } else {
             response = `invalid permissions`;

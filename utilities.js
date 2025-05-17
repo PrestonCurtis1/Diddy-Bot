@@ -1,3 +1,5 @@
+const { stringify } = require('querystring');
+
 try{
     const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json');
@@ -13,6 +15,20 @@ try{
             this.users = {};
             this.shop = new Shop(shop.id,shop.items,shop.balance,shop.config);
             Guild.all[id] = this;
+        }
+        getName(){
+            return this.name;
+        }
+        setName(name){
+            this.name = name;
+            saveData();
+        }
+        getBooster(){
+            return this.booster;
+        }
+        setBooster(newBooster){
+            this.booster = newBooster
+            saveData();
         }
         hasUser(id){
             return (this.users[id]);
@@ -39,7 +55,7 @@ try{
             saveData();
         }
         showSettings(){
-            let message = `Settings for ${this.name}\n`;
+            let message = `Settings for ${this.getName()}\n`;
             for (const key in this.settings){
                 message += `${key}\t|\t${this.settings[key]}\n`
             }
@@ -68,7 +84,7 @@ try{
 
             for (const key in this.users) {
                 userCoinList.push({
-                    name: this.users[key].user.name,
+                    name: this.users[key].user.getName(),
                     coins: this.users[key].coins
                 });
             }
@@ -82,11 +98,11 @@ try{
             const end = start + perPage;
             const pageUsers = userCoinList.slice(start, end);
 
-            let message = `**Server Coin Leaderboard — Page ${pageIndex + 1}/${totalPages} for ${this.name}**\n`;
+            let message = `**Server Coin Leaderboard — Page ${pageIndex + 1}/${totalPages} for ${this.getName()}**\n`;
 
             pageUsers.forEach((user, index) => {
                 const rank = start + index + 1;
-                message += `**${rank}.** @${user.name} — ${user.coins} coins\n`;
+                message += `**${rank}.** @${user.getName()} — ${user.coins} coins\n`;
             });
 
             if (userCoinList.length === 0) {
@@ -130,6 +146,16 @@ try{
         getAuraMultiplier(){
             return (1 + this.boosters.temp.multi + this.boosters.perm + (this.level/20));
         }
+        getName(){
+            return this.name
+        }
+        setName(name){
+            this.name = name;
+            saveData();
+        }
+        getAura(){
+            return this.aura;
+        }
         giveAura(amount,applyMulti=true){
             const oldLevel = this.level
             switch(applyMulti){
@@ -140,12 +166,12 @@ try{
                     this.aura += Math.floor(amount);
                     break
             }
-            this.level = Math.floor((this.aura/2)**(1/2.25));
+            this.level = Math.floor((this.getAura()/2)**(1/2.25));
             if (oldLevel !== this.level){
-                return `${this.name} is now level ${this.level}`
+                return `${this.getName()} is now level ${this.level}`
             }
             saveData();
-            return `no new level for ${this.name}`
+            return `no new level for ${this.getName()}`
             
         }
         pay(reciever,guild,amount){
@@ -176,12 +202,12 @@ try{
 
             for (const key in User.all) {
                 userAuraList.push({
-                    name: User.all[key].name,
-                    aura: User.all[key].aura
+                    name: User.all[key].getName(),
+                    aura: User.all[key].getAura()
                 });
             }
 
-            userAuraList.sort((a, b) => b.aura - a.aura);
+            userAuraList.sort((a, b) => b.getAura() - a.getAura());
 
             const totalPages = Math.ceil(userAuraList.length / perPage);
             const pageIndex = Math.max(0, Math.min(page - 1, totalPages - 1)); // Clamp page
@@ -194,7 +220,7 @@ try{
 
             pageUsers.forEach((user, index) => {
                 const rank = start + index + 1;
-                message += `**${rank}.** @${user.name} — ${user.aura} aura\n`;
+                message += `**${rank}.** @${user.getName()} — ${user.getAura()} aura\n`;
             });
 
             if (userAuraList.length === 0) {
@@ -235,7 +261,7 @@ try{
                 message = "item not in shop"
             } else {//item exists
                 if (user.getCoins(guild) < shopItem.price){//invalid funds
-                    await msg(`invalid funds to buy ${shopItem} in ${guild} for ${user.name} user has balance:${user.getCoins(Guild.getGuild(guild.id))}`);
+                    await msg(`invalid funds to buy ${shopItem} in ${guild} for ${user.getName()} user has balance:${user.getCoins(Guild.getGuild(guild.id))}`);
                     message = "invalid funds"
                 } else {//sufficient funds
                     saveData();
@@ -287,8 +313,8 @@ try{
                 if (typeof price === 'string') {
                     price = parseInt(value, 10);
                 }
-                if (price > user.aura){
-                    return `insufficient funds ${amount} coins costs ${price} aura you only have ${user.aura} aura`;
+                if (price > user.getAura()){
+                    return `insufficient funds ${amount} coins costs ${price} aura you only have ${user.getAura()} aura`;
                 } else {
                     user.giveAura((-1*price),false);
                     this.balance += price;
@@ -299,7 +325,7 @@ try{
             }
         }
         showSettings(){//nonprivate fix by adding getName
-            let message = `Settings for ${Guild.getGuild(this.id).name} shop\n`;
+            let message = `Settings for ${Guild.getGuild(this.id).getName()} shop\n`;
             for (const key in this.config){
                 message += `${key}\t|\t${this.config[key]}\n`
             }
@@ -323,7 +349,7 @@ try{
             saveData();
         }
         showShop(){
-            let message = `Shop items for ${Guild.getGuild(this.id).name}\n`;
+            let message = `Shop items for ${Guild.getGuild(this.id).getName()}\n`;
             message += `**Bank**: ${this.balance}:\tAura\n`
             this.items.forEach(({type, itemInfo, price}) => {
                 switch (type){
@@ -375,52 +401,78 @@ try{
     }
 
     function saveData(){
-        let guilds = [];
-        for (const id in Guild.all){
-            let guild = Guild.all[id];
-            guildObject = {
-                "id": guild.id,
-                "name": guild.name,
-                "booster": guild.booster,
-                "settings": guild.settings,
-                "shop": {
-                    "id": guild.shop.id,
-                    "items": guild.shop.items,
-                    "balance": guild.shop.balance,
-                    "config": guild.shop.config
-                }
-            }
-            guilds.push(guildObject);
-        }
-        let users = [];
-        for (const id in User.all){
-            let user = User.all[id];
-            userObject = {
-                "id": user.id,
-                "tag": user.name,
-                "aura": user.aura,
-                "boosters": user.boosters,
-                "guilds": user.guilds
-            }
-            users.push(userObject);
-        }
-        let data = {
-            "guilds":guilds,
-            "users":users,
-        }
-        fs.writeFileSync("./data.json", JSON.stringify(data, null, 2), 'utf-8');
+        let data = {"guilds":Guild.all,"users":User.all};
+        fs.writeFileSync("./data.json",JSON.stringify(data,null,2),'utf-8');
+        msg("Saved data.json");
+        // let guilds = [];
+        // for (const id in Guild.all){
+        //     let guild = Guild.all[id];
+        //     guildObject = {
+        //         "id": guild.id,
+        //         "name": guild.getName(),
+        //         "booster": guild.booster,
+        //         "settings": guild.settings,
+        //         "shop": {
+        //             "id": guild.shop.id,
+        //             "items": guild.shop.items,
+        //             "balance": guild.shop.balance,
+        //             "config": guild.shop.config
+        //         }
+        //     }
+        //     guilds.push(guildObject);
+        // }
+        // let users = [];
+        // for (const id in User.all){
+        //     let user = User.all[id];
+        //     userObject = {
+        //         "id": user.id,
+        //         "tag": user.getName(),
+        //         "aura": user.getAura(),
+        //         "boosters": user.boosters,
+        //         "guilds": user.guilds
+        //     }
+        //     users.push(userObject);
+        // }
+        // let data = {
+        //     "guilds":guilds,
+        //     "users":users,
+        // }
+        // fs.writeFileSync("./data.json", JSON.stringify(data, null, 2), 'utf-8');
     }
     async function loadData(){
-        if (fs.existsSync("./data.json")) {
-            const data = JSON.parse(fs.readFileSync("./data.json", 'utf-8'));
-            for (const guild in data.guilds){
-                new Guild(data.guilds[guild].id,data.guilds[guild].name,data.guilds[guild].booster,data.guilds[guild].settings,data.guilds[guild].shop);
-            }
-            for (const user in data.users){
-                new User(data.users[user].id,data.users[user].tag,data.users[user].aura,data.users[user].boosters,data.users[user].guilds);
-            }
-            await msg("Loaded Data");
-        }; // Return an empty object if the file doesn't exist
+        const raw = fs.readFileSync("./data.json","utf-8");
+        const {guilds, users} = JSON.parse(raw);
+        Guild.all = {}
+        User.all = {}
+        for (const guild of Object.values(guilds)) {
+            new Guild(
+                guild.id,
+                guild.name,
+                guild.booster,
+                guild.settings,
+                guild.shop
+            );
+        }
+        for (const user of Object.values(users)) {
+            new User(
+                user.id,
+                user.name,
+                user.aura,
+                user.boosters,
+                user.guilds
+            );
+        }
+        console.log("Loaded", Object.keys(Guild.all).length, "guilds and", Object.keys(User.all).length, "users.");
+        // if (fs.existsSync("./data.json")) {
+        //     const data = JSON.parse(fs.readFileSync("./data.json", 'utf-8'));
+        //     for (const guild in data.guilds){
+        //         new Guild(data.guilds[guild].id,data.guilds[guild].name,data.guilds[guild].booster,data.guilds[guild].settings,data.guilds[guild].shop);
+        //     }
+        //     for (const user in data.users){
+        //         new User(data.users[user].id,data.users[user].tag,data.users[user].aura,data.users[user].boosters,data.users[user].guilds);
+        //     }
+        //     await msg("Loaded Data");
+        // }; // Return an empty object if the file doesn't exist
     }
     const client = new Client({
         intents: [
