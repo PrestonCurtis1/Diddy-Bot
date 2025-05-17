@@ -403,7 +403,6 @@ try{
     function saveData(){
         let data = {"guilds":Guild.all,"users":User.all};
         fs.writeFileSync("./data.json",JSON.stringify(data,null,2),'utf-8');
-        msg("Saved data.json");
         // let guilds = [];
         // for (const id in Guild.all){
         //     let guild = Guild.all[id];
