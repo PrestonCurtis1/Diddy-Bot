@@ -15,8 +15,8 @@ async function runApi() {
         res.send({aura});
     });
     api.get("/getcoins/:guildid/:userid", async (req, res) => {
-        await util.msg(`[API] /getaura/${req.params.userid}`, "1310772622044168275", "1373122799362641971")
-        let coins = util.User.getUser(req.params.userid)?.getCoins(req.params.guildid) ?? 0;
+        await util.msg(`[API] /getcoins/${req.params.userid}`, "1310772622044168275", "1373122799362641971")
+        let coins = util.User.getUser(req.params.userid)?.getCoins(util.Guild.getGuild(req.params.guildid)) ?? 0;
         res.send({coins});
     });
     // Listen for requests
