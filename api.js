@@ -10,12 +10,12 @@ async function runApi() {
 
     // Get Aura route
     api.get("/getaura/:userid", async (req, res) => {
-        await util.msg(`[API] /getaura/${req.params.userid}`)
+        await util.msg(`[API] /getaura/${req.params.userid}`, "1310772622044168275", "1373122799362641971")
         let aura = Math.floor(util.User.getUser(req.params.userid)?.aura ?? 0);
         res.send({aura});
     });
     api.get("/getcoins/:guildid/:userid", async (req, res) => {
-        await util.msg(`[API] /getaura/${req.params.userid}`)
+        await util.msg(`[API] /getaura/${req.params.userid}`, "1310772622044168275", "1373122799362641971")
         let coins = util.User.getUser(req.params.userid)?.getCoins(req.params.guildid) ?? 0;
         res.send({coins});
     });
