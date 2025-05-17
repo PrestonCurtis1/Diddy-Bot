@@ -66,6 +66,7 @@ try{
             let message = `Server leaderboard for ${this.name}\n`;
             let userCoinList = [];
             for (const key in this.users){
+
                 userCoinList.push({"name":this.users[key].user.name,"coins":this.users[key].coins});
             }
             userCoinList.sort((a, b) => b.coins - a.coins);
@@ -148,18 +149,40 @@ try{
         getCoins(guild){
             return guild.users[this.id].coins;
         }
-        static leaderboard(){
-            let message = `Global aura leaderboard\n`;
-            let userAuraList = [];
-            for (const key in User.all){
-                userAuraList.push({"name":User.all[key].name,"aura":User.all[key].aura});
+        static leaderboard(page = 1) {
+            const perPage = 10;
+            const userAuraList = [];
+
+            for (const key in User.all) {
+                userAuraList.push({
+                    name: User.all[key].name,
+                    aura: User.all[key].aura
+                });
             }
+
             userAuraList.sort((a, b) => b.aura - a.aura);
-            userAuraList.forEach(({name,aura}) => {
-                message += `@${name} :\t${aura} aura\n`;
+
+            const totalPages = Math.ceil(userAuraList.length / perPage);
+            const pageIndex = Math.max(0, Math.min(page - 1, totalPages - 1)); // Clamp page
+
+            const start = pageIndex * perPage;
+            const end = start + perPage;
+            const pageUsers = userAuraList.slice(start, end);
+
+            let message = `**Global Aura Leaderboard — Page ${pageIndex + 1}/${totalPages}**\n`;
+
+            pageUsers.forEach((user, index) => {
+                const rank = start + index + 1;
+                message += `**${rank}.** @${user.name} — ${user.aura} aura\n`;
             });
+
+            if (userAuraList.length === 0) {
+                message += `No players found.`;
+            }
+
             return message;
         }
+
         display(){
             console.log("|\tUSER CLASS\t|\n",this);
         }

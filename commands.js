@@ -291,9 +291,10 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function auraBoard(interaction){
-        await interaction.reply({content: util.User.leaderboard(),fetchReply: true, allowedMentions: {parse: []}});
+        let page = interaction.options.getNumber("page") ?? 1;
+        await interaction.reply({content: util.User.leaderboard(page),fetchReply: true, allowedMentions: {parse: []}});
     }
-    new util.Command({name: "auraLeaderboard".toLowerCase(),description: "Show the global aura leaderboard",integration_types: [0, 1], contexts: [0, 1, 2]},auraBoard);
+    new util.Command({name: "auraLeaderboard".toLowerCase(),description: "Show the global aura leaderboard",options: [{name: "page", description: "what page to show", type: 10, required: false}],integration_types: [0, 1], contexts: [0, 1, 2]},auraBoard);
     //buyCoins
     /**
      * gives coins to the given user
