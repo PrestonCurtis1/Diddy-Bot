@@ -62,19 +62,40 @@ try{
         display(){
             console.log("|\tGUILD CLASS\t|\n",this);
         }
-        leaderboard(){
-            let message = `Server leaderboard for ${this.name}\n`;
-            let userCoinList = [];
-            for (const key in this.users){
+        leaderboard(page = 1) {
+            const perPage = 10;
+            const userCoinList = [];
 
-                userCoinList.push({"name":this.users[key].user.name,"coins":this.users[key].coins});
+            for (const key in this.users) {
+                userCoinList.push({
+                    name: this.users[key].user.name,
+                    coins: this.users[key].coins
+                });
             }
+
             userCoinList.sort((a, b) => b.coins - a.coins);
-            userCoinList.forEach(({name,coins}) => {
-                message += `@${name} :\t${coins} coins\n`;
+
+            const totalPages = Math.ceil(userCoinList.length / perPage);
+            const pageIndex = Math.max(0, Math.min(page - 1, totalPages - 1)); // Clamp to valid range
+
+            const start = pageIndex * perPage;
+            const end = start + perPage;
+            const pageUsers = userCoinList.slice(start, end);
+
+            let message = `**Server Coin Leaderboard — Page ${pageIndex + 1}/${totalPages} for ${this.name}**\n`;
+
+            pageUsers.forEach((user, index) => {
+                const rank = start + index + 1;
+                message += `**${rank}.** @${user.name} — ${user.coins} coins\n`;
             });
+
+            if (userCoinList.length === 0) {
+                message += `No players found.`;
+            }
+
             return message;
-        }  
+        }
+  
     }
     class User {//const futureDate = new Date(currentDate.getTime() + hoursToAdd * 60 * 60 * 1000); // Add hours in milliseconds
         static all = {};

@@ -280,9 +280,10 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function coinBoard(interaction){
-        await interaction.reply({content: util.Guild.getGuild(interaction.guild.id).leaderboard(),fetchReply: true, allowedMentions: {parse: []}});
+        let page = interaction.options.getNumber("page") ?? 1;
+        await interaction.reply({content: util.Guild.getGuild(interaction.guild.id).leaderboard(page),fetchReply: true, allowedMentions: {parse: []}});
     }
-    new util.Command({name: "coinLeaderBoard".toLowerCase(),description: "leaderboard for coins", dm_permission : false},coinBoard)
+    new util.Command({name: "coinLeaderBoard".toLowerCase(),description: "leaderboard for coins",options: [{name: "page", description: "what page to show", type: 10, required: false}], dm_permission : false},coinBoard)
     //auraLeaderboard
     /**
      * sends the global aura leaderboard
