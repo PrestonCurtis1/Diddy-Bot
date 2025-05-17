@@ -220,7 +220,7 @@ try{
 
             pageUsers.forEach((user, index) => {
                 const rank = start + index + 1;
-                message += `**${rank}.** @${user.getName()} — ${user.getAura()} aura\n`;
+                message += `**${rank}.** @${user.name} — ${user.aura} aura\n`;
             });
 
             if (userAuraList.length === 0) {
