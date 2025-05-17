@@ -244,7 +244,7 @@ try{
                             if (!(await userHasRole(client,this.id,user.id,shopItem.itemInfo))){
                                 await addRole(user.id,this.id,shopItem.itemInfo);
                                 if (await userHasRole(client,this.id,user.id,shopItem.itemInfo)){
-                                    message = `bought role with id ${shopItem.itemInfo} for ${shopItem.price}`;
+                                    message = `bought role with id ${shopItem.itemInfo} for ${shopItem.price} coins`;
                                     user.giveCoins(-1*shopItem.price,guild);
                                     break
                                 } else {
@@ -259,7 +259,7 @@ try{
                             if (!(await userHasChannel(user.id,this.id,shopItem.itemInfo))){
                                 await addChannel(user.id,this.id,shopItem.itemInfo);
                                 if(await userHasChannel(user.id,this.id,shopItem.itemInfo)){
-                                    message = `bought channel with id ${shopItem.itemInfo} for ${shopItem.price}`;
+                                    message = `bought channel with id ${shopItem.itemInfo} for ${shopItem.price} coins`;
                                     user.giveCoins(-1*shopItem.price,guild);
                                     break
                                 } else {
