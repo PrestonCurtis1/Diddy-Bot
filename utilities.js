@@ -608,4 +608,5 @@ try{
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file utilities.js",error);
+    msg(`an error occured in file utilities.js:\t${error}`);
 }

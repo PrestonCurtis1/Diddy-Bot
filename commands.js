@@ -580,4 +580,5 @@ try{
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
+    util.msg(`an error occured in file commands.js:\t${error}`);
 }

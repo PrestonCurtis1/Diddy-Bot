@@ -91,4 +91,5 @@ try {
     api.runApi();
 } catch (error) {
     console.error("A fatal error occured in file index.js",error);
+    util.msg(`an error occured in file index.js:\t${error}`);
 }
