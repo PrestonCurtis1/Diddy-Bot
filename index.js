@@ -5,7 +5,7 @@ try {
     const JSONConfig = require('./config.json');
     const util = require("./utilities.js");
     require("./commands.js");
-    require("./api.js");
+    const api = require("./api.js");
     const client = new Client({
         intents: [
             GatewayIntentBits.Guilds,
@@ -88,7 +88,7 @@ try {
     });
     client.login(JSONConfig.token);
 
-    runApi();
+    api.runApi();
 } catch (error) {
     console.error("A fatal error occured in file index.js",error);
 }
