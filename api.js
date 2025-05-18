@@ -14,10 +14,17 @@ async function runApi() {
         let aura = Math.floor(util.User.getUser(req.params.userid)?.aura ?? 0);
         res.send({aura});
     });
+    // Get Coins route
     api.get("/getcoins/:guildid/:userid", async (req, res) => {
-        await util.msg(`[API] /getcoins/${req.params.userid}`, "1310772622044168275", "1373122799362641971")
+        await util.msg(`[API] /getcoins/${req.params.guildid}/${req.params.userid}`, "1310772622044168275", "1373122799362641971")
         let coins = util.User.getUser(req.params.userid)?.getCoins(util.Guild.getGuild(req.params.guildid)) ?? 0;
         res.send({coins});
+    });
+    // rizzme messages route
+    api.get("/pickuplines", async (req, res) => {
+        await util.msg(`[API] /pickuplines}`, "1310772622044168275", "1373122799362641971")
+        let pickuplines = util.getPickupLines();
+        res.send(pickuplines);
     });
     // Listen for requests
     api.listen(port, (e) => {

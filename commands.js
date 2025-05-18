@@ -27,14 +27,7 @@ try{
      * @returns {Promise<Void>}
      */
     async function rizzme(interaction){
-        let PICKUP_LINES = [];
-        try {
-            const data = fs.readFileSync('./pickup_lines.txt', 'utf8');//the file containing all the pickuplines
-            PICKUP_LINES = data.split('\n').filter(line => line.trim() !== ''); // Remove empty lines
-        } catch (error) {
-            console.error("Error reading pickup_lines.txt:",error);
-            process.exit(1); // Exit if the file cannot be read
-        }
+        let PICKUP_LINES = util.getPickupLines();
         // Send a random pickup line
         const response = PICKUP_LINES[Math.floor(Math.random() * PICKUP_LINES.length)];
         await interaction.reply({content: response, fetchReply: true , allowedMentions: {parse: []}});
