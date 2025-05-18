@@ -401,8 +401,13 @@ try{
     }
 
     function saveData(){
-        let data = {"guilds":Guild.all,"users":User.all};
-        fs.writeFileSync("./data.json",JSON.stringify(data,null,2),'utf-8');
+        const data = {"guilds":Guild.all,"users":User.all};
+        try {
+            fs.writeFileSync("./tempData.json",JSON.stringify(data,null,2),'utf-8');
+            fs.renameSync("./tempData.json","data.json");
+        } catch(error){
+            msg(`Error saving file data.json: ${error}`)
+        }
         // let guilds = [];
         // for (const id in Guild.all){
         //     let guild = Guild.all[id];
@@ -439,7 +444,13 @@ try{
         // fs.writeFileSync("./data.json", JSON.stringify(data, null, 2), 'utf-8');
     }
     async function loadData(){
-        const raw = fs.readFileSync("./data.json","utf-8");
+        let raw;
+        try {
+            raw = fs.readFileSync("./data.json","utf-8");
+        } catch(error){
+            msg(`Error loading file data.json`);
+            return;
+        }
         const {guilds, users} = JSON.parse(raw);
         Guild.all = {}
         User.all = {}
@@ -474,6 +485,10 @@ try{
         //     await msg("Loaded Data");
         // }; // Return an empty object if the file doesn't exist
     }
+    process.on("SIGINT", () => {
+        saveData();
+        process.exit();
+    })
     const client = new Client({
         intents: [
             GatewayIntentBits.Guilds, 
