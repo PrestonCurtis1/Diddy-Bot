@@ -406,6 +406,7 @@ try{
     }
 
     function saveData(){
+        if (Guild.all == {} || User.all == {})return;
         const data = {"guilds":Guild.all,"users":User.all};
         try {
             fs.writeFileSync("./tempData.json",JSON.stringify(data,null,2),'utf-8');
@@ -456,7 +457,6 @@ try{
             await msg(`Error loading file data.json${error}`);
             process.exit();
         }
-        console.log(raw)
         const {guilds, users} = JSON.parse(raw);
         let guildArray = Object.values(guilds);
         let userArray = Object.values(users);
