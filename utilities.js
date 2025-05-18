@@ -107,7 +107,7 @@ try{
 
             pageUsers.forEach((user, index) => {
                 const rank = start + index + 1;
-                message += `**${rank}.** @${user.getName()} — ${user.coins} coins\n`;
+                message += `**${rank}.** @${user.name} — ${user.coins} coins\n`;
             });
 
             if (userCoinList.length === 0) {
