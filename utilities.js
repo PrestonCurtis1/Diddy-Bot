@@ -651,20 +651,29 @@ try{
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
         await loadData();
-        client.guilds.cache.forEach(async guild => {
+        
+        for (const guild of client.guilds.cache.values()) {
             let guildExists = Guild.exists(guild.id);
             if(!guildExists)Guild.register(guild.id,guild.name);
             await migrateShop(guild.id);
-            const allMembers = await guild.members.fetch();
-            allMembers.forEach(async member => {
-                if (member.user.bot)return;
+            console.log(guild.name)
+            let allMembers;
+            try{
+                allMembers = await guild.members.fetch();
+            } catch(error){
+                console.log(`unable to retrieve member list for guild ${guild.name}:${guild.id}`);
+                continue;
+            }
+            for (const member of allMembers.values()) {
+                if (member.user.bot)continue;
                 let userExists = User.exists(member.user.id);
+                if(userExists)continue;
                 if(!userExists)User.register(member.user.id,member.user.tag,{[member.guild.id]:0});
                 await migrateUser(member.user.id);
                 //if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))util.Guild.getGuild(member.guild.id).addUser({"user":util.User.getUser(member.user.id),"coins":0});
-                let guildHasUser = Guild.getGuild(member.guild.id).hasUser(member.user.id);
+                let guildHasUser = await Guild.getGuild(member.guild.id).hasUser(member.user.id);
                 let userData = {"user":User.getUser(member.user.id),"coins": 0};
-                if(!guildHasUser)Guild.getGuild(member.guild.id).addUser(userData);
+                if(!guildHasUser)await Guild.getGuild(member.guild.id).addUser(userData);
             });
         });
         msg("loaded all guilds and users");
