@@ -652,14 +652,12 @@ try{
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
         await loadData();
         client.guilds.cache.forEach(async guild => {
-            console.log(guild.name)
             let guildExists = Guild.exists(guild.id);
             if(!guildExists)Guild.register(guild.id,guild.name);
             await migrateShop(guild.id);
             const allMembers = await guild.members.fetch();
             allMembers.forEach(async member => {
                 if (member.user.bot)return;
-                console.log(member.user.tag);
                 let userExists = User.exists(member.user.id);
                 if(!userExists)User.register(member.user.id,member.user.tag,{[member.guild.id]:0});
                 await migrateUser(member.user.id);
@@ -667,8 +665,10 @@ try{
                 let guildHasUser = Guild.getGuild(member.guild.id).hasUser(member.user.id);
                 let userData = {"user":User.getUser(member.user.id),"coins": 0};
                 if(!guildHasUser)Guild.getGuild(member.guild.id).addUser(userData);
-            })
+            });
         });
+        msg("loaded all guilds and users");
+
     });
     module.exports = {
         msg,
