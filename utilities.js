@@ -455,14 +455,14 @@ try{
         const {guilds, users} = await JSON.parse(raw);
         let guildAmount = Object.values(guilds).length;
         let userAmount = Object.values(users).length;
-        console.log("guilds",guildAmount);
-        console.log("users",userAmount);
+        await msg(`guildAmount:\t${guildAmount}`);
+        await msg(`userAmount:\t${userAmount}`);
         Guild.all = {}
         User.all = {}
         let guildCount = 0;
         for (const guild of Object.values(guilds)) {
             guildCount++;
-            if(guildCount % 100 == 0)console.log("guilds:\t",Math.floor((guildCount/guildAmount)*100),"%")
+            if(guildCount % 100 == 0)await msg(`Loading Guilds:\t${Math.floor((guildCount/guildAmount)*100)}%`)
             new Guild(
                 guild.id,
                 guild.name,
@@ -474,7 +474,7 @@ try{
         let userCount = 0;
         for (const user of Object.values(users)) {
             userCount++;
-            if(userCount % 100 == 0)console.log("users:\t",Math.floor((userCount/userAmount)*100),"%")
+            if(userCount % 100 == 0)await msg(`Loading Users:\t${Math.floor((userCount/userAmount)*100)}%`);
             new User(
                 user.id,
                 user.name,
