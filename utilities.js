@@ -458,8 +458,8 @@ try{
         }
         console.log(raw)
         const {guilds, users} = JSON.parse(raw);
-        let guildArray = Object.values(guilds).length;
-        let userArray = Object.values(users).length;
+        let guildArray = Object.values(guilds);
+        let userArray = Object.values(users);
         let guildAmount = guildArray.length;
         let userAmount = userArray.length;
         await msg(`guildAmount:\t${guildAmount}`);
