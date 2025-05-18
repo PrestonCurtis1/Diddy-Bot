@@ -469,7 +469,7 @@ try{
         let guildCount = 0;
         for (const guild of guildArray) {
             guildCount++;
-            console.log("loading guild:",guild.name);
+            console.log(`loading guild(${guildCount}):`,guild.name);
             if(guildCount % 100 == 0)setImmediate(() => msg(`Loading Guilds:\t${Math.floor((guildCount / guildAmount) * 100)}%`));
             new Guild(
                 guild.id,
@@ -482,7 +482,7 @@ try{
         let userCount = 0;
         for (const user of userArray) {
             userCount++;
-            console.log("loading user:",user.name);
+            console.log(`loading user(${userCount}):`,user.name);
             if(userCount % 100 == 0)setImmediate(() => msg(`Loading Users:\t${Math.floor((userCount / userAmount) * 100)}%`));
             new User(
                 user.id,
