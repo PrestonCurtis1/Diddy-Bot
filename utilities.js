@@ -4,7 +4,11 @@ try{
     const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json');
     const path = require("path");
-    const fs = require("fs").promises;
+    const fsp = require("fs").promises;
+    const fs = require("fs");
+
+    let PICKUP_LINES;
+
     class Guild {
         static all = {};
         constructor(id,name,booster,settings,shop){
@@ -447,7 +451,7 @@ try{
     async function loadData(){
         let raw;
         try {
-            raw = await fs.readFile("./data.json","utf-8");
+            raw = await fsp.readFile("./data.json","utf-8");
         } catch(error){
             await msg(`Error loading file data.json${error}`);
             process.exit();
@@ -484,6 +488,12 @@ try{
                 user.boosters,
                 user.guilds
             );
+        }
+        try {
+            const data = fs.readFileSync('./pickup_lines.txt', 'utf8');//the file containing all the pickuplines
+            PICKUP_LINES = data.split('\n').filter(line => line.trim() !== ''); // Remove empty lines
+        } catch (error) {
+            console.error("Error reading pickup_lines.txt:",error);
         }
         await msg(`Loaded ${Object.keys(Guild.all).length} Guilds and ${Object.keys(User.all).length} Users`);
         //msg("Loaded" + Object.keys(Guild.all).length + "guilds and" + Object.keys(User.all).length + "users.");
@@ -613,6 +623,10 @@ try{
         guild.members.cache.has(userId);
         guild.members
     }
+    
+    function getPickupLines() {
+        return PICKUP_LINES;
+    }
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
         await loadData();
@@ -626,6 +640,7 @@ try{
         userHasRole,
         userHasChannel,
         addChannel,
+        getPickupLines,
         Guild,
         User,
         Shop,
