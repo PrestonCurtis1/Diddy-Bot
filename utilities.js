@@ -447,22 +447,24 @@ try{
     async function loadData(){
         let raw;
         try {
-            raw = fs.readFileSync("./data.json","utf-8");
+            raw = fs.readFile("./data.json","utf-8");
         } catch(error){
             await msg(`Error loading file data.json`);
             return;
         }
-        const {guilds, users} = await JSON.parse(raw);
-        let guildAmount = Object.values(guilds).length;
-        let userAmount = Object.values(users).length;
+        const {guilds, users} = JSON.parse(raw);
+        let guildArray = Object.values(guilds).length;
+        let userArray = Object.values(users).length;
+        let guildAmount = guildArray.length;
+        let userAmount = userArray.length;
         await msg(`guildAmount:\t${guildAmount}`);
         await msg(`userAmount:\t${userAmount}`);
         Guild.all = {}
         User.all = {}
         let guildCount = 0;
-        for (const guild of Object.values(guilds)) {
+        for (const guild of guildArray) {
             guildCount++;
-            if(guildCount % 100 == 0)await msg(`Loading Guilds:\t${Math.floor((guildCount/guildAmount)*100)}%`)
+            if(guildCount % 100 == 0)setImmediate(() => msg(`Loading Guilds:\t${Math.floor((guildCount / guildAmount) * 100)}%`));
             new Guild(
                 guild.id,
                 guild.name,
@@ -472,9 +474,9 @@ try{
             );
         }
         let userCount = 0;
-        for (const user of Object.values(users)) {
+        for (const user of userArray) {
             userCount++;
-            if(userCount % 100 == 0)await msg(`Loading Users:\t${Math.floor((userCount/userAmount)*100)}%`);
+            if(userCount % 100 == 0)setImmediate(() => msg(`Loading Users:\t${Math.floor((userCount / userAmount) * 100)}%`));
             new User(
                 user.id,
                 user.name,
