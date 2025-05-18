@@ -31,14 +31,7 @@ client.once('ready', async () => {
             count++;
             if (count % 100 === 0) console.log(`Processed ${count} users in ${guild.name} ${Math.floor((count/guild.memberCount)*100)}%`);
             let userExists = util.User.exists(member.user.id);
-            if(userExists){
-                let guildHasUser = await util.Guild.getGuild(member.guild.id).hasUser(member.user.id);
-                if(guildHasUser)continue;
-                if(!guildHasUser){
-                    let userData = {"user":util.User.getUser(member.user.id),"coins": 0};
-                    await util.Guild.getGuild(member.guild.id).addUser(userData);
-                }
-            };
+            if(userExists)continue;
             if(!userExists)util.User.register(member.user.id,member.user.tag,{[member.guild.id]:0});
             //if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))util.Guild.getGuild(member.guild.id).addUser({"user":util.User.getUser(member.user.id),"coins":0});
             let guildHasUser = await util.Guild.getGuild(member.guild.id).hasUser(member.user.id);
