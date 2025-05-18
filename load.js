@@ -29,7 +29,7 @@ client.once('ready', async () => {
         for (const member of allMembers.values()) {
             if (member.user.bot)continue;
             count++;
-            if (count % 100 === 0) console.log(`Processed ${count} users in ${guild.name} ${Math.floor((count/guild.memberCount)*100)}`);
+            if (count % 100 === 0) console.log(`Processed ${count} users in ${guild.name} ${Math.floor((count/guild.memberCount)*100)}%`);
             let userExists = util.User.exists(member.user.id);
             if(userExists){
                 let guildHasUser = await util.Guild.getGuild(member.guild.id).hasUser(member.user.id);
