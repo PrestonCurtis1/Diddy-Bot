@@ -22,9 +22,13 @@ async function runApi() {
     });
     // rizzme messages route
     api.get("/pickuplines", async (req, res) => {
-        await util.msg(`[API] /pickuplines}`, "1310772622044168275", "1373122799362641971")
+        await util.msg(`[API] /pickuplines`, "1310772622044168275", "1373122799362641971");
         let pickuplines = util.getPickupLines();
         res.send(pickuplines);
+    });
+    api.get("/help",async (req, res) => {
+        await util.msg(`[API] /help`, "1310772622044168275", "1373122799362641971");
+        res.send("/getaura\n/getcoins\n/pickuplines\n/help");
     });
     // Listen for requests
     api.listen(port, (e) => {
