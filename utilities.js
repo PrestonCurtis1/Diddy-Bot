@@ -3,7 +3,7 @@ const { stringify } = require('querystring');
 try{
     const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json');
-    const path = require ("path");
+    const path = require("path");
     const fs = require("fs");
     class Guild {
         static all = {};
@@ -651,37 +651,6 @@ try{
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
         await loadData();
-        let servers = 0;
-        for (const guild of client.guilds.cache.values()) {
-            servers++;
-            let guildExists = Guild.exists(guild.id);
-            if(!guildExists)Guild.register(guild.id,guild.name);
-            await migrateShop(guild.id);
-            console.log(`${servers}.${guild.name} has ${guild.memberCount} members`);
-            let allMembers;
-            try{
-                allMembers = await guild.members.fetch({time: 5000});
-            } catch(error){
-                console.log(`unable to retrieve member list for guild ${guild.name}:${guild.id}`);
-                continue;
-            }
-            let count = 0;
-            for (const member of allMembers.values()) {
-                if (member.user.bot)continue;
-                count++;
-                if (count % 100 === 0) console.log(`Processed ${count} users in ${guild.name} ${Math.floor((count/guild.memberCount)*100)}`);
-                let userExists = User.exists(member.user.id);
-                if(userExists)continue;
-                if(!userExists)User.register(member.user.id,member.user.tag,{[member.guild.id]:0});
-                await migrateUser(member.user.id);
-                //if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))util.Guild.getGuild(member.guild.id).addUser({"user":util.User.getUser(member.user.id),"coins":0});
-                let guildHasUser = await Guild.getGuild(member.guild.id).hasUser(member.user.id);
-                let userData = {"user":User.getUser(member.user.id),"coins": 0};
-                if(!guildHasUser)await Guild.getGuild(member.guild.id).addUser(userData);
-            };
-        };
-        msg("loaded all guilds and users");
-
     });
     module.exports = {
         msg,
@@ -689,6 +658,7 @@ try{
         loadData,
         addRole,
         migrateUser,
+        migrateShop,
         sendDM,
         userHasRole,
         userHasChannel,
