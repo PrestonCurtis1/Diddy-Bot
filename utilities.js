@@ -449,13 +449,14 @@ try{
         try {
             raw = fs.readFileSync("./data.json","utf-8");
         } catch(error){
-            msg(`Error loading file data.json`);
+            await msg(`Error loading file data.json`);
             return;
         }
-        const {guilds, users} = JSON.parse(raw);
+        const {guilds, users} = await JSON.parse(raw);
         Guild.all = {}
         User.all = {}
         for (const guild of Object.values(guilds)) {
+            console.log(guild.name);
             new Guild(
                 guild.id,
                 guild.name,
@@ -465,6 +466,7 @@ try{
             );
         }
         for (const user of Object.values(users)) {
+            console.log(user.name);
             new User(
                 user.id,
                 user.name,
@@ -473,7 +475,7 @@ try{
                 user.guilds
             );
         }
-        msg(`Loaded ${Object.keys(Guild.all).length} Guilds and ${Object.keys(User.all).length} Users`);
+        await msg(`Loaded ${Object.keys(Guild.all).length} Guilds and ${Object.keys(User.all).length} Users`);
         //msg("Loaded" + Object.keys(Guild.all).length + "guilds and" + Object.keys(User.all).length + "users.");
         // if (fs.existsSync("./data.json")) {
         //     const data = JSON.parse(fs.readFileSync("./data.json", 'utf-8'));
