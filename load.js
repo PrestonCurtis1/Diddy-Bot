@@ -1,5 +1,5 @@
 const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
-const util = require("utilities.js");
+const util = require("./utilities.js");
 const JSONConfig = require('./config.json');
 const client = new Client({
     intents: [
