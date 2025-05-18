@@ -590,53 +590,6 @@ try{
             return false;
         }
     }
-    async function migrateShop(shopId){//shop id just use the guild id
-        if(fs.existsSync("./shop.json")){
-            let oldShops;
-            try{
-                oldShops = JSON.parse(fs.readFileSync("./shop.json","utf-8"));
-            } catch(error){
-                await msg("error reading file \"./shop.json\"",error);
-            }
-            let oldShop
-            if(shopId in oldShops){
-                oldShop = oldShops[shopId]
-            } else {
-                oldShop = [];
-            }
-            let GuildShop = Guild.getGuild(shopId).shop
-            for (let shop of oldShop){
-                GuildShop.addShopItem("role",shop["roleId"],shop["price"]);
-            }
-            oldShops[shopId] = [];
-            saveData();
-            try{
-                fs.writeFileSync("./shop.json", JSON.stringify(oldShops,null,2), 'utf-8');
-            } catch(error){
-                await msg("error saving file",error);
-            }
-        }
-    }
-    async function migrateUser(userId){
-        if (fs.existsSync("./oldData.json")){
-            let oldData;
-            try {
-                oldData = JSON.parse(fs.readFileSync("./oldData.json", 'utf-8'));
-            } catch(error){
-                await msg("error reading file \"./oldData.json\"",error);
-            }
-            let oldAura;
-            oldAura = oldData[userId]?.[0] ?? 0;
-            oldData[userId] = [0,0];
-            User.getUser(userId).giveAura(oldAura,false);
-            saveData();
-            try{
-                fs.writeFileSync("./oldData.json", JSON.stringify(oldData, null, 2), 'utf-8');
-            } catch(error){
-                await msg("error saving file",error);
-            }
-        }
-    }
     
     /**
      * add a shop to the guilds shop
@@ -657,8 +610,6 @@ try{
         saveData,
         loadData,
         addRole,
-        migrateUser,
-        migrateShop,
         sendDM,
         userHasRole,
         userHasChannel,

@@ -37,7 +37,6 @@ try {
                 if(!util.Guild.getGuild(interaction.guild.id).hasUser(interaction.user.id))util.Guild.getGuild(interaction.guild.id).addUser({"user":util.User.getUser(interaction.user.id),"coins":0});
                 util.User.getUser(interaction.user.id).setName(interaction.user.tag);
                 util.Guild.getGuild(interaction.guild.id).setName(interaction.guild.name);
-                util.migrateUser(interaction.user.id);
             }
             const command = util.Command.getCommand(interaction.commandName);
             await command.runCommand(interaction);
@@ -59,7 +58,6 @@ try {
         if(!util.Guild.getGuild(message.guild.id).hasUser(message.author.id))util.Guild.getGuild(message.guild.id).addUser({"user":util.User.getUser(message.author.id),"coins":0});
         util.User.getUser(message.author.id).setName(message.author.tag);
         util.Guild.getGuild(message.guild.id).setName(message.guild.name);
-        util.migrateUser(message.author.id);
         util.User.getUser(message.author.id).giveAura(messagePoints,true);
         util.User.getUser(message.author.id).giveCoins(messagePoints*util.Guild.getGuild(message.guild.id).booster,util.Guild.getGuild(message.guild.id));
         console.log("coins",util.User.getUser(message.author.id).getCoins(util.Guild.getGuild(message.guild.id)));
