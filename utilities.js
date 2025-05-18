@@ -453,11 +453,16 @@ try{
             return;
         }
         const {guilds, users} = await JSON.parse(raw);
-        console.log("guilds",Object.values(guilds).length);
-        console.log("users",Object.values(users).length);
+        let guildAmount = Object.values(guilds).length;
+        let userAmount = Object.values(users).length;
+        console.log("guilds",guildAmount);
+        console.log("users",userAmount);
         Guild.all = {}
         User.all = {}
+        let guildCount = 0;
         for (const guild of Object.values(guilds)) {
+            guildCount++;
+            if(guildCount % 100 == 0)console.log("guilds:\t",Math.floor((guildCount/guildAmount)*100),"%")
             new Guild(
                 guild.id,
                 guild.name,
@@ -466,7 +471,10 @@ try{
                 guild.shop
             );
         }
+        let userCount = 0;
         for (const user of Object.values(users)) {
+            userCount++;
+            if(userCount % 100 == 0)console.log("users:\t",Math.floor((userCount/userAmount)*100),"%")
             new User(
                 user.id,
                 user.name,
