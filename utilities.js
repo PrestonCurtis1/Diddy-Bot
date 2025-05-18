@@ -453,10 +453,11 @@ try{
             return;
         }
         const {guilds, users} = await JSON.parse(raw);
+        console.log("guilds",Object.values(guilds).length);
+        console.log("users",Object.values(users).length);
         Guild.all = {}
         User.all = {}
         for (const guild of Object.values(guilds)) {
-            console.log(guild.name);
             new Guild(
                 guild.id,
                 guild.name,
@@ -466,7 +467,6 @@ try{
             );
         }
         for (const user of Object.values(users)) {
-            console.log(user.name);
             new User(
                 user.id,
                 user.name,
