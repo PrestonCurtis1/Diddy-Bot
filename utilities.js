@@ -456,6 +456,7 @@ try{
             await msg(`Error loading file data.json${error}`);
             process.exit();
         }
+        console.log(raw)
         const {guilds, users} = JSON.parse(raw);
         let guildArray = Object.values(guilds).length;
         let userArray = Object.values(users).length;
