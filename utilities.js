@@ -469,7 +469,7 @@ try{
         let guildCount = 0;
         for (const guild of guildArray) {
             guildCount++;
-            if(guildCount % 100 == 0)msg(`Loading Guilds:\t${Math.floor((guildCount / guildAmount) * 100)}%`);
+            if(guildCount % 10 == 0)msg(`Loading Guilds:\t${Math.floor((guildCount / guildAmount) * 100)}%`);
             new Guild(
                 guild.id,
                 guild.name,
