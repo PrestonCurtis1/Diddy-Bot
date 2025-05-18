@@ -34,9 +34,10 @@ try{
             return (this.users[id]);
         }
         static exists(id){
-            return (Guild.all[id]);
+            return id in this.all;
         }
         static register(guildId,guildName){
+            msg(`registering guild ${guildName}`);
             new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","randomInviteEnabled":false},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}});
             saveData();
             return Guild.exists(guildId);
@@ -48,7 +49,7 @@ try{
             //{"user":this,"coins":guilds[serverId]}
             if (!this.users[userData.user.id]){//user isn't already added to guild
                 this.users[userData.user.id] = {"user":userData.user,"coins":userData.coins};
-                if(userData.user.inGuild(this.id)){
+                if(!userData.user.inGuild(this.id)){
                     userData.user.guilds[this.id] = userData.coins;
                 }     
             }
@@ -133,12 +134,12 @@ try{
         }
         static register(userId,userTag,guilds={}){
             msg(`registering user ${userTag}`);
-            new User(userId,userTag,0,{"temp":{"multi":0,"endTime": new Date()},"perm":0},guilds);
+            new User(userId,userTag,100,{"temp":{"multi":0,"endTime": new Date()},"perm":0},guilds);
             saveData();
             return User.exists(userId);
         }
         inGuild(id){
-            return (this.guilds[id]);
+            return id in this.guilds;
         }
         static getUser(id){
             return User.all[id];
@@ -650,9 +651,24 @@ try{
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
         await loadData();
-        for (let guild in Guild.all){
-            await migrateShop(guild);
-        }
+        client.guilds.cache.forEach(async guild => {
+            console.log(guild.name)
+            let guildExists = Guild.exists(guild.id);
+            if(!guildExists)Guild.register(guild.id,guild.name);
+            await migrateShop(guild.id);
+            const allMembers = await guild.members.fetch();
+            allMembers.forEach(async member => {
+                if (member.user.bot)return;
+                console.log(member.user.tag);
+                let userExists = User.exists(member.user.id);
+                if(!userExists)User.register(member.user.id,member.user.tag,{[member.guild.id]:0});
+                await migrateUser(member.user.id);
+                //if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))util.Guild.getGuild(member.guild.id).addUser({"user":util.User.getUser(member.user.id),"coins":0});
+                let guildHasUser = Guild.getGuild(member.guild.id).hasUser(member.user.id);
+                let userData = {"user":User.getUser(member.user.id),"coins": 0};
+                if(!guildHasUser)Guild.getGuild(member.guild.id).addUser(userData);
+            })
+        });
     });
     module.exports = {
         msg,
