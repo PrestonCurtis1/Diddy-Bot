@@ -28,7 +28,7 @@ async function runApi() {
     });
     // random rizzme route
     api.get("/rizzme", async (req, res) => {
-        await util.msg(`[API] /pickuplines`, "1310772622044168275", "1373122799362641971");
+        await util.msg(`[API] /rizzme`, "1310772622044168275", "1373122799362641971");
         let pickuplines = util.getPickupLines();
         const pickupline = pickuplines[Math.floor(Math.random() * pickuplines.length)];
         res.send({pickupline});
