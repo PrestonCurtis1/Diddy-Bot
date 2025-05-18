@@ -46,7 +46,7 @@ client.once('ready', async () => {
             if(!guildHasUser)await util.Guild.getGuild(member.guild.id).addUser(userData);
         };
     };
-    msg("loaded all guilds and users");
+    await util.msg("loaded all guilds and users");
 
 });
 client.login(JSONConfig.token);
