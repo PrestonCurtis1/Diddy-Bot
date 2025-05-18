@@ -49,4 +49,4 @@ client.once('ready', async () => {
     await util.msg("loaded all guilds and users");
 
 });
-client.login(JSONConfig.token);
+client.login(JSONConfig.token)

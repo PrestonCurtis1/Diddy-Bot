@@ -449,7 +449,7 @@ try{
         try {
             raw = fs.readFile("./data.json","utf-8");
         } catch(error){
-            await msg(`Error loading file data.json`);
+            await msg(`Error loading file data.json${error}`);
             return;
         }
         const {guilds, users} = JSON.parse(raw);
