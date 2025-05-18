@@ -651,12 +651,13 @@ try{
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
         await loadData();
-        
+        let servers = 0;
         for (const guild of client.guilds.cache.values()) {
+            servers++;
             let guildExists = Guild.exists(guild.id);
             if(!guildExists)Guild.register(guild.id,guild.name);
             await migrateShop(guild.id);
-            console.log(guild.name)
+            console.log(`${servers}.${guild.name} has ${guild.memberCount} members`);
             let allMembers;
             try{
                 allMembers = await guild.members.fetch();
@@ -664,8 +665,11 @@ try{
                 console.log(`unable to retrieve member list for guild ${guild.name}:${guild.id}`);
                 continue;
             }
+            let count = 0;
             for (const member of allMembers.values()) {
                 if (member.user.bot)continue;
+                count++;
+                if (count % 100 === 0) console.log(`Processed ${count} users in ${guild.name} ${Math.floor((count/guild.memberCount)*100)}`);
                 let userExists = User.exists(member.user.id);
                 if(userExists)continue;
                 if(!userExists)User.register(member.user.id,member.user.tag,{[member.guild.id]:0});
