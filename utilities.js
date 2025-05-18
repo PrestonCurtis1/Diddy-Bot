@@ -4,7 +4,7 @@ try{
     const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json');
     const path = require("path");
-    const fs = require("fs");
+    const fs = require("fs").promises;
     class Guild {
         static all = {};
         constructor(id,name,booster,settings,shop){
@@ -447,10 +447,10 @@ try{
     async function loadData(){
         let raw;
         try {
-            raw = fs.readFile("./data.json","utf-8");
+            raw = await fs.readFile("./data.json","utf-8");
         } catch(error){
             await msg(`Error loading file data.json${error}`);
-            return;
+            process.exit();
         }
         const {guilds, users} = JSON.parse(raw);
         let guildArray = Object.values(guilds).length;
