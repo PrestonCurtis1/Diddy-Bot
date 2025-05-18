@@ -660,7 +660,7 @@ try{
             console.log(`${servers}.${guild.name} has ${guild.memberCount} members`);
             let allMembers;
             try{
-                allMembers = await guild.members.fetch();
+                allMembers = await guild.members.fetch({time: 5000});
             } catch(error){
                 console.log(`unable to retrieve member list for guild ${guild.name}:${guild.id}`);
                 continue;
