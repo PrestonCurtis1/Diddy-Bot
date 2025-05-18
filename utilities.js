@@ -674,8 +674,8 @@ try{
                 let guildHasUser = await Guild.getGuild(member.guild.id).hasUser(member.user.id);
                 let userData = {"user":User.getUser(member.user.id),"coins": 0};
                 if(!guildHasUser)await Guild.getGuild(member.guild.id).addUser(userData);
-            });
-        });
+            };
+        };
         msg("loaded all guilds and users");
 
     });
