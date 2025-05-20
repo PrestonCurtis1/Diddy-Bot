@@ -7,3 +7,6 @@ shop.json
 oldData.json
 userMessageLists.json
 backup/
+bot.log
+cron-check.log
+
