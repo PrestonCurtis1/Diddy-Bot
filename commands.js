@@ -473,7 +473,7 @@ try{
     * @returns {Promise<void>}
     */
     async function rizzlers(interaction){
-        interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\n@royalknight0\n@nexuscageoil\n@buldakislovebuldakislife\n@def_not_vexx\n@chi56567899\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}});
+        interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\n@royalknight0\n@nexuscageoil\n@buldakislovebuldakislife\n@def_not_vexx\n@chi56567899\n@yellow262\n@inspectorcomrad\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}});
     }
     new util.Command({name: "rizzlers",description: "people who contributed pickup-lines",integration_types: [0, 1], contexts: [0, 1, 2]},rizzlers);
     client.once('ready', async () => {
