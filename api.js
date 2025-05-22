@@ -45,7 +45,7 @@ async function runApi() {
     // Listen for requests
     api.listen(port, (e) => {
         if (e) {
-            console.error("An error occured while trying to listen for API requests");
+            console.error("An error occured while trying to listen for API requests",e);
         } else {
             console.log("Diddy Bot API started!");
         }
