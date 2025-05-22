@@ -454,7 +454,7 @@ try{
         let raw;
         loadingData = true;
         try {
-            raw = await fsp.readFile("./data.json","utf-8");
+            raw = await fs.readFileSync("./data.json","utf-8");
         } catch(error){
             msg(`Error loading file data.json${error}`);
             process.exit();
