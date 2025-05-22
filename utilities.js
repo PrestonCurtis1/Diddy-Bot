@@ -8,7 +8,7 @@ try{
     const fs = require("fs");
 
     let PICKUP_LINES;
-
+    let loadingData;
     class Guild {
         static all = {};
         constructor(id,name,booster,settings,shop){
@@ -406,6 +406,7 @@ try{
     }
 
     function saveData(){
+        if (loadingData)return;
         if (Guild.all == {} || User.all == {})return;
         const data = {"guilds":Guild.all,"users":User.all};
         try {
@@ -451,25 +452,25 @@ try{
     }
     async function loadData(){
         let raw;
+        loadingData = true;
         try {
             raw = await fsp.readFile("./data.json","utf-8");
         } catch(error){
-            await msg(`Error loading file data.json${error}`);
+            msg(`Error loading file data.json${error}`);
             process.exit();
         }
+        msg(`Loaded file data.json`);
         const {guilds, users} = JSON.parse(raw);
         let guildArray = Object.values(guilds);
         let userArray = Object.values(users);
         let guildAmount = guildArray.length;
         let userAmount = userArray.length;
-        await msg(`guildAmount:\t${guildAmount}`);
-        await msg(`userAmount:\t${userAmount}`);
-        Guild.all = {}
-        User.all = {}
+        console.log(`guildAmount:\t${guildAmount}`);
+        console.log(`userAmount:\t${userAmount}`);
         let guildCount = 0;
         for (const guild of guildArray) {
             guildCount++;
-            if(guildCount % 10 == 0)msg(`Loading Guilds:\t${Math.floor((guildCount / guildAmount) * 100)}%`);
+            if(guildCount % 10 == 0)console.log(`Loading Guilds:\t${Math.floor((guildCount / guildAmount) * 100)}%`);
             new Guild(
                 guild.id,
                 guild.name,
@@ -481,7 +482,7 @@ try{
         let userCount = 0;
         for (const user of userArray) {
             userCount++;
-            if(userCount % 100 == 0)msg(`Loading Users:\t${Math.floor((userCount / userAmount) * 100)}%`);
+            if(userCount % 100 == 0)console.log(`Loading Users:\t${Math.floor((userCount / userAmount) * 100)}%`);
             new User(
                 user.id,
                 user.name,
@@ -496,7 +497,9 @@ try{
         } catch (error) {
             console.error("Error reading pickup_lines.txt:",error);
         }
+        msg("loaded data pickuplines")
         await msg(`Loaded ${Object.keys(Guild.all).length} Guilds and ${Object.keys(User.all).length} Users`);
+        loadingData = false;
         //msg("Loaded" + Object.keys(Guild.all).length + "guilds and" + Object.keys(User.all).length + "users.");
         // if (fs.existsSync("./data.json")) {
         //     const data = JSON.parse(fs.readFileSync("./data.json", 'utf-8'));
