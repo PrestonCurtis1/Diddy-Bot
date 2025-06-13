@@ -60,8 +60,6 @@ try {
         util.Guild.getGuild(message.guild.id).setName(message.guild.name);
         util.User.getUser(message.author.id).giveAura(messagePoints,true);
         util.User.getUser(message.author.id).giveCoins(messagePoints*util.Guild.getGuild(message.guild.id).booster,util.Guild.getGuild(message.guild.id));
-        console.log("coins",util.User.getUser(message.author.id).getCoins(util.Guild.getGuild(message.guild.id)));
-        console.log("aura",util.User.getUser(message.author.id).aura);
     });
     client.on('guildCreate', async (guild) => {
         const welcomeMessage = fs.readFileSync('./welcome', 'utf8');

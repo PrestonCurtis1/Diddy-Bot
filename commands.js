@@ -428,12 +428,12 @@ try{
             const guildData = util.Guild.getGuild(g.id);
 
             if (!guildData) {
-                console.log(`❌ No guild data for ID: ${g.id}`);
+                //console.log(`❌ No guild data for ID: ${g.id}`);
                 return;
             }
 
             if (!guildData.settings) {
-                console.log(`❌ No settings for guild ID: ${g.id}`);
+                //console.log(`❌ No settings for guild ID: ${g.id}`);
                 return;
             }
 
@@ -452,7 +452,7 @@ try{
         if (invites.length > 0) {
             let randomInvite = Math.floor(Math.random() * invites.length);
             await interaction.reply({
-                content: `https://discord.gg/${invites[randomInvite]}`,
+                content: `https://discord.gg/${invites[randomInvite]}\nset your invite code and add your server`,
                 fetchReply: true
             });
         } else {
