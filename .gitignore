@@ -4,6 +4,7 @@ discloud.config
 .vscode/
 data.json
 shop.json
+database.sqlite
 oldData.json
 userMessageLists.json
 backup/

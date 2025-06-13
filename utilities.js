@@ -3,12 +3,17 @@ const { stringify } = require('querystring');
 try{
     const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
     const JSONConfig = require('./config.json');
+    const sqlite3 = require('sqlite3').verbose();
+    const { promisify } = require('util');
     const path = require("path");
     const fsp = require("fs").promises;
     const fs = require("fs");
 
     let PICKUP_LINES;
     let loadingData;
+    const db = new sqlite3.Database('./database.sqlite');
+    const runAsync = promisify(db.run).bind(db);
+    const allAsync = promisify(db.all).bind(db);
     class Guild {
         static all = {};
         constructor(id,name,booster,settings,shop){
@@ -20,19 +25,22 @@ try{
             this.shop = new Shop(shop.id,shop.items,shop.balance,shop.config);
             Guild.all[id] = this;
         }
+        async update(key,value){
+            await runAsync(`UPDATE Guild SET ${key} = ? WHERE id = ?`, [value, this.id]);
+        }
         getName(){
             return this.name;
         }
         setName(name){
             this.name = name;
-            saveData();
+            this.update("name",this.name);
         }
         getBooster(){
             return this.booster;
         }
         setBooster(newBooster){
             this.booster = newBooster
-            saveData();
+            this.update("booster",this.booster);
         }
         hasUser(id){
             return (this.users[id]);
@@ -40,10 +48,19 @@ try{
         static exists(id){
             return id in this.all;
         }
-        static register(guildId,guildName){
+        static async register(guildId,guildName){
             msg(`registering guild ${guildName}`);
-            new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","randomInviteEnabled":false},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}});
-            saveData();
+            new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","randomInviteEnabled":true},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}});
+            let g = {"id": guildId, "name": guildName, "booster" : 1, "settings": {"about":"","features":[],"invite-code":"","randomInviteEnabled":true},"shop": {"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}}};
+            await runAsync(
+                `INSERT OR REPLACE INTO Guild (id, name, booster, settings, shop_id) VALUES (?, ?, ?, ?, ?)`,
+                [g.id, g.name, g.booster, JSON.stringify(g.settings), g.shop.id]
+            );
+            let shop = g.shop;
+            await runAsync(
+                `INSERT OR REPLACE INTO Shop (id, items, balance, config) VALUES (?, ?, ?, ?)`,
+                [shop.id, JSON.stringify(shop.items), shop.balance, JSON.stringify(shop.config)]
+            );
             return Guild.exists(guildId);
         }
         static getGuild(id){
@@ -55,9 +72,9 @@ try{
                 this.users[userData.user.id] = {"user":userData.user,"coins":userData.coins};
                 if(!userData.user.inGuild(this.id)){
                     userData.user.guilds[this.id] = userData.coins;
+                    userData.user.update("guilds",JSON.stringify(userData.user.guilds));
                 }     
             }
-            saveData();
         }
         showSettings(){
             let message = `Settings for ${this.getName()}\n`;
@@ -78,7 +95,7 @@ try{
                 value = value.split(",")
             }
             this.settings[setting] = value;
-            saveData();
+            this.update("settings",JSON.stringify(this.settings));
         }
         display(){
             console.log("|\tGUILD CLASS\t|\n",this);
@@ -133,13 +150,20 @@ try{
                 Guild.getGuild(serverId).addUser({"user":this,"coins":guilds[serverId]});
             };
         }
+        async update(key,value){
+            await runAsync(`UPDATE User SET ${key} = ? WHERE id = ?`, [value, this.id]);
+        }
         static exists(id){
             return id in this.all;
         }
-        static register(userId,userTag,guilds={}){
+        static async register(userId,userTag,guilds={}){
             msg(`registering user ${userTag}`);
             new User(userId,userTag,100,{"temp":{"multi":0,"endTime": new Date()},"perm":0},guilds);
-            saveData();
+            let user = {"id": userId, "name": userTag, "aura": 100, "boosters": {"temp":{"multi":0,"endTime": new Date()},"perm":0},"guilds":guilds}
+            await runAsync(
+                `INSERT OR REPLACE INTO User (id, name, aura, boosters, guilds) VALUES (?, ?, ?, ?, ?)`,
+                [user.id, user.name, user.aura, JSON.stringify(user.boosters), JSON.stringify(user.guilds),]
+            );
             return User.exists(userId);
         }
         inGuild(id){
@@ -156,7 +180,7 @@ try{
         }
         setName(name){
             this.name = name;
-            saveData();
+            this.update("name",this.name);
         }
         getAura(){
             return this.aura;
@@ -171,22 +195,20 @@ try{
                     this.aura += Math.floor(amount);
                     break
             }
+            this.update("aura",this.aura);
             this.level = Math.floor((this.getAura()/2)**(1/2.25));
             if (oldLevel !== this.level){
                 return `${this.getName()} is now level ${this.level}`
             }
-            saveData();
             return `no new level for ${this.getName()}`
             
         }
         pay(reciever,guild,amount){
             if (this.getCoins(guild) < amount){
-                saveData();
                 return false;
             } else{
                 this.giveCoins(-1*amount,guild);
                 reciever.giveCoins(amount,guild);
-                saveData();
                 return true
             }
         }
@@ -196,7 +218,7 @@ try{
             }
             guild.users[this.id].coins += Math.floor(amount);
             this.guilds[guild.id] += Math.floor(amount);
-            saveData();
+            this.update("guilds",JSON.stringify(this.guilds));
         }
         getCoins(guild){
             return guild.users[this.id].coins;
@@ -248,16 +270,19 @@ try{
             this.config = config;//buyCoinCost, buyCoins, shopAdminRole
             Shop.all[id] = this;
         }
+        async update(key,value){
+            await runAsync(`UPDATE Shop SET ${key} = ? WHERE id = ?`, [value, this.id]);
+        }
         display(){
             console.log("|\tSHOP CLASS\t|\n",this);
         }
         addShopItem(type,info,price){
             this.items.push({"type":type,"itemInfo":info,"price":price})
-            saveData();
+            this.update("items",JSON.stringify(this.items));
         }
         removeShopItem(type,info){
             this.items = this.items.filter(item => (!(item["itemInfo"] === info && item["type"] === type)));
-            saveData();
+            this.update("items",JSON.stringify(this.items));
         }
         async buyShopItem(shopItem,guild,user){
             let message;
@@ -269,7 +294,6 @@ try{
                     await msg(`invalid funds to buy ${shopItem} in ${guild} for ${user.getName()} user has balance:${user.getCoins(Guild.getGuild(guild.id))}`);
                     message = "invalid funds"
                 } else {//sufficient funds
-                    saveData();
                     switch(shopItem.type){//valid types role channel
                         case "role":
                             if (!(await userHasRole(client,this.id,user.id,shopItem.itemInfo))){
@@ -324,7 +348,6 @@ try{
                     user.giveAura((-1*price),false);
                     this.balance += price;
                     user.giveCoins(amount,guild);
-                    saveData();
                     return `payment of ${amount} coins for ${price} aura successful`
                 }
             }
@@ -348,10 +371,10 @@ try{
                     }
                 }  
                 this.config[setting] = value;
+                this.update("config",JSON.stringify(this.config));
             } else {
                 return `you must have <@&${this.config.shopAdminRole}> or have admin perms to edit config `
             }
-            saveData();
         }
         showShop(){
             let message = `Shop items for ${Guild.getGuild(this.id).getName()}\n`;
@@ -380,9 +403,9 @@ try{
                 } else {
                     user.giveAura(amount,false);
                     this.balance -= amount;
+                    this.update("balance",this.balance);
                 }
             }
-            saveData();
         }
     }
     class Command {
@@ -404,116 +427,94 @@ try{
             console.log("|\tCOMMAND CLASS\t|\n",this);
         }
     }
+    async function createTables() {
+        await runAsync(`
+            CREATE TABLE IF NOT EXISTS Shop (
+            id TEXT PRIMARY KEY,
+            items TEXT,
+            balance INTEGER,
+            config TEXT
+            )
+        `);
 
-    function saveData(){
-        if (loadingData)return;
-        if (Guild.all == {} || User.all == {})return;
-        const data = {"guilds":Guild.all,"users":User.all};
-        try {
-            fs.writeFileSync("./tempData.json",JSON.stringify(data,null,2),'utf-8');
-            fs.renameSync("./tempData.json","data.json");
-        } catch(error){
-            msg(`Error saving file data.json: ${error}`)
-        }
-        // let guilds = [];
-        // for (const id in Guild.all){
-        //     let guild = Guild.all[id];
-        //     guildObject = {
-        //         "id": guild.id,
-        //         "name": guild.getName(),
-        //         "booster": guild.booster,
-        //         "settings": guild.settings,
-        //         "shop": {
-        //             "id": guild.shop.id,
-        //             "items": guild.shop.items,
-        //             "balance": guild.shop.balance,
-        //             "config": guild.shop.config
-        //         }
-        //     }
-        //     guilds.push(guildObject);
-        // }
-        // let users = [];
-        // for (const id in User.all){
-        //     let user = User.all[id];
-        //     userObject = {
-        //         "id": user.id,
-        //         "tag": user.getName(),
-        //         "aura": user.getAura(),
-        //         "boosters": user.boosters,
-        //         "guilds": user.guilds
-        //     }
-        //     users.push(userObject);
-        // }
-        // let data = {
-        //     "guilds":guilds,
-        //     "users":users,
-        // }
-        // fs.writeFileSync("./data.json", JSON.stringify(data, null, 2), 'utf-8');
+        await runAsync(`
+            CREATE TABLE IF NOT EXISTS Guild (
+            id TEXT PRIMARY KEY,
+            name TEXT,
+            booster INTEGER,
+            settings TEXT,
+            shop_id TEXT,
+            FOREIGN KEY(shop_id) REFERENCES Shop(id)
+            )
+        `);
+
+        await runAsync(`
+            CREATE TABLE IF NOT EXISTS User (
+            id TEXT PRIMARY KEY,
+            name TEXT,
+            aura INTEGER,
+            boosters TEXT,
+            guilds TEXT
+            )
+        `);
     }
-    async function loadData(){
-        let raw;
-        loadingData = true;
+    async function loadData() {
         try {
-            raw = await fs.readFileSync("./data.json","utf-8");
-        } catch(error){
-            msg(`Error loading file data.json${error}`);
-            process.exit();
-        }
-        msg(`Loaded file data.json`);
-        const {guilds, users} = JSON.parse(raw);
-        let guildArray = Object.values(guilds);
-        let userArray = Object.values(users);
-        let guildAmount = guildArray.length;
-        let userAmount = userArray.length;
-        console.log(`guildAmount:\t${guildAmount}`);
-        console.log(`userAmount:\t${userAmount}`);
-        let guildCount = 0;
-        for (const guild of guildArray) {
-            guildCount++;
-            if(guildCount % 10 == 0)console.log(`Loading Guilds:\t${Math.floor((guildCount / guildAmount) * 100)}%`);
+            // Load guilds with their shops
+            const guildRows = await allAsync(`
+            SELECT g.id as guild_id, g.name, g.booster, g.settings,
+                    s.id as shop_id, s.items, s.balance, s.config
+            FROM Guild g
+            LEFT JOIN Shop s ON g.shop_id = s.id
+            `);
+
+            for (const row of guildRows) {
+            const shop = {
+                id: row.shop_id,
+                items: JSON.parse(row.items),
+                balance: row.balance,
+                config: JSON.parse(row.config),
+            };
+
             new Guild(
-                guild.id,
-                guild.name,
-                guild.booster,
-                guild.settings,
-                guild.shop
+                row.guild_id,
+                row.name,
+                row.booster,
+                JSON.parse(row.settings),
+                shop
             );
-        }
-        let userCount = 0;
-        for (const user of userArray) {
-            userCount++;
-            if(userCount % 100 == 0)console.log(`Loading Users:\t${Math.floor((userCount / userAmount) * 100)}%`);
+            }
+
+            // Load users
+            const userRows = await allAsync(`SELECT * FROM User`);
+            console.log(userRows)
+            for (const user of userRows) {
             new User(
                 user.id,
                 user.name,
                 user.aura,
-                user.boosters,
-                user.guilds
+                JSON.parse(user.boosters),
+                JSON.parse(user.guilds)
             );
+            }
+
+            await msg(
+            `Loaded ${Object.keys(Guild.all).length} Guilds and ${Object.keys(User.all).length} Users`
+            );
+        } catch (error) {
+            msg(`Error loading data from database: ${error}`);
+            process.exit();
         }
         try {
             const data = fs.readFileSync('./pickup_lines.txt', 'utf8');//the file containing all the pickuplines
             PICKUP_LINES = data.split('\n').filter(line => line.trim() !== ''); // Remove empty lines
         } catch (error) {
             console.error("Error reading pickup_lines.txt:",error);
+            process.exit();
         }
         msg("loaded data pickuplines")
-        await msg(`Loaded ${Object.keys(Guild.all).length} Guilds and ${Object.keys(User.all).length} Users`);
-        loadingData = false;
-        //msg("Loaded" + Object.keys(Guild.all).length + "guilds and" + Object.keys(User.all).length + "users.");
-        // if (fs.existsSync("./data.json")) {
-        //     const data = JSON.parse(fs.readFileSync("./data.json", 'utf-8'));
-        //     for (const guild in data.guilds){
-        //         new Guild(data.guilds[guild].id,data.guilds[guild].name,data.guilds[guild].booster,data.guilds[guild].settings,data.guilds[guild].shop);
-        //     }
-        //     for (const user in data.users){
-        //         new User(data.users[user].id,data.users[user].tag,data.users[user].aura,data.users[user].boosters,data.users[user].guilds);
-        //     }
-        //     await msg("Loaded Data");
-        // }; // Return an empty object if the file doesn't exist
     }
     process.on("SIGINT", () => {
-        saveData();
         process.exit();
     })
     const client = new Client({
@@ -526,7 +527,7 @@ try{
     });
 
     // Function to send a message to a specific channel in a specific server
-    async function msg(logMessage,guildId="1310772622044168275", channelId="1310982567398342737") {
+    async function msg(logMessage,guildId=JSONConfig.communityServer, channelId=JSONConfig.logChannel) {
         try {
             // Fetch the guild using its ID
             const guild = await client.guilds.fetch(guildId);
@@ -633,11 +634,10 @@ try{
     }
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
-        await loadData();
     });
     module.exports = {
         msg,
-        saveData,
+        createTables,
         loadData,
         addRole,
         sendDM,
@@ -650,8 +650,6 @@ try{
         Shop,
         Command,
     }
-    // setInterval(() => {saveData();msg("saved data YAY!!!");},60000);
-    // Log in with your bot token
     
     client.login(JSONConfig.token);
 } catch (error){

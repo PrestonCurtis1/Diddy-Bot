@@ -76,7 +76,7 @@ try{
     async function announce(interaction){
         const announcementFile = interaction.options.getString("message")
         const announcementMessage = fs.readFileSync(`./${announcementFile}`,"utf-8");
-        const communityServer = await client.guilds.fetch("1310772622044168275");
+        const communityServer = await client.guilds.fetch(JSONConfig.communityServer);
         const member = await communityServer.members.fetch(interaction.user.id);
         if (!member.permissions.has(PermissionsBitField.Flags.Administrator)){
             await interaction.reply({content: "invalid password", fetchReply: true});
@@ -212,7 +212,7 @@ try{
         let message;
         const target = interaction.options.getUser("user");
         const auraAmount = interaction.options.getNumber("aura");
-        const communityServer = await client.guilds.fetch("1310772622044168275");
+        const communityServer = await client.guilds.fetch(JSONConfig.communityServer);
         const member = await communityServer.members.fetch(interaction.user.id);
         if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
             util.User.getUser(interaction.user.id).giveAura(auraAmount,false);
@@ -513,7 +513,7 @@ try{
      * @returns {Promise<void>}
      */
     async function dm(interaction){
-        const communityServer = await client.guilds.fetch("1310772622044168275");
+        const communityServer = await client.guilds.fetch(JSONConfig.communityServer);
         const member = await communityServer.members.fetch(interaction.user.id);
         if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
             util.sendDM(interaction.options.getString('message'),interaction.options.getString('id'));
@@ -560,7 +560,7 @@ try{
      * @returns {Promise<void>}
      */
     async function getFile(interaction) {
-        const communityServer = await client.guilds.fetch("1310772622044168275");
+        const communityServer = await client.guilds.fetch(JSONConfig.communityServer);
         const member = await communityServer.members.fetch(interaction.user.id);
         if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
                 const file = new AttachmentBuilder(interaction.options.getString("path"));
