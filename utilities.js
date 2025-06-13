@@ -436,7 +436,7 @@ try{
             config TEXT
             )
         `);
-
+        console.log("shop table created");
         await runAsync(`
             CREATE TABLE IF NOT EXISTS Guild (
             id TEXT PRIMARY KEY,
@@ -447,7 +447,7 @@ try{
             FOREIGN KEY(shop_id) REFERENCES Shop(id)
             )
         `);
-
+        console.log("guild table created");
         await runAsync(`
             CREATE TABLE IF NOT EXISTS User (
             id TEXT PRIMARY KEY,
@@ -457,6 +457,7 @@ try{
             guilds TEXT
             )
         `);
+        console.log("user table created");
     }
     async function loadData() {
         try {
@@ -634,11 +635,11 @@ try{
     }
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
+        await createTables();
+        await loadData();
     });
     module.exports = {
         msg,
-        createTables,
-        loadData,
         addRole,
         sendDM,
         userHasRole,

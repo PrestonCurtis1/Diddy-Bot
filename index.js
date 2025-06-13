@@ -82,9 +82,6 @@ try {
             activities: [{ name: 'at the Diddy Party', type: 0 }],
             status: 'online', 
         });
-        await util.createTables().then(async () => {
-            await util.loadData();
-        });
     });
     client.login(JSONConfig.token);
 
