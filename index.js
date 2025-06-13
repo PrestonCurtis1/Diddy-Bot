@@ -52,7 +52,7 @@ try {
         if(message.content != undefined){
             msgcontent = message.content;
         }
-        util.msg(`${message.author.username} sent a message in server ${message.guild.name} channel ${message.channel.name} worth ${messagePoints}:${msgcontent}`,"1310772622044168275","1372357343224008734");
+        util.msg(`${message.author.username} sent a message in server ${message.guild.name} channel ${message.channel.name} worth ${messagePoints}:${msgcontent}`,JSONConfig.communityServer,JSONConfig.auraChannel);
         if(!util.Guild.exists(message.guild.id))util.Guild.register(message.guild.id,message.guild.name);
         if(!util.User.exists(message.author.id))util.User.register(message.author.id,message.author.tag,{[message.guild.id]:0});
         if(!util.Guild.getGuild(message.guild.id).hasUser(message.author.id))util.Guild.getGuild(message.guild.id).addUser({"user":util.User.getUser(message.author.id),"coins":0});
@@ -82,6 +82,8 @@ try {
             activities: [{ name: 'at the Diddy Party', type: 0 }],
             status: 'online', 
         });
+        await util.createTables();
+        await util.loadData();
     });
     client.login(JSONConfig.token);
 

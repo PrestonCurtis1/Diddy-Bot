@@ -1,0 +1,8 @@
+{
+	"token": "Your-Bots-Token",
+	"clientId": "Bots-Client-ID",
+	"communityServer" : "The Guild id of the server where logs and bot admins are",
+	"apiChannel" : "the channel id of where API logs will go",
+	"logChannel" : "the channel id of where general logs will go",
+	"auraChannel" : "the channel id of where aura logs will go"
+}
