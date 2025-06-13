@@ -531,25 +531,23 @@ try{
      * @returns {Promise<void>}
      */
     async function gamble(interaction){
-        let amount = interaction.options.getNumber("amount");
+        let amount = Math.abs(interaction.options.getNumber("amount"));
         let user = util.User.getUser(interaction.user.id)
         let hasAura = amount <= user.aura; 
-        if (hasAura){
-            let percent = Math.floor(Math.random()*101)/100;
-            let win = Math.floor(Math.random()*2);
-            let result;
-            if (win == 1){
-                result = Math.floor(amount*percent);
-                user.giveAura(result,false);
-                interaction.reply({content: `You gained ${result} aura`,fetchReply:true});
-            } else {
-                result = Math.floor(-1*(amount*percent));
-                user.giveAura(result,false);
-                interaction.reply({content: `You lost ${(-1*(result))} aura`, fetchReply: true});
-            }
+        if (!hasAura)amount = user.aura;
+        let percent = Math.floor(Math.random()*101)/100;
+        let win = Math.floor(Math.random()*2);
+        let result;
+        if (win == 1){
+            result = Math.floor(amount*percent);
+            user.giveAura(result,false);
+            interaction.reply({content: `You gained ${result} aura from betting ${amount}`,fetchReply:true});
         } else {
-            interaction.reply({content: `you only have ${user.aura} aura`,fetchReply: true});
+            result = Math.floor(-1*(amount*percent));
+            user.giveAura(result,false);
+            interaction.reply({content: `You lost ${(-1*(result))} aura from betting ${amount}`, fetchReply: true});
         }
+        
     }
     new util.Command({name: "gamble", description: "gamble your money", options: [{name: "amount", description: "how much to gamble", type: 10, required: true}], integration_types: [0, 1], contexts: [0, 1, 2]},gamble);
     //getFile
