@@ -45,9 +45,9 @@ async function runApi() {
     });
     api.post("/vote", async (req, res) => {
         if (req.ip.includes("159.203.105.187") && req.headers.authorization == JSONConfig.auth){
-            console.log("helpmeplease",req.body.type,req.body.type == "vote");
+            console.log("helpmeplease",req.body.type,req.body.type == "upvote");
             console.log("ivebeencodingfortoolong",req.body.bot,req.body.bot == JSONConfig.clientId);
-            if(req.body.type == "test" && req.body.bot == JSONConfig.clientId){
+            if(req.body.type == "upvote" && req.body.bot == JSONConfig.clientId){
                 let aura = 1000
                 console.log(req.body.user);
                 util.User.getUser(req.body.user).giveAura(aura,false);
