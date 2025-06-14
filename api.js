@@ -38,10 +38,15 @@ async function runApi() {
         const pickupline = pickuplines[Math.floor(Math.random() * pickuplines.length)];
         res.send({pickupline});
     });
-    api.get("/help",async (req, res) => {
+    api.get("/help", async (req, res) => {
         await util.msg(`[API] /help`, JSONConfig.communityServer, JSONConfig.apiChannel);
         console.log(req.ip);
         res.send("/getaura\n/getcoins\n/pickuplines\n/rizzme\n/help");
+    });
+    api.post("/vote", async (req, res) => {
+        const data = req.body;
+        console.log(`Recieved post data: ${data}`);
+        res.status(200).send({ message: 'POST received successfully!' });
     });
     // Listen for requests
     api.listen(port, (e) => {
