@@ -45,7 +45,11 @@ async function runApi() {
     });
     api.post("/vote", async (req, res) => {
         if (req.ip.includes("159.203.105.187") && req.headers.authorization == JSONConfig.auth){
-            console.log('Received POST data:', JSON.stringify(req.body, null, 2));
+            if(req.body.type == "vote" && req.body.bot == JSONConfig.clientId){
+                let aura = 1000
+                util.User.getUser(req.body.user).giveAura(aura,false);
+                util.msg(`<@${req.body.user}> voted for the bot and got ${aura} aura`,JSONConfig.communityServer, JSONConfig.voteChannel);
+            }
         }
         res.status(200).send({message: "POST received successfully!"});
     });
