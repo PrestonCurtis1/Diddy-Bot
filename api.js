@@ -45,7 +45,7 @@ async function runApi() {
     });
     api.post("/vote", async (req, res) => {
         const data = await req.body;
-        console.log(`Recieved post data: ${data}`);
+        console.log('Received POST data:', await data);
         res.status(200).send({ message: 'POST received successfully!' });
     });
     // Listen for requests
