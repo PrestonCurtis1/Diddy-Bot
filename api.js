@@ -44,7 +44,7 @@ async function runApi() {
         res.send("/getaura\n/getcoins\n/pickuplines\n/rizzme\n/help");
     });
     api.post("/vote", async (req, res) => {
-        const data = req.body;
+        const data = await req.body;
         console.log(`Recieved post data: ${data}`);
         res.status(200).send({ message: 'POST received successfully!' });
     });
