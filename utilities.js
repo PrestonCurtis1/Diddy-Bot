@@ -141,6 +141,10 @@ try{
             this.id = id;//string
             this.name = tag;//string
             this.aura = aura;//int
+            if (isNaN(this.aura)){
+                this.aura = 0;
+                this.update("aura", this.aura);
+            }
             this.level = Math.floor((this.aura/2)**(1/2.25));
             this.boosters = boosters;//object
             this.serverMulti = {};
