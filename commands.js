@@ -473,7 +473,9 @@ try{
     * @returns {Promise<void>}
     */
     async function rizzlers(interaction){
-        interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\n@royalknight0\n@nexuscageoil\n@buldakislovebuldakislife\n@def_not_vexx\n@chi56567899\n@yellow262\n@inspectorcomrad\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}});
+        interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\n@royalknight0\n@nexuscageoil\n@buldakislovebuldakislife\n@def_not_vexx\n@chi56567899\n@yellow262\n@inspectorcomrad\n@monkeiy1\n@It_KingXjimmie\n@brimisbrim\n@_htzumiii_\n@Drakkar\n@blitzfootball\n@d.tokyo.d.\n@69master0569\n@wehttam._\n@hunterstudios947\n@ListAck\n@Frostbite53\n@ace_nowhere\n@doogledean91\n@4mz4r.\n@._._.hi\n@jlee406\n@Figgy Pudding\n@joeypterodactyl\n@KingCreeper531\n@masterofbluefire_21530
+
+\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}});
     }
     new util.Command({name: "rizzlers",description: "people who contributed pickup-lines",integration_types: [0, 1], contexts: [0, 1, 2]},rizzlers);
     client.once('ready', async () => {
