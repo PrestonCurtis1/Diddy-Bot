@@ -215,7 +215,7 @@ try{
         const communityServer = await client.guilds.fetch(JSONConfig.communityServer);
         const member = await communityServer.members.fetch(interaction.user.id);
         if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
-            util.User.getUser(interaction.user.id).giveAura(auraAmount,false);
+            util.User.getUser(target.id).giveAura(auraAmount,false);
             message = `<@${target.id}> has been given ${auraAmount} aura by <@${interaction.user.id}>`;
         } else {
             message = `invalid password`;
