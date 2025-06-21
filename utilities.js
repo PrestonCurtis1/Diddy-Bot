@@ -1,19 +1,22 @@
 const { stringify } = require('querystring');
 
 try{
-    const { Client, GatewayIntentBits, PermissionsBitField } = require('discord.js');
+    const { Client, GatewayIntentBits, PermissionsBitField, Routes, makeURLSearchParams, DiscordAPIError } = require('discord.js');
     const JSONConfig = require('./config.json');
     const sqlite3 = require('sqlite3').verbose();
     const { promisify } = require('util');
     const path = require("path");
     const fsp = require("fs").promises;
     const fs = require("fs");
+    const JSONLynx = require('./lynx.json');
 
     let PICKUP_LINES;
     let loadingData;
     const db = new sqlite3.Database('./database.sqlite');
     const runAsync = promisify(db.run).bind(db);
     const allAsync = promisify(db.all).bind(db);
+    let lynxAccessToken;
+    let lynxRefreshToken = JSONLynx.lynxRefreshToken;
     class Guild {
         static all = {};
         constructor(id,name,booster,settings,shop){
@@ -637,6 +640,29 @@ try{
     function getPickupLines() {
         return PICKUP_LINES;
     }
+
+    async function getLynxAccessToken() {
+        if (lynxAccessToken) {
+            return lynxAccessToken;
+        }
+        const tokenResponse = await fetch("https://discord.com/api/" + Routes.oauth2TokenExchange(), {body: `grant_type=refresh_token&refresh_token=${lynxRefreshToken}`, method: "POST", headers:{'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + btoa(JSONConfig.clientId + ":" + JSONConfig.clientSecret)}});
+        if (tokenResponse.status > 400) {
+            throw new TypeError("Error refreshing token: " + await tokenResponse.text() + " (" + tokenResponse.status + ")");
+        }
+        const resJson = JSON.parse(await tokenResponse.text());
+        if (resJson.error) {
+            throw new TypeError("Error refreshing token: " + await tokenResponse.text() + " (" + tokenResponse.status + ")");
+        }
+        console.log(JSON.stringify(resJson));
+        const token = resJson.access_token;
+        lynxAccessToken = token;
+        lynxRefreshToken = resJson.refresh_token;
+        fs.writeFileSync("./lynx.json", JSON.stringify({lynxRefreshToken: resJson.refresh_token}, null, 2), 'utf-8'); // Save new refresh token as JSON
+        setTimeout(() => {
+            lynxAccessToken = null;
+        }, resJson.expires_in * 1000);
+        return token;
+    }
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
         await createTables();
@@ -650,6 +676,7 @@ try{
         userHasChannel,
         addChannel,
         getPickupLines,
+        getLynxAccessToken,
         Guild,
         User,
         Shop,

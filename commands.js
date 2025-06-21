@@ -568,6 +568,26 @@ try{
         }
     }
     new util.Command({name: "getFile".toLowerCase(), description: "retrieve a file (bot admins only)", options: [{name: "path",description: "path to file",type: 3,required: true}],integration_types: [0, 1],contexts: [0, 1, 2]},getFile)
+    async function lynx(interaction) {
+        if (interaction.member.permissions.has(PermissionsBitField.Flags.CreateInstantInvite)){
+            // Check if the server already contains lynx
+            let lynx = null;
+            try {
+                lynx = await interaction.guild.members.fetch("1215373521463681147");
+            } finally {
+                if (lynx) {
+                    await interaction.reply({content: "the server already contains Lynx",fetchReply: true});
+                } else {
+                    const lynxAccessToken = await util.getLynxAccessToken();
+                    await interaction.guild.members.add("1215373521463681147", {accessToken: lynxAccessToken});
+                    await interaction.reply({content: "Lynx has been summoned!",fetchReply: true});
+                }
+            }
+        } else {
+            await interaction.reply({content: "you do not have permission to summon a lynx (invite people)",fetchReply: true});
+        }
+    }
+    new util.Command({name: "lynx", description: "Summon a Lynx to your discord server"}, lynx);
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
