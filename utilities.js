@@ -688,6 +688,7 @@ try{
         User,
         Shop,
         Command,
+        loadingData,
     }
     
     client.login(JSONConfig.token);
