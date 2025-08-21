@@ -29,6 +29,7 @@ try{
             Guild.all[id] = this;
         }
         async update(key,value){
+            if (loadingData)return;
             await runAsync(`UPDATE Guild SET ${key} = ? WHERE id = ?`, [value, this.id]);
         }
         getName(){
@@ -52,6 +53,7 @@ try{
             return id in this.all;
         }
         static async register(guildId,guildName){
+            if (loadingData)return;
             msg(`registering guild ${guildName}`);
             new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","randomInviteEnabled":true},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}});
             let g = {"id": guildId, "name": guildName, "booster" : 1, "settings": {"about":"","features":[],"invite-code":"","randomInviteEnabled":true},"shop": {"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}}};
@@ -158,12 +160,14 @@ try{
             };
         }
         async update(key,value){
+            if (loadingData)return;
             await runAsync(`UPDATE User SET ${key} = ? WHERE id = ?`, [value, this.id]);
         }
         static exists(id){
             return id in this.all;
         }
         static async register(userId,userTag,guilds={}){
+            if (loadingData)return;
             msg(`registering user ${userTag}`);
             new User(userId,userTag,100,{"temp":{"multi":0,"endTime": new Date()},"perm":0},guilds);
             let user = {"id": userId, "name": userTag, "aura": 100, "boosters": {"temp":{"multi":0,"endTime": new Date()},"perm":0},"guilds":guilds}
@@ -278,6 +282,7 @@ try{
             Shop.all[id] = this;
         }
         async update(key,value){
+            if (loadingData)return;
             await runAsync(`UPDATE Shop SET ${key} = ? WHERE id = ?`, [value, this.id]);
         }
         display(){
@@ -467,6 +472,7 @@ try{
         console.log("user table created");
     }
     async function loadData() {
+        loadingData = true;
         try {
             // Load guilds with their shops
             const guildRows = await allAsync(`
@@ -509,6 +515,7 @@ try{
             await msg(
             `Loaded ${Object.keys(Guild.all).length} Guilds and ${Object.keys(User.all).length} Users`
             );
+            loadingData = false;
         } catch (error) {
             msg(`Error loading data from database: ${error}`);
             process.exit();
