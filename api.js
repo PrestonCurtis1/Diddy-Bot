@@ -65,16 +65,17 @@ async function runApi() {
 
         // Simple HTML page with a form
         res.send(`
-            <form id="evalForm">
-                <label>Enter JavaScript code:</label><br>
-                <input type="text" name="code" id="code" />
-                <button type="submit">Run</button>
-            </form>
+            <input type="text" id="code" style="width:400px;" placeholder="Enter JS code" />
+            <button id="run">Run</button>
+            <pre id="output"></pre>
 
             <script>
-                document.getElementById('evalForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const code = document.getElementById('code').value;
+                const button = document.getElementById('run');
+                const input = document.getElementById('code');
+                const output = document.getElementById('output');
+
+                button.addEventListener('click', async () => {
+                    const code = input.value;
 
                     const res = await fetch(window.location.pathname, {
                         method: 'POST',
@@ -83,7 +84,7 @@ async function runApi() {
                     });
 
                     const data = await res.json();
-                    console.log(data);
+                    output.textContent = data.result ?? data.error;
                 });
             </script>
         `);
