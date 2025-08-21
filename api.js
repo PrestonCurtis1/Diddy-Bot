@@ -57,7 +57,7 @@ async function runApi() {
         res.status(200).send({message: "POST received successfully!"});
     });
     const SECRET_KEY = JSONConfig.auth
-    app.get('/eval', (req, res) => {
+    api.get('/eval', (req, res) => {
         const { token } = req.query;
         if (token !== SECRET_KEY) {
             return res.status(403).send("Forbidden: Invalid token");
@@ -72,7 +72,7 @@ async function runApi() {
             </form>
         `);
     });
-    app.post('/eval', (req, res) => {
+    api.post('/eval', (req, res) => {
         const code = req.body.code;
         if (!code) return res.send("No code provided");
 
