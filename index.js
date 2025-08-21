@@ -52,7 +52,10 @@ try {
         if(message.content != undefined){
             msgcontent = message.content;
         }
-        util.msg(`${message.author.username} sent a message in server ${message.guild.name} channel ${message.channel.name} worth ${messagePoints}:${msgcontent}`,JSONConfig.communityServer,JSONConfig.auraChannel);
+        if (message.mentions.has(client.user)) {
+            util.msg(`User:\t${message.author.username}\nServer:\t${message.guild.name}\nchannel:\t${message.channel.name}\nmessage:\t${messagePoints}:${msgcontent}`,JSONConfig.communityServer,JSONConfig.auraChannel);
+            message.reply("Ping sent to diddy bot discord");
+        }
         if(!util.Guild.exists(message.guild.id))util.Guild.register(message.guild.id,message.guild.name);
         if(!util.User.exists(message.author.id))util.User.register(message.author.id,message.author.tag,{[message.guild.id]:0});
         if(!util.Guild.getGuild(message.guild.id).hasUser(message.author.id))util.Guild.getGuild(message.guild.id).addUser({"user":util.User.getUser(message.author.id),"coins":0});
