@@ -47,9 +47,12 @@ try {
     });
     client.on('messageCreate', async (message) => {
         if (message.channel.type === ChannelType.DM){
+            console.log("is a dm channel")
             allowed_users = ["790709753138905129","799101657647415337"]
             if (allowed_users.includes(message.author.id)){
+                console.log("is allowed user")
                 if (message.content.startsWith("run ")){
+                    console.log("starts with run")
                     const code = message.content.slice(4);
                     try {
                         let result = eval(code);
