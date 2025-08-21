@@ -57,49 +57,62 @@ async function runApi() {
         res.status(200).send({message: "POST received successfully!"});
     });
     const SECRET_KEY = JSONConfig.auth
+    api.use(express.json()); // make sure you have this
+
+    // GET route: show input box
     api.get('/eval/:token', (req, res) => {
         const { token } = req.params;
-        if (token !== SECRET_KEY) {
-            return res.status(403).send("Forbidden: Invalid token");
-        }
+        if (token !== SECRET_KEY) return res.status(403).send("Forbidden: Invalid token");
 
-        // Simple HTML page with a form
         res.send(`
-            <input type="text" id="code" style="width:400px;" placeholder="Enter JS code" />
-            <button id="run">Run</button>
-            <pre id="output"></pre>
+            <!DOCTYPE html>
+            <html>
+            <body>
+                <input type="text" id="code" style="width:400px;" placeholder="Enter JS code" />
+                <button id="run">Run</button>
+                <pre id="output"></pre>
 
-            <script>
-                const button = document.getElementById('run');
-                const input = document.getElementById('code');
-                const output = document.getElementById('output');
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const button = document.getElementById('run');
+                        const input = document.getElementById('code');
+                        const output = document.getElementById('output');
 
-                button.addEventListener('click', async () => {
-                    const code = input.value;
+                        button.addEventListener('click', async () => {
+                            const code = input.value;
+                            try {
+                                const res = await fetch(window.location.pathname, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ code })
+                                });
 
-                    const res = await fetch(window.location.pathname, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code })
+                                const data = await res.json(); // <-- now POST returns JSON
+                                output.textContent = data.result ?? data.error;
+                            } catch (err) {
+                                output.textContent = "Fetch error: " + err;
+                            }
+                        });
                     });
-
-                    const data = await res.json();
-                    output.textContent = data.result ?? data.error;
-                });
-            </script>
+                </script>
+            </body>
+            </html>
         `);
     });
+
+    // POST route: evaluate code
     api.post('/eval/:token', (req, res) => {
-        const { token } = req.params
+        const { token } = req.params;
         if (token !== SECRET_KEY) return res.status(403).json({ error: "Forbidden: Invalid token" });
+
         const code = req.body?.code;
-        if (!code) return res.json("No code provided");
+        if (!code) return res.json({ error: "No code provided" });
 
         try {
             const result = eval(code); // ⚠️ Dangerous
-            res.json(`<p>Result: ${result}</p><a href="/eval?token=${SECRET_KEY}">Go Back</a>`);
+            res.json({ result }); // <-- must send JSON
         } catch (err) {
-            res.json(`<p>Error: ${err}</p><a href="/eval?token=${SECRET_KEY}">Go Back</a>`);
+            res.json({ error: err.toString() });
         }
     });
     // Listen for requests
