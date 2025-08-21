@@ -47,7 +47,8 @@ try {
         }
     });
     client.on('messageCreate', (message) => {
-        if (message.author.bot) return; 
+        if (message.author.bot) return;
+        if (!message.guild) return;
         const messagePoints = Math.floor(Math.random() * (50 - 15 + 1) + 15);
         let msgcontent = "none";
         if(message.content != undefined){
