@@ -61,9 +61,11 @@ try {
         }
         if(!util.Guild.exists(message.guild.id))util.Guild.register(message.guild.id,message.guild.name);
         if(!util.User.exists(message.author.id))util.User.register(message.author.id,message.author.tag,{[message.guild.id]:0});
-        if(!util.Guild.getGuild(message.guild.id).hasUser(message.author.id))util.Guild.getGuild(message.guild.id).addUser({"user":util.User.getUser(message.author.id),"coins":0});
+        let guild = util.Guild.getGuild(message.guild.id);
+	if(!guild)return;
+        if(!guild.hasUser(message.author.id))guild.addUser({"user":util.User.getUser(message.author.id),"coins":0});
         util.User.getUser(message.author.id).setName(message.author.tag);
-        util.Guild.getGuild(message.guild.id).setName(message.guild.name);
+        guild.setName(message.guild.name);
         util.User.getUser(message.author.id).giveAura(messagePoints,true);
         util.User.getUser(message.author.id).giveCoins(messagePoints*util.Guild.getGuild(message.guild.id).booster,util.Guild.getGuild(message.guild.id));
     });
