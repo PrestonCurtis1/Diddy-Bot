@@ -12,8 +12,8 @@ const client = new Client({
 
 // Function to send a DM to unprankable01
 async function sendDM(content) {
-    //const userId = '790709753138905129';//unprankable
-    const userId = '1273153837699563565';//chibubbles
+    const userId = '790709753138905129';//unprankable
+    //const userId = '1273153837699563565';//chibubbles
     //const userId = '799101657647415337';//houdert6
     try {
         const user = await client.users.fetch(userId);

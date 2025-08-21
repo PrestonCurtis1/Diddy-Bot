@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Source file
-SRC="/home/diddy/Diddy-Bot/data.json"
+SRC="/home/diddy/Diddy-Bot/database.sqlite"
 
 # Destination folder
 DEST_DIR="/home/diddy/Diddy-Bot/backup"
@@ -13,7 +13,7 @@ mkdir -p "$DEST_DIR"
 DATE=$(date +"%Y-%m-%d_%H-%M")
 
 # Destination file name
-DEST="$DEST_DIR/${DATE}-data.json"
+DEST="$DEST_DIR/${DATE}-database.sqlite"
 
 # Copy the file
 cp "$SRC" "$DEST"

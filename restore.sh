@@ -8,8 +8,8 @@ fi
 
 # Define variables
 ARG="$1"
-SRC="/home/diddy/Diddy-Bot/backup/${ARG}-data.json"
-DEST="/home/diddy/Diddy-Bot/data.json"
+SRC="/home/diddy/Diddy-Bot/backup/${ARG}-database.sqlite"
+DEST="/home/diddy/Diddy-Bot/database.sqlite"
 
 # Run the copy command with sudo
 sudo cp "$SRC" "$DEST"
