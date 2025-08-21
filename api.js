@@ -57,22 +57,38 @@ async function runApi() {
         res.status(200).send({message: "POST received successfully!"});
     });
     const SECRET_KEY = JSONConfig.auth
-    api.get('/eval', (req, res) => {
-        const { token } = req.query;
+    api.get('/eval/:token', (req, res) => {
+        const { token } = req.params;
         if (token !== SECRET_KEY) {
             return res.status(403).send("Forbidden: Invalid token");
         }
 
         // Simple HTML page with a form
         res.send(`
-            <form method="POST">
+            <form id="evalForm">
                 <label>Enter JavaScript code:</label><br>
-                <input type="text" name="code" style="width:400px;" /><br>
+                <input type="text" name="code" id="code" />
                 <button type="submit">Run</button>
             </form>
+
+            <script>
+                document.getElementById('evalForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const code = document.getElementById('code').value;
+
+                    const res = await fetch(window.location.pathname, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code })
+                    });
+
+                    const data = await res.json();
+                    console.log(data);
+                });
+            </script>
         `);
     });
-    api.post('/eval', (req, res) => {
+    api.post('/eval/:token', (req, res) => {
         const code = req.body.code;
         if (!code) return res.send("No code provided");
 
