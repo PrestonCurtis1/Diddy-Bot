@@ -6,6 +6,7 @@ try {
     const util = require("./utilities.js");
     require("./commands.js");
     const api = require("./api.js");
+    const clicoderunner = ("./cli.js")
     const client = new Client({
         intents: [
             GatewayIntentBits.Guilds,
