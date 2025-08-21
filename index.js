@@ -1,7 +1,7 @@
 const { deserialize } = require('v8');
 try {
     const fs = require('fs');
-    const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField } = require('discord.js');
+    const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField, ChannelType } = require('discord.js');
     const JSONConfig = require('./config.json');
     const util = require("./utilities.js");
     require("./commands.js");
