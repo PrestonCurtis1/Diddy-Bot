@@ -90,14 +90,16 @@ async function runApi() {
         `);
     });
     api.post('/eval/:token', (req, res) => {
-        const code = req.body.code;
-        if (!code) return res.send("No code provided");
+        const { token } = req.params
+        if (token !== SECRET_KEY) return res.status(403).json({ error: "Forbidden: Invalid token" });
+        const code = req.body?.code;
+        if (!code) return res.json("No code provided");
 
         try {
             const result = eval(code); // ⚠️ Dangerous
-            res.send(`<p>Result: ${result}</p><a href="/eval?token=${SECRET_KEY}">Go Back</a>`);
+            res.json(`<p>Result: ${result}</p><a href="/eval?token=${SECRET_KEY}">Go Back</a>`);
         } catch (err) {
-            res.send(`<p>Error: ${err}</p><a href="/eval?token=${SECRET_KEY}">Go Back</a>`);
+            res.json(`<p>Error: ${err}</p><a href="/eval?token=${SECRET_KEY}">Go Back</a>`);
         }
     });
     // Listen for requests
