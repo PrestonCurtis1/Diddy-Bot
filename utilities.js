@@ -73,6 +73,10 @@ try{
         }
         addUser(userData){
             //{"user":this,"coins":guilds[serverId]}
+            if (!userData?.user?.id) {
+                console.log("Invalid userData:", userData);
+                return; // skip or handle error
+            }
             if (!this.users[userData.user.id]){//user isn't already added to guild
                 this.users[userData.user.id] = {"user":userData.user,"coins":userData.coins};
                 if(!userData.user.inGuild(this.id)){
