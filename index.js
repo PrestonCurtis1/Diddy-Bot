@@ -55,11 +55,6 @@ try {
         if(message.content != undefined){
             msgcontent = message.content;
         }
-        if (message.mentions.has(client.user) && msgcontent != "none" && msgcontent.includes("<@1305713838775210015>")) {
-            content = `User:\t${message.author.username}\nServer:\t${message.guild.name}\nchannel:\t${message.channel.name}\nmessage:\t${msgcontent}`;
-            util.msg(content,JSONConfig.communityServer,JSONConfig.mentionsChannel);
-            message.reply("Ping sent to diddy bot discord");
-        }
         if(!util.Guild.exists(message.guild.id))util.Guild.register(message.guild.id,message.guild.name);
         if(!util.User.exists(message.author.id))util.User.register(message.author.id,message.author.tag,{[message.guild.id]:0});
         let guild = util.Guild.getGuild(message.guild.id);
