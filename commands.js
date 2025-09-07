@@ -213,9 +213,16 @@ try{
         const target = interaction.options.getUser("user");
         const auraAmount = interaction.options.getNumber("aura");
         const communityServer = await client.guilds.fetch(JSONConfig.communityServer);
-        const member = await communityServer.members.fetch(interaction.user.id);
+        let member;
+        let hasMember;
+        try {
+            member = await communityServer.members.fetch(interaction.user.id);
+            hasMember = true;
+        } catch {
+            hasMember = false;
+        }
         // Only allow bot admins to give aura, unless the target is diddy bot
-        if (member.permissions.has(PermissionsBitField.Flags.Administrator) || target.id == JSONConfig.clientId){
+        if ((hasMember && member.permissions.has(PermissionsBitField.Flags.Administrator)) || target.id == JSONConfig.clientId){
             if (!util.User.exists(target.id)) {
                 util.User.register(target.id, target.tag, {});
             }
