@@ -214,7 +214,11 @@ try{
         const auraAmount = interaction.options.getNumber("aura");
         const communityServer = await client.guilds.fetch(JSONConfig.communityServer);
         const member = await communityServer.members.fetch(interaction.user.id);
-        if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
+        // Only allow bot admins to give aura, unless the target is diddy bot
+        if (member.permissions.has(PermissionsBitField.Flags.Administrator) || target.id == JSONConfig.clientId){
+            if (!util.User.exists(target.id)) {
+                util.User.register(target.id, target.tag, {});
+            }
             util.User.getUser(target.id).giveAura(auraAmount,false);
             message = `<@${target.id}> has been given ${auraAmount} aura by <@${interaction.user.id}>`;
         } else {

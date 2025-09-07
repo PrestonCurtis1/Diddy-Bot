@@ -239,6 +239,10 @@ try{
             const userAuraList = [];
 
             for (const key in User.all) {
+                // Exclude diddy bot from the aura leaderboard
+                if (key == JSONConfig.clientId) {
+                    continue;
+                }
                 userAuraList.push({
                     name: User.all[key].getName(),
                     aura: User.all[key].getAura()
