@@ -72,7 +72,7 @@ try {
         let guild = util.Guild.getGuild(message.guild.id);
 	if(!guild)return;
         if(!guild.hasUser(message.author.id))guild.addUser({"user":util.User.getUser(message.author.id),"coins":0});
-        util.User.getUser(message.author.id).setName(message.author.tag);
+        util.User.getUser(message.author.id).?setName(message.author.tag);
         guild.setName(message.guild.name);
         util.User.getUser(message.author.id).giveAura(messagePoints,true);
         util.User.getUser(message.author.id).giveCoins(messagePoints*util.Guild.getGuild(message.guild.id).booster,util.Guild.getGuild(message.guild.id));
