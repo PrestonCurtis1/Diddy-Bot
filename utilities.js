@@ -73,6 +73,9 @@ try{
         }
         addUser(userData){
             //{"user":this,"coins":guilds[serverId]}
+            if (typeof userData?.user?.id === "undefined") {
+                return
+            }
             if (!this.users[userData.user.id]){//user isn't already added to guild
                 this.users[userData.user.id] = {"user":userData.user,"coins":userData.coins};
                 if(!userData.user.inGuild(this.id)){
