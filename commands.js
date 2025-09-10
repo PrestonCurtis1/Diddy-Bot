@@ -634,7 +634,7 @@ try{
     async function diddlebutton(interaction) {
         if (interaction.customId == "diddlebutton") {
             // Create the response
-            const response = `@everyone has been diddled by ${interaction.user.id}`;
+            const response = `@everyone has been diddled by <@${interaction.user.id}>`;
 
             // Send the reply
             await interaction.reply({ content: response, fetchReply: true , allowedMentions: {parse: []}});
