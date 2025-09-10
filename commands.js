@@ -654,6 +654,27 @@ try{
         }
     }
     new util.ComponentCommand(diddlebutton);
+    //lynxblacklist
+    /**
+     * Blacklists servers from running /lynx
+     * function created by lynxoflucidity
+     * @param {Interaction} interaction idk what this means so I won't change it
+     * @returns {Promise<void>} same here
+     */
+    async function lynxblacklist(interaction) {
+        const lynxId = "1215373521463681147"; //Get lynx's id
+        const guildId = interaction.guildId; //Get the current server's id
+
+        if (interaction.user.id !== lynxId) {
+            //Ephemeral reply
+            return interaction.reply({
+                content: "This command is only availible to Lynx. If you are trying to disable /lynx in your server, modify the /lynx command permissions in Server Settings > Integrations > Diddy Bot."
+                ephemeral: true
+        });
+
+        //The command is unfinished
+    }
+    new util.Command({name: "lynxblacklist", description: "Blacklist this server from running /lynx"}, lynxblacklist);
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
