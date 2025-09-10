@@ -1,7 +1,7 @@
 const { stringify } = require('querystring');
 
 try{
-    const { Client, GatewayIntentBits, PermissionsBitField, Routes, makeURLSearchParams, DiscordAPIError } = require('discord.js');
+    const { Client, GatewayIntentBits, PermissionsBitField, Routes, makeURLSearchParams, DiscordAPIError, RoleSelectMenuBuilder } = require('discord.js');
     const JSONConfig = require('./config.json');
     const sqlite3 = require('sqlite3').verbose();
     const { promisify } = require('util');
@@ -443,6 +443,16 @@ try{
             console.log("|\tCOMMAND CLASS\t|\n",this);
         }
     }
+    class ComponentCommand {
+        static commands = [];
+        constructor(run) {
+            this.run = run;
+            ComponentCommand.commands.push(this);
+        }
+        display(){
+            console.log("|\tCOMPONENT COMMAND CLASS\t|\n",this);
+        }
+    }
     async function createTables() {
         await runAsync(`
             CREATE TABLE IF NOT EXISTS Shop (
@@ -674,6 +684,18 @@ try{
         }, resJson.expires_in * 1000);
         return token;
     }
+
+    async function getUserEntitlements(userId, skuId) {
+        const entitlementList = await fetch("https://discord.com/api/" + Routes.entitlements(JSONConfig.clientId) + `?user_id=${userId}&sku_ids=${skuId}&exclude_ended=true`, {headers:{'Authorization': `Bot ${JSONConfig.token}`}});
+        if (entitlementList.status > 400) {
+            throw new TypeError("Error fetching user entitlements: " + await entitlementList.text() + " (" + entitlementList.status + ")");
+        }
+        const entitlements = JSON.parse(await entitlementList.text());
+        if (entitlements.error) {
+            throw new TypeError("Error fetching user entitlements: " + await entitlementList.text() + " (" + entitlementList.status + ")");
+        }
+        return entitlements;
+    }
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
         await createTables();
@@ -688,10 +710,12 @@ try{
         addChannel,
         getPickupLines,
         getLynxAccessToken,
+        getUserEntitlements,
         Guild,
         User,
         Shop,
         Command,
+        ComponentCommand,
         loadingData,
     }
     

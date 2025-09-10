@@ -32,16 +32,23 @@ try {
     client.on('interactionCreate', async (interaction) => {
         try {
                 if (interaction.guild){
-                if(!interaction.isCommand()) return;
+                if(!interaction.isCommand() && !interaction.isMessageComponent()) return;
                 if(!util.Guild.exists(interaction.guild.id))util.Guild.register(interaction.guild.id,interaction.guild.name);
                 if(!util.User.exists(interaction.user.id))util.User.register(interaction.user.id,interaction.user.tag,{[interaction.guild.id]:0});
                 if(!util.Guild.getGuild(interaction.guild.id).hasUser(interaction.user.id))util.Guild.getGuild(interaction.guild.id).addUser({"user":util.User.getUser(interaction.user.id),"coins":0});
                 util.User.getUser(interaction.user.id).setName(interaction.user.tag);
                 util.Guild.getGuild(interaction.guild.id).setName(interaction.guild.name);
             }
-            const command = util.Command.getCommand(interaction.commandName);
-            await command.runCommand(interaction);
-            await util.msg(`[${interaction.commandName}](${interaction.guild?.name ?? "DM"}){${interaction.channel?.name ?? "DM"}}<${interaction.user.tag}>`);
+            if (interaction.isCommand()) {
+                const command = util.Command.getCommand(interaction.commandName);
+                await command.runCommand(interaction);
+                await util.msg(`[${interaction.commandName}](${interaction.guild?.name ?? "DM"}){${interaction.channel?.name ?? "DM"}}<${interaction.user.tag}>`);
+            } else if (interaction.isMessageComponent()) {
+                for (var command of util.ComponentCommand.commands) {
+                    command.run(interaction);
+                }
+                await util.msg(`[${interaction.customId} (message component)](${interaction.guild?.name ?? "DM"}){${interaction.channel?.name ?? "DM"}}<${interaction.user.tag}>`);
+            }
         } catch (error) {
             console.error("Error handling interaction:",error);
         }

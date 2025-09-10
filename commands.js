@@ -1,7 +1,7 @@
 try{
     //if u need help with a certain function please contact the person who created it. 
     // it should show the author of each function above the function
-    const { AttachmentBuilder, Client, GatewayIntentBits, REST, Routes, PermissionsBitField } = require('discord.js');
+    const { AttachmentBuilder, Client, GatewayIntentBits, REST, Routes, PermissionsBitField, ButtonStyle, MessageFlags } = require('discord.js');
     const util = require("./utilities.js");
     const fs = require("fs");
     const JSONConfig = require("./config.json");
@@ -579,6 +579,13 @@ try{
         }
     }
     new util.Command({name: "getFile".toLowerCase(), description: "retrieve a file (bot admins only)", options: [{name: "path",description: "path to file",type: 3,required: true}],integration_types: [0, 1],contexts: [0, 1, 2]},getFile)
+    //lynx
+    /**
+     * Summons lynx to the discord server the command is run in
+     * function created by houdert6
+     * @param {Interaction} interaction
+     * @returns {Promise<void>}
+     */
     async function lynx(interaction) {
         if (interaction.member.permissions.has(PermissionsBitField.Flags.CreateInstantInvite)){
             // Check if the server already contains lynx
@@ -599,6 +606,41 @@ try{
         }
     }
     new util.Command({name: "lynx", description: "Summon a Lynx to your discord server"}, lynx);
+    //diddlebutton
+    /**
+     * Creates a button to diddle everyone
+     * function created by houdert6
+     * @param {Interaction} interaction
+     * @returns {Promise<void>}
+     */
+    async function diddlebuttoncommand(interaction) {
+        for (var entitlement of await util.getUserEntitlements(interaction.user.id, "1414124214578974883")) {
+            if (!entitlement.consumed) {
+                await interaction.reply({flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: "# Diddle Button!"}, {type: 10, content: "Click the button to diddle everyone:"}], accessory: {type: 2, style: ButtonStyle.Primary, label: "Diddle Everyone!", custom_id: "diddlebutton"}}}}]});
+                await client.application.entitlements.consume(entitlement.id); // Consume the entitlement
+                return;
+            }
+        }
+        await interaction.reply({flags: 32768 | MessageFlags.Ephemeral, components: [{toJSON() {return {type: 9, components: [{type: 10, content: "# Diddle Button!"}, {type: 10, content: "You can buy a diddle button that diddles everyone when clicked!"}], accessory: {type: 2, style: ButtonStyle.Premium, sku_id: "1414124214578974883"}}}}]});
+    }
+    new util.Command({name: "diddlebutton".toLowerCase(), description: "Make a button anyone can use to diddle everyone",integration_types: [0, 1], contexts: [0, 1, 2]}, diddlebuttoncommand);
+    //The Diddle Button (created by the /diddlebutton command)
+    /**
+     * Diddles everyone when clicked
+     * function created by houdert6
+     * @param {Interaction} interaction
+     * @returns {Promise<void>}
+     */
+    async function diddlebutton(interaction) {
+        if (interaction.customId == "diddlebutton") {
+            // Create the response
+            const response = `@everyone has been diddled by ${interaction.user.id}`;
+
+            // Send the reply
+            await interaction.reply({ content: response, fetchReply: true , allowedMentions: {parse: []}});
+        }
+    }
+    new util.ComponentCommand(diddlebutton);
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
