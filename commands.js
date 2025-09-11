@@ -722,7 +722,7 @@ try{
         let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
         let mangoImage = new AttachmentBuilder("./mango.jpeg");
         let mangoLeaderboard = util.User.mangoLeaderboard(page);
-        let reply = {files: [mangoImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: mangoLeaderboard.message}], accessory: {type: 11, media: "attachment://mango.jpeg"}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `mangopage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `mangopage${page + 1}`, disabled: page == mangoLeaderboard.totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
+        let reply = {files: [mangoImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: mangoLeaderboard.message}], accessory: {type: 11, media: {url: "attachment://mango.jpeg"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `mangopage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `mangopage${page + 1}`, disabled: page == mangoLeaderboard.totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
         if (navigatePage) {
             // Update the existing message instead of sending a new one
             await interaction.update(reply);
