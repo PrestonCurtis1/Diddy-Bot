@@ -4,6 +4,7 @@ try{
     const { AttachmentBuilder, Client, GatewayIntentBits, REST, Routes, PermissionsBitField, ButtonStyle, MessageFlags } = require('discord.js');
     const util = require("./utilities.js");
     const fs = require("fs");
+    const path = require("path");
     const JSONConfig = require("./config.json");
     // Code Lynx added, remove if it doesn't work
     //const lynxblacklist = require("./lynxblacklist/lynxblacklist.json");
@@ -747,7 +748,30 @@ try{
         }
     }
     new util.ComponentCommand(mangoLeaderboardButtons);
-    //
+    //lynxblacklist
+    /**
+     * Blacklists servers from running /lynx. Only Lynx can run
+     * function created by lynxoflucidity
+     * @param {Interaction} interaction - The interaction passed by the client.
+     * @returns {Promise<Void>}
+     */
+    /* This is a comment so that I can come back to it later and finish it. Please don't delete this
+    async function lynxblacklist(interaction) {
+        const userId = interactionUser.user.id
+        const guildId = interaction.guildId; //Gets the guild ID to blacklist it
+        //Check if the user running the command is lynx
+        if (!userId == 1234) { //(Change to lynx's user id later
+            await interaction.reply({
+                content: "Sorry, but only Lynx can run this command! If you are trying to disable the /lynx command in your server, xxx", //Replace xxx with the actual instructions later
+                ephemeral: true
+            });
+        }
+        //If it is, add the server's guild ID to lynxblacklist.json
+        else {
+            // finish later
+    }
+    new util.Command({name: 'lynxblacklist',description: 'Blacklist the current server from running /lynx.',integration_types: [0, 1], contexts: [0, 1, 2] },lynxblacklist);
+    */
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
