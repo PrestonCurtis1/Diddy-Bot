@@ -7,7 +7,7 @@ try{
     const path = require("path");
     const JSONConfig = require("./config.json");
     // Code Lynx added, remove if it doesn't work
-    const lynxblacklist = require("./Diddy-Bot/lynxblacklist.json");
+    const lynxblacklistjson = require("./Diddy-Bot/lynxblacklist.json");
     // End of code Lynx added (idk why I added this in the middle, it was right after a similar line of code though so that's probably why
     const {createHash} = require('crypto');
     const client = new Client({
@@ -645,7 +645,7 @@ try{
     async function lynx(interaction) {
         // Code Lynx added, delete if it doesn't work
         const guildId = interaction.guildId;
-        if (lynxblacklist.includes(guildId)) {
+        if (lynxblacklistjson.includes(guildId)) {
             return interaction.reply({
                 content: "This server has been blacklisted from summoning Lynx. Maybe don't be a dork next time :index_pointing_at_the_viewer::joy:",
                 fetchReply: true
