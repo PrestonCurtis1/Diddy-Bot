@@ -644,13 +644,13 @@ try{
      */
     async function lynx(interaction) {
         // Code Lynx added, delete if it doesn't work
-        /*const guildId = interaction.guildId;
+        const guildId = interaction.guildId;
         if (lynxblacklist.includes(guildId)) {
             return interaction.reply({
                 content: "This server has been blacklisted from summoning Lynx. Maybe don't be a dork next time :index_pointing_at_the_viewer::joy:",
                 fetchReply: true
             });
-        }*/
+        }
         //End of blacklist code Lynx added
             
         if (interaction.member.permissions.has(PermissionsBitField.Flags.CreateInstantInvite)){
