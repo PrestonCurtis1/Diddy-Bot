@@ -6,7 +6,7 @@ try{
     const fs = require("fs");
     const JSONConfig = require("./config.json");
     // Code Lynx added, remove if it doesn't work
-    //const lynxblacklist = require("./lynxblacklist.json");
+    //const lynxblacklist = require("./lynxblacklist/lynxblacklist.json");
     // End of code Lynx added (idk why I added this in the middle, it was right after a similar line of code though so that's probably why
     const {createHash} = require('crypto');
     const client = new Client({
@@ -747,6 +747,7 @@ try{
         }
     }
     new util.ComponentCommand(mangoLeaderboardButtons);
+    //
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
