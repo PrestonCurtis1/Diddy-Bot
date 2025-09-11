@@ -6,7 +6,7 @@ try{
     const fs = require("fs");
     const JSONConfig = require("./config.json");
     // Code Lynx added, remove if it doesn't work
-    const lynxblacklist = require("./lynxblacklist.json");
+    //const lynxblacklist = require("./lynxblacklist.json");
     // End of code Lynx added (idk why I added this in the middle, it was right after a similar line of code though so that's probably why
     const {createHash} = require('crypto');
     const client = new Client({
@@ -546,6 +546,7 @@ try{
      */
     async function gamble(interaction){
         let amount = Math.abs(interaction.options.getNumber("amount"));
+        let convertToMangoes = interaction.options.getBoolean("mangoes", false);
         let user = util.User.getUser(interaction.user.id)
         let hasAura = amount <= user.aura; 
         if (!hasAura)amount = user.aura;
@@ -554,8 +555,13 @@ try{
         let result;
         if (win == 1){
             result = Math.floor(amount*percent);
-            user.giveAura(result,false);
-            interaction.reply({content: `You gained ${result} aura from betting ${amount}`,fetchReply:true});
+            if (convertToMangoes) {
+                user.giveMangoes(result);
+                interaction.reply({content: `You gained ${result} mangoes from betting ${amount} aura`,fetchReply:true});
+            } else {
+                user.giveAura(result,false);
+                interaction.reply({content: `You gained ${result} aura from betting ${amount}`,fetchReply:true});
+            }
         } else {
             result = Math.floor(-1*(amount*percent));
             user.giveAura(result,false);
@@ -563,7 +569,7 @@ try{
         }
         
     }
-    new util.Command({name: "gamble", description: "gamble your money", options: [{name: "amount", description: "how much to gamble", type: 10, required: true}], integration_types: [0, 1], contexts: [0, 1, 2]},gamble);
+    new util.Command({name: "gamble", description: "gamble your money", options: [{name: "amount", description: "how much to gamble", type: 10, required: true}, {name: "winmangoes", description: "whether aura received from winning should be converted to mangoes", type: 5, required: false}], integration_types: [0, 1], contexts: [0, 1, 2]},gamble);
     //getFile
     /**
      * Retrieve a file if your a bot admin
@@ -591,13 +597,13 @@ try{
      */
     async function lynx(interaction) {
         // Code Lynx added, delete if it doesn't work
-        const guildId = interaction.guildId;
+        /*const guildId = interaction.guildId;
         if (lynxblacklist.includes(guildId)) {
             return interaction.reply({
                 content: "This server has been blacklisted from summoning Lynx. Maybe don't be a dork next time :index_pointing_at_the_viewer::joy:",
                 fetchReply: true
             });
-        }
+        }*/
         //End of blacklist code Lynx added
             
         if (interaction.member.permissions.has(PermissionsBitField.Flags.CreateInstantInvite)){
@@ -654,27 +660,93 @@ try{
         }
     }
     new util.ComponentCommand(diddlebutton);
-    //lynxblacklist
+    //getMangoes
     /**
-     * Blacklists servers from running /lynx
-     * function created by lynxoflucidity
-     * @param {Interaction} interaction idk what this means so I won't change it
-     * @returns {Promise<void>} same here
+     * sends how many mangoes the given user has
+     * function created by houdert6
+     * @param {Interaction} interaction
+     * @returns {Promise<void>}
      */
-    async function lynxblacklist(interaction) {
-        const lynxId = "1215373521463681147"; //Get lynx's id
-        const guildId = interaction.guildId; //Get the current server's id
+    async function getMangoes(interaction) {
+        const user = interaction.options.getUser("member")
+        if (user === undefined || user === null) user = interaction.user;
+        // Get the user's mangoes
+        const mangoes = util.User.getUser(user.id).mangoes;
 
-        if (interaction.user.id !== lynxId) {
-            //Ephemeral reply
-            return interaction.reply({
-                content: "This command is only availible to Lynx. If you are trying to disable /lynx in your server, modify the /lynx command permissions in Server Settings > Integrations > Diddy Bot."
-                ephemeral: true
-        });
-
-        //The command is unfinished
+        // send the reply
+        await interaction.reply({content: `<@${user.id}> has ${mangoes} mangoes`, fetchReply: true, allowedMentions: {parse: []}});
     }
-    new util.Command({name: "lynxblacklist", description: "Blacklist this server from running /lynx"}, lynxblacklist);
+    new util.Command({name: "getMangoes".toLowerCase(),description: "display how many mangoes a user has",integration_types: [0, 1], contexts: [0, 1, 2], options: [{name: "member",type: 6,description: "User to get mangoes of",required: true}]},getMangoes);
+    //giveMangoes
+    /**
+     * give mangoes to a user
+     * function created by houdert6
+     * @param {Interaction} interaction
+     * @returns {Promise<Void>}
+     */ 
+    async function giveMangoes(interaction){
+        let message;
+        const target = interaction.options.getUser("user");
+        const mangoAmount = interaction.options.getNumber("mangoes");
+        const communityServer = await client.guilds.fetch(JSONConfig.communityServer);
+        let member;
+        let hasMember;
+        try {
+            member = await communityServer.members.fetch(interaction.user.id);
+            hasMember = true;
+        } catch {
+            hasMember = false;
+        }
+        // Only allow bot admins to give mangoes
+        if (hasMember && member.permissions.has(PermissionsBitField.Flags.Administrator)){
+            if (!util.User.exists(target.id)) {
+                util.User.register(target.id, target.tag, {});
+            }
+            util.User.getUser(target.id).giveMangoes(mangoAmount);
+            message = `<@${target.id}> has been given ${mangoAmount} mangoes by <@${interaction.user.id}>`;
+        } else {
+            await interaction.reply({content: `only Diddy Bot admins may give mangoes`, fetchReply: true, ephemeral: true});
+        }
+        await interaction.reply({content: message, fetchReply: true, allowedMentions: {parse: []}});
+    }
+    new util.Command({name:"giveMangoes".toLowerCase(),description: "give mangoes to a user (bot admins only)",integration_types: [0, 1], contexts: [0, 1, 2], options: [{name: "user",type:6,description: "user to give mangoes to",required:true},{name: "mangoes",type: 10,description: "amount of mangoes to give",required: true}]},giveMangoes);
+
+    //mangoLeaderboard
+    /**
+     * sends the global mango leaderboard
+     * function created by houdert6
+     * @param {Interaction} interaction - The interaction passed by the client.
+     * @returns {Promise<Void>}
+     */ 
+    async function mangoLeaderboard(interaction, navigatePage){
+        let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
+        let mangoImage = new AttachmentBuilder("./mango.jpeg");
+        let mangoLeaderboard = util.User.mangoLeaderboard(page);
+        let reply = {files: [mangoImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: mangoLeaderboard.message}], accessory: {type: 11, media: "attachment://mango.jpeg"}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `mangopage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `mangopage${page + 1}`, disabled: page == mangoLeaderboard.totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
+        if (navigatePage) {
+            // Update the existing message instead of sending a new one
+            await interaction.update(reply);
+        } else {
+            await interaction.reply(reply);
+        }
+    }
+    new util.Command({name: "mangoLeaderboard".toLowerCase(),description: "Show the global mango leaderboard",options: [{name: "page", description: "what page to show", type: 10, required: false}],integration_types: [0, 1], contexts: [0, 1, 2]},mangoLeaderboard);
+
+    //Mango Leaderboard previous and next buttons
+    /**
+     * sends a specific page of the mango leaderboard as determined by previous and next buttons
+     * function created by houdert6
+     * @param {Interaction} interaction
+     * @returns {Promise<void>}
+     */
+    async function mangoLeaderboardButtons(interaction) {
+        if (interaction.customId.startsWith("mangopage")) {
+            let page = parseInt(interaction.customId.substring(9));
+            // Update the mango leaderboard message
+            await mangoLeaderboard(interaction, page);
+        }
+    }
+    new util.ComponentCommand(mangoLeaderboardButtons);
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);

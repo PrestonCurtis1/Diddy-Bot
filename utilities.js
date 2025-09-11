@@ -145,7 +145,7 @@ try{
     }
     class User {//const futureDate = new Date(currentDate.getTime() + hoursToAdd * 60 * 60 * 1000); // Add hours in milliseconds
         static all = {};
-        constructor(id,tag,aura,boosters,guilds){//for guilds use {"server_id_one": 10,"server_id_two":10}
+        constructor(id,tag,aura,boosters,guilds,mangoes){//for guilds use {"server_id_one": 10,"server_id_two":10}
             this.id = id;//string
             this.name = tag;//string
             this.aura = aura;//int
@@ -161,6 +161,7 @@ try{
             for (const serverId in guilds){
                 Guild.getGuild(serverId).addUser({"user":this,"coins":guilds[serverId]});
             };
+            this.mangoes = mangoes;
         }
         async update(key,value){
             if (loadingData)return;
@@ -172,7 +173,7 @@ try{
         static async register(userId,userTag,guilds={}){
             if (loadingData)return;
             msg(`registering user ${userTag}`);
-            new User(userId,userTag,100,{"temp":{"multi":0,"endTime": new Date()},"perm":0},guilds);
+            new User(userId,userTag,100,{"temp":{"multi":0,"endTime": new Date()},"perm":0},guilds,0);
             let user = {"id": userId, "name": userTag, "aura": 100, "boosters": {"temp":{"multi":0,"endTime": new Date()},"perm":0},"guilds":guilds}
             await runAsync(
                 `INSERT OR REPLACE INTO User (id, name, aura, boosters, guilds) VALUES (?, ?, ?, ?, ?)`,
@@ -273,6 +274,48 @@ try{
             }
 
             return message;
+        }
+
+        getMangoes() {
+            return this.mangoes;
+        }
+        giveMangoes(amount) {
+            this.mangoes += Math.floor(amount);
+            this.update("mangoes", this.mangoes);
+        }
+
+        static mangoLeaderboard(page = 1) {
+            const perPage = 10;
+            const userMangoList = [];
+
+            for (const key in User.all) {
+                userMangoList.push({
+                    name: User.all[key].getName(),
+                    mangoes: User.all[key].getMangoes()
+                });
+            }
+
+            userMangoList.sort((a, b) => b.mangoes - a.mangoes);
+
+            const totalPages = Math.ceil(userMangoList.length / perPage);
+            const pageIndex = Math.max(0, Math.min(page - 1, totalPages - 1)); // Clamp page
+
+            const start = pageIndex * perPage;
+            const end = start + perPage;
+            const pageUsers = userMangoList.slice(start, end);
+
+            let message = `## Global Mango Leaderboard — Page ${pageIndex + 1}/${totalPages}\n`;
+
+            pageUsers.forEach((user, index) => {
+                const rank = start + index + 1;
+                message += `**${rank}.** @${user.name} — ${user.mangoes} mangoes\n`;
+            });
+
+            if (userMangoList.length === 0) {
+                message += `No players found.`;
+            }
+
+            return {message, totalPages};
         }
 
         display(){
@@ -483,10 +526,30 @@ try{
             name TEXT,
             aura INTEGER,
             boosters TEXT,
-            guilds TEXT
+            guilds TEXT,
+            mangoes INTEGER
             )
         `);
         console.log("user table created");
+        // Update the user table to have a column for mangoes
+        var userColumns = await allAsync(`
+            PRAGMA table_info(User);
+        `);
+        var hasMangoes = false;
+        for (var column of userColumns) {
+            if (column.name == "mangoes") {
+                hasMangoes = true;
+                break;
+            }
+        }
+        console.log("has mangoes column:", hasMangoes);
+        if (!hasMangoes) {
+            console.log("creating mangoes column");
+            await runAsync(`
+                ALTER TABLE User
+                ADD COLUMN mangoes INTEGER
+            `);
+        }
     }
     async function loadData() {
         loadingData = true;
@@ -525,7 +588,8 @@ try{
                 user.name,
                 user.aura,
                 JSON.parse(user.boosters),
-                JSON.parse(user.guilds)
+                JSON.parse(user.guilds),
+                user.mangoes
             );
             }
 
