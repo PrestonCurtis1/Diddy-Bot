@@ -161,6 +161,9 @@ try{
             for (const serverId in guilds){
                 Guild.getGuild(serverId).addUser({"user":this,"coins":guilds[serverId]});
             };
+            if (mangoes === null || mangoes === undefined || isNaN(mangoes)) {
+                mangoes = 0;
+            }
             this.mangoes = mangoes;
         }
         async update(key,value){
