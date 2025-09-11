@@ -7,7 +7,7 @@ try{
     const path = require("path");
     const JSONConfig = require("./config.json");
     // Code Lynx added, remove if it doesn't work
-    //const lynxblacklist = require("./lynxblacklist/lynxblacklist.json");
+    const lynxblacklist = require("./Diddy-Bot/lynxblacklist.json");
     // End of code Lynx added (idk why I added this in the middle, it was right after a similar line of code though so that's probably why
     const {createHash} = require('crypto');
     const client = new Client({
@@ -801,23 +801,26 @@ try{
      * @param {Interaction} interaction - The interaction passed by the client.
      * @returns {Promise<Void>}
      */
-    /* This is a comment so that I can come back to it later and finish it. Please don't delete this
     async function lynxblacklist(interaction) {
         const userId = interactionUser.user.id
         const guildId = interaction.guildId; //Gets the guild ID to blacklist it
         //Check if the user running the command is lynx
         if (!userId == 1234) { //(Change to lynx's user id later
-            await interaction.reply({
-                content: "Sorry, but only Lynx can run this command! If you are trying to disable the /lynx command in your server, xxx", //Replace xxx with the actual instructions later
+            return interaction.reply({
+                content: "Sorry, but only Lynx can run this command! If you are trying to disable the /lynx command in your server, modify the permissions in Server Settings > Integrations > Diddy Bot.", //Replace xxx with the actual instructions later
                 ephemeral: true
             });
         }
         //If it is, add the server's guild ID to lynxblacklist.json
         else {
-            // finish later
+            const jsonString = JSON.stringify(data, null, 2);
+            fs.writeFileSync("lynxblacklist.json", jsonString);
+            return interaction.reply({
+                content: "This server has been blacklisted from summoning Lynx."
+            });
+        }
     }
     new util.Command({name: 'lynxblacklist',description: 'Blacklist the current server from running /lynx.',integration_types: [0, 1], contexts: [0, 1, 2] },lynxblacklist);
-    */
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
