@@ -257,7 +257,7 @@ try{
      */ 
     async function getCoins(interaction){
         const coins = util.User.getUser(interaction.options.getUser("member").id)?.getCoins(util.Guild.getGuild(interaction.guild.id)) ?? 0;
-        let response = `${interaction.options.getUser("member")} has ${coins} coins`
+        let response = `${interaction.options.getUser("member")} has ${coins} ${coins == 1 ? "coin" : "coins"}`
         await interaction.reply({content: response, fetchReply: true, allowedMentions: {parse: []}});
     }
     new util.Command({name: "getCoins".toLowerCase(),description: "get a users coin balance",dm_permission: false,options:[{name: "member", type: 6, description: "member to get the coins of", required: true}]},getCoins);
@@ -546,7 +546,7 @@ try{
      */
     async function gamble(interaction){
         let amount = Math.abs(interaction.options.getNumber("amount"));
-        let convertToMangoes = interaction.options.getBoolean("mangoes", false);
+        let convertToMangoes = interaction.options.getBoolean("winmangoes", false);
         let user = util.User.getUser(interaction.user.id)
         let hasAura = amount <= user.aura; 
         if (!hasAura)amount = user.aura;
@@ -674,7 +674,7 @@ try{
         const mangoes = util.User.getUser(user.id).mangoes;
 
         // send the reply
-        await interaction.reply({content: `<@${user.id}> has ${mangoes} mangoes`, fetchReply: true, allowedMentions: {parse: []}});
+        await interaction.reply({content: `<@${user.id}> has ${mangoes} ${mangoes == 1 ? "mango" : "mangoes"}`, fetchReply: true, allowedMentions: {parse: []}});
     }
     new util.Command({name: "getMangoes".toLowerCase(),description: "display how many mangoes a user has",integration_types: [0, 1], contexts: [0, 1, 2], options: [{name: "member",type: 6,description: "User to get mangoes of",required: true}]},getMangoes);
     //giveMangoes
