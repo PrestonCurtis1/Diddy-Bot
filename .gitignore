@@ -11,3 +11,4 @@ backup/
 bot.log
 cron-check.log
 lynx.json
+lynxblacklist.json
