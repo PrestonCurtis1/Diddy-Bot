@@ -287,11 +287,34 @@ try{
      * @param {Interaction} interaction - The interaction passed by the client.
      * @returns {Promise<Void>}
      */ 
-    async function coinBoard(interaction){
-        let page = interaction.options.getNumber("page") ?? 1;
-        await interaction.reply({content: util.Guild.getGuild(interaction.guild.id).leaderboard(page),fetchReply: true, allowedMentions: {parse: []}});
+    async function coinBoard(interaction, navigatePage){
+        let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
+        let diddycoinImage = new AttachmentBuilder("./DiddyBotCoin.png");//image from chatgpt.com. the image is slighlty edited
+        let coinLeaderBoard = util.Guild.getGuild(interaction.guild.id).leaderboard(page)
+        let reply = {files: [diddycoinImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: coinLeaderBoard.message}], accessory: {type: 11, media: {url: "attachment://DiddyBotCoin.png"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `coinpage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `coinpage${page + 1}`, disabled: page == coinLeaderBoard.totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
+        if (navigatePage) {
+            // Update the existing message instead of sending a new one
+            await interaction.update(reply);
+        } else {
+            await interaction.reply(reply);
+        }
     }
     new util.Command({name: "coinLeaderBoard".toLowerCase(),description: "leaderboard for coins",options: [{name: "page", description: "what page to show", type: 10, required: false}], dm_permission : false},coinBoard)
+    //coinbuttons
+    /**
+     * the buttons have functions -unprankable 9/11/2025 1:32:36 PM
+     * function created by houdable <houdert and unprankable> but mostly houdert
+     * @param {Interaction} interaction 
+     * @returns {Promise<Void>}
+     */
+    async function coinLeaderboardButtons(interaction) {
+        if (interaction.customId.startsWith("coinpage")) {
+            let page = parseInt(interaction.customId.substring(8));
+            // Update the mango leaderboard message
+            await coinBoard(interaction, page);//ill give you 1000000 aura diddy beta if you let this work.
+        }
+    }
+    new util.ComponentCommand(coinLeaderboardButtons);
     //auraLeaderboard
     /**
      * sends the global aura leaderboard
@@ -299,11 +322,34 @@ try{
      * @param {Interaction} interaction - The interaction passed by the client.
      * @returns {Promise<Void>}
      */ 
-    async function auraBoard(interaction){
-        let page = interaction.options.getNumber("page") ?? 1;
-        await interaction.reply({content: util.User.leaderboard(page),fetchReply: true, allowedMentions: {parse: []}});
+    async function auraBoard(interaction, navigatePage){
+        let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
+        let auraImage = new AttachmentBuilder("./aura.png");//image from freepik
+        let auraLeaderboard = util.User.leaderboard(page);
+        let reply = {files: [auraImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: auraLeaderboard.message}], accessory: {type: 11, media: {url: "attachment://aura.png"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `aurapage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `aurapage${page + 1}`, disabled: page == auraLeaderboard.totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
+        if (navigatePage) {
+            // Update the existing message instead of sending a new one
+            await interaction.update(reply);
+        } else {
+            await interaction.reply(reply);
+        }
     }
     new util.Command({name: "auraLeaderboard".toLowerCase(),description: "Show the global aura leaderboard",options: [{name: "page", description: "what page to show", type: 10, required: false}],integration_types: [0, 1], contexts: [0, 1, 2]},auraBoard);
+    //aurabuttons
+    /**
+     * the buttons have function -unprankable 9/11/2025 1:32:36 PM
+     * function created by houdable <houdert and unprankable> but mostly houdert
+     * @param {Interaction} interaction 
+     * @returns {Promise<Void>}
+     */
+    async function auraLeaderboardButtons(interaction) {
+        if (interaction.customId.startsWith("aurapage")) {
+            let page = parseInt(interaction.customId.substring(8));
+            // Update the mango leaderboard message
+            await auraBoard(interaction, page);//ill give you 1000000 aura diddy beta if you let this work.
+        }
+    }
+    new util.ComponentCommand(auraLeaderboardButtons);
     //buyCoins
     /**
      * gives coins to the given user
@@ -721,7 +767,7 @@ try{
      */ 
     async function mangoLeaderboard(interaction, navigatePage){
         let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
-        let mangoImage = new AttachmentBuilder("./mango.jpeg");
+        let mangoImage = new AttachmentBuilder("./mango.jpeg");//image from walmart.com. the image is slighlty edited
         let mangoLeaderboard = util.User.mangoLeaderboard(page);
         let reply = {files: [mangoImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: mangoLeaderboard.message}], accessory: {type: 11, media: {url: "attachment://mango.jpeg"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `mangopage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `mangopage${page + 1}`, disabled: page == mangoLeaderboard.totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
         if (navigatePage) {

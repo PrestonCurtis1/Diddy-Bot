@@ -139,7 +139,7 @@ try{
                 message += `No players found.`;
             }
 
-            return message;
+            return {message, totalPages};
         }
   
     }
@@ -231,7 +231,7 @@ try{
             }
         }
         giveCoins(amount,guild){
-            if(guild.hasUser(this.id)){
+            if(!guild.hasUser(this.id)){
                 guild.addUser({"user":this,"coins":amount});
             }
             guild.users[this.id].coins += Math.floor(amount);
@@ -276,7 +276,7 @@ try{
                 message += `No players found.`;
             }
 
-            return message;
+            return {message, totalPages};
         }
 
         getMangoes() {
