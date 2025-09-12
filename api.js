@@ -112,7 +112,7 @@ async function runApi() {
         const { token } = req.params;
         if (token !== SECRET_KEY) return res.status(403).send("Forbidden: Invalid token");
 
-        const cookies = req.header("cookie");
+        let cookies = req.header("cookie");
 
         if (req.query.code) {
             let codeWorked = true;
@@ -131,6 +131,7 @@ async function runApi() {
             if (codeWorked) {
                 res.set('Set-Cookie', `auth=${resJson.access_token}; Max-Age=${resJson.expires_in}`);
             }
+            cookies = `auth=${resJson.access_token}`;
         }
 
         let username;
