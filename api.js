@@ -206,7 +206,7 @@ async function runApi() {
                 <div style="align-items: center; display: flex; flex-direction: column; width: 100%;">
                     <div style="display:flex;">
                         <h1 style="position: relative; left:70px;">Diddy Bot Developer Panel</h1>
-                        <img src="https://cdn.discordapp.com/avatar/${pfp}" style="width: 50px; height:50px; margin-left:100px; clip-path: circle(50% at 50% 50%)"/>
+                        <img src="https://cdn.discordapp.com/avatars/${pfp}?size=512" style="width: 50px; height:50px; margin-left:100px; clip-path: circle(50% at 50% 50%)"/>
                         <span>${username} <a style="color: red;" href="#" onclick="logout();">Log Out</a><span>
                     </div>
                     <button id="run" style="width:10%; height: 5%; padding: 5px;">Run Code</button>
