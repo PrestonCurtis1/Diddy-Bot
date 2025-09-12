@@ -6,9 +6,7 @@ try{
     const fs = require("fs");
     const path = require("path");
     const JSONConfig = require("./config.json");
-    // Code Lynx added, remove if it doesn't work
     const lynxblacklistjson = require("./lynxblacklist.json");
-    // End of code Lynx added (idk why I added this in the middle, it was right after a similar line of code though so that's probably why
     const {createHash} = require('crypto');
     const client = new Client({
         intents: [
@@ -814,7 +812,7 @@ try{
         //If it is, add the server's guild ID to lynxblacklist.json
         else {
             const jsonString = JSON.stringify(data, null, 2);
-            fs.writeFileSync(lynxblacklistjson, jsonString);
+            fs.writeFile(lynxblacklistjson, jsonString)
             return interaction.reply({
                 content: "This server has been blacklisted from summoning Lynx."
             });
