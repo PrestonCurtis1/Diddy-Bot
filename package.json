@@ -2,6 +2,7 @@
   "dependencies": {
     "discord.js": "^14.16.3",
     "express": "^5.1.0",
+    "monaco-editor": "^0.53.0",
     "pm2": "^5.4.3",
     "sqlite3": "^5.1.7",
     "undici": "^7.1.1",

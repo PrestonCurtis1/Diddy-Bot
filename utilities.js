@@ -766,6 +766,13 @@ try{
         }
         return entitlements;
     }
+
+    async function isDev(userId) {
+        // Check if the user is a dev in the community server
+        const communityServer = await client.guilds.fetch(JSONConfig.communityServer);
+        const devRole = await communityServer.roles.fetch(JSONConfig.communityDevRole);
+        return devRole.members.has(userId);
+    }
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
         await createTables();
@@ -781,6 +788,7 @@ try{
         getPickupLines,
         getLynxAccessToken,
         getUserEntitlements,
+        isDev,
         Guild,
         User,
         Shop,
