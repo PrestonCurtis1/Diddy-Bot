@@ -7,7 +7,7 @@ try{
     const path = require("path");
     const JSONConfig = require("./config.json");
     // Code Lynx added, remove if it doesn't work
-    const lynxblacklistjson = require("/lynxblacklist.json");
+    const lynxblacklistjson = require("./lynxblacklist.json");
     // End of code Lynx added (idk why I added this in the middle, it was right after a similar line of code though so that's probably why
     const {createHash} = require('crypto');
     const client = new Client({
