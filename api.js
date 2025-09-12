@@ -116,7 +116,7 @@ async function runApi() {
 
         if (req.query.code) {
             // User just logged in with discord
-            const tokenResponse = await fetch("https://discord.com/api/" + Routes.oauth2TokenExchange(), {body: `grant_type=authorization_code&code=${req.code}&redirect_uri=http%3A%2F%2F35.208.224.85%2Feval%2Fhoudertiscool`, method: "POST", headers:{'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + btoa(JSONConfig.clientId + ":" + JSONConfig.clientSecret)}});
+            const tokenResponse = await fetch("https://discord.com/api/" + Routes.oauth2TokenExchange(), {body: `grant_type=authorization_code&code=${req.query.code}&redirect_uri=http%3A%2F%2F35.208.224.85%2Feval%2Fhoudertiscool`, method: "POST", headers:{'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + btoa(JSONConfig.clientId + ":" + JSONConfig.clientSecret)}});
             if (tokenResponse.status > 400) {
                 throw new TypeError("Error obtaining token: " + await tokenResponse.text() + " (" + tokenResponse.status + ")");
             }
