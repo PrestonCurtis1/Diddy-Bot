@@ -115,18 +115,21 @@ async function runApi() {
         const cookies = req.header("cookie");
 
         if (req.query.code) {
+            let codeWorked = true;
             // User just logged in with discord
             const tokenResponse = await fetch("https://discord.com/api/" + Routes.oauth2TokenExchange(), {body: `grant_type=authorization_code&code=${req.query.code}&redirect_uri=http%3A%2F%2F35.208.224.85%2Feval%2Fhoudertiscool`, method: "POST", headers:{'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + btoa(JSONConfig.clientId + ":" + JSONConfig.clientSecret)}});
             if (tokenResponse.status > 400) {
-                throw new TypeError("Error obtaining token: " + await tokenResponse.text() + " (" + tokenResponse.status + ")");
+                console.error("Error obtaining token: " + await tokenResponse.text() + " (" + tokenResponse.status + ")");
+                codeWorked = false;
             }
             const resJson = JSON.parse(await tokenResponse.text());
             if (resJson.error) {
-                throw new TypeError("Error obtaining token: " + await tokenResponse.text() + " (" + tokenResponse.status + ")");
+                console.error("Error obtaining token: " + await tokenResponse.text() + " (" + tokenResponse.status + ")");
+                codeWorked = false;
             }
-            res.set('Set-Cookie', `auth=${resJson.access_token}; Max-Age=${resJson.expires_in}`);
-            // Remove the code from the uri
-            res.status(302).set("Location", req.protocol + "://" + req.get("host") + req.originalUrl.substring(0, req.originalUrl.indexOf("?")));
+            if (codeWorked) {
+                res.set('Set-Cookie', `auth=${resJson.access_token}; Max-Age=${resJson.expires_in}`);
+            }
         }
 
         let username;
