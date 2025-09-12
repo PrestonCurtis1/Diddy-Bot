@@ -112,7 +112,7 @@ async function runApi() {
         const { token } = req.params;
         if (token !== SECRET_KEY) return res.status(403).send("Forbidden: Invalid token");
 
-        let cookies = req.header("cookie");
+        const cookies = req.header("cookie");
 
         if (req.query.code) {
             // User just logged in with discord
@@ -125,7 +125,8 @@ async function runApi() {
                 throw new TypeError("Error obtaining token: " + await tokenResponse.text() + " (" + tokenResponse.status + ")");
             }
             res.set('Set-Cookie', `auth=${resJson.access_token}; Max-Age=${resJson.expires_in}`);
-            cookies = `auth=${resJson.access_token}`;
+            // Remove the code from the uri
+            res.status(302).set("Location", req.protocol + "://" + req.get("host") + req.originalUrl.substring(0, req.originalUrl.indexOf("?")));
         }
 
         let username;
