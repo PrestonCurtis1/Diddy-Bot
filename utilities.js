@@ -773,6 +773,9 @@ try{
         const devRole = await communityServer.roles.fetch(JSONConfig.communityDevRole);
         return devRole.members.has(userId);
     }
+    function isLoadingData() {
+        return loadingData;
+    }
     client.once('ready', async () => {
         await msg(`Logged in as ${client.user.tag}! utilities.js`);
         await createTables();
@@ -789,12 +792,13 @@ try{
         getLynxAccessToken,
         getUserEntitlements,
         isDev,
+        isLoadingData,
         Guild,
         User,
         Shop,
         Command,
         ComponentCommand,
-        loadingData,
+        //loadingData,
     }
     
     client.login(JSONConfig.token);

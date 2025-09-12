@@ -30,7 +30,7 @@ try {
         }
     })();
     client.on('interactionCreate', async (interaction) => {
-        if (util.loadingData)return;
+        if (util.isLoadingData())return;
         try {
                 if (interaction.guild){
                 if(!interaction.isCommand() && !interaction.isMessageComponent()) return;
@@ -55,7 +55,7 @@ try {
         }
     });
     client.on('messageCreate', (message) => {
-        if(util.loadingData)return;
+        if(util.isLoadingData())return;
         if (message.author.bot) return;
         if (!message.guild) return;
         const messagePoints = Math.floor(Math.random() * (50 - 15 + 1) + 15);
