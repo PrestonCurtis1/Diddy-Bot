@@ -128,6 +128,9 @@ async function runApi() {
             cookies = `auth=${resJson.access_token}`;
         }
 
+        let username;
+        let pfp;
+
         if (cookies) {
             for (var cookie of cookies.split(";")) {
                 cookie = cookie.trim().split("=");
@@ -164,6 +167,8 @@ async function runApi() {
                             `)
                         return;
                     }
+                    username = userResJson.global_name;
+                    pfp = userResJson.id + "/" + userResJson.avatar;
                 }
             }
         } else {
@@ -199,7 +204,11 @@ async function runApi() {
                 <div id="code" style="height: 100%; width: 70vw;"></div>
                 <div style="border-right: 1px solid gray; margin-left: 10px; margin-right: 20px;"></div>
                 <div style="align-items: center; display: flex; flex-direction: column; width: 100%;">
-                    <h1>Diddy Bot Developer Panel</h1>
+                    <div style="display:flex;">
+                        <h1 style="position: relative; left:70px;">Diddy Bot Developer Panel</h1>
+                        <img src="https://cdn.discordapp.com/avatar/${pfp}" style="width: 50px; height:50px; margin-left:100px; clip-path: circle(50% at 50% 50%)"/>
+                        <span>${username} <a style="color: red;" href="#" onclick="logout();">Log Out</a><span>
+                    </div>
                     <button id="run" style="width:10%; height: 5%; padding: 5px;">Run Code</button>
                     <div style="position: relative;top: 50%; width: 100%; left: 30px;">
                         <h2 style="width:100%;border: 2px solid gray;border-radius: 10px;padding: 3px; margin-bottom:0;">Output</h2>
@@ -208,6 +217,10 @@ async function runApi() {
                 </div>
 
                 <script>
+                    function logout() {
+                        document.cookie = 'auth=0; Max-Age=-1';
+                        location.reload();
+                    }
                     document.addEventListener('DOMContentLoaded', () => {
                         require.config({ paths: { vs: '../monaco/min/vs' } });
 			            require(['vs/editor/editor.main'], function () {
