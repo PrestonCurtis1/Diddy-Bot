@@ -147,9 +147,12 @@ async function runApi() {
                     if (userRes.status > 400) {
                         util.msg("Could not fetch logged in user to dev panel: " + await userRes.text() + " (" + userRes.status + ")");
                     }
-                    const userResJson = JSON.parse(await userRes.text());
+                    const userResText = await userRes.text();
+                    const userResJson = JSON.parse(userResText);
                     if (userResJson.error) {
-                        util.msg("Could not fetch logged in user to dev panel: " + await userRes.text() + " (" + userRes.status + ")");
+                        util.msg("Could not fetch logged in user to dev panel: " + userResText + " (" + userRes.status + ")");
+                        res.status(302).set('Location', 'https://discord.com/oauth2/authorize?client_id=1305713838775210015&response_type=code&redirect_uri=http%3A%2F%2F35.208.224.85%2Feval%2Fhoudertiscool&scope=identify').end();
+                        return;
                     }
                     if (!await util.isDev(userResJson.id)) {
                         res.status(403).send(`
