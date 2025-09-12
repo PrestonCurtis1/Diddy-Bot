@@ -158,7 +158,6 @@ async function runApi() {
                         res.status(302).set('Location', 'https://discord.com/oauth2/authorize?client_id=1305713838775210015&response_type=code&redirect_uri=http%3A%2F%2F35.208.224.85%2Feval%2Fhoudertiscool&scope=identify').end();
                         return;
                     }
-                    console.log(userResJson);
                     if (!await util.isDev(userResJson.id)) {
                         res.status(403).send(`
                             <!DOCTYPE html>
