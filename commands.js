@@ -803,14 +803,13 @@ try{
         const userId = interactionUser.user.id
         const guildId = interaction.guildId; //Gets the guild ID to blacklist it
         //Check if the user running the command is lynx
-        if (!userId == 1234) { //(Change to lynx's user id later
+        if (!userId == 1215373521463681147) {
             return interaction.reply({
-                content: "Sorry, but only Lynx can run this command! If you are trying to disable the /lynx command in your server, modify the permissions in Server Settings > Integrations > Diddy Bot.", //Replace xxx with the actual instructions later
+                content: "Sorry, but only Lynx can run this command! If you are trying to disable the /lynx command in your server, modify the permissions in Server Settings > Integrations > Diddy Bot.",
                 ephemeral: true
             });
         }
         //If it is, add the server's guild ID to lynxblacklist.json
-        //I was going to add a comment for something but forgot what
         else {
             const jsonString = JSON.stringify(data, null, 2);
             fs.writeFile(lynxblacklistjson, jsonString)
