@@ -810,6 +810,7 @@ try{
             });
         }
         //If it is, add the server's guild ID to lynxblacklist.json
+        //I was going to add a comment for something but forgot what
         else {
             const jsonString = JSON.stringify(data, null, 2);
             fs.writeFile(lynxblacklistjson, jsonString)
