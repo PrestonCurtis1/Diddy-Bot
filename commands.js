@@ -800,21 +800,21 @@ try{
      * @returns {Promise<Void>}
      */
     async function lynxblacklist(interaction) {
-        const userId = interactionUser.user.id
+        const userId = interactionUser.user.id //Gets the user's ID to check if it's lynx
         const guildId = interaction.guildId; //Gets the guild ID to blacklist it
         //Check if the user running the command is lynx
-        if (!userId == 1215373521463681147) {
-            return interaction.reply({
-                content: "Sorry, but only Lynx can run this command! If you are trying to disable the /lynx command in your server, modify the permissions in Server Settings > Integrations > Diddy Bot.",
-                ephemeral: true
-            });
-        }
-        //If it is, add the server's guild ID to lynxblacklist.json
-        else {
+        if (userId == 1215373521463681147) {
+            //If it is, add the server's guild ID to lynxblacklist.json
             const jsonString = JSON.stringify(data, null, 2);
             fs.writeFile(lynxblacklistjson, jsonString)
             return interaction.reply({
                 content: "This server has been blacklisted from summoning Lynx."
+            });
+        }
+        else {
+            return interaction.reply({
+                content: "Sorry, but only Lynx can run this command! If you are trying to disable the /lynx command in your server, modify the permissions in Server Settings > Integrations > Diddy Bot.",
+                ephemeral: true
             });
         }
     }
