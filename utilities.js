@@ -771,6 +771,9 @@ try{
         // Check if the user is a dev in the community server
         const communityServer = await client.guilds.fetch(JSONConfig.communityServer);
         const devRole = await communityServer.roles.fetch(JSONConfig.communityDevRole);
+        for (var id of devRole.members.keys()) {
+            console.log("member: ", id);
+        }
         return devRole.members.has(userId);
     }
     function isLoadingData() {
