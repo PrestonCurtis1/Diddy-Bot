@@ -132,8 +132,8 @@ async function runApi() {
             }
             if (codeWorked) {
                 res.set('Set-Cookie', `auth=${resJson.access_token}; Max-Age=${resJson.expires_in}`);
+                cookies = `auth=${resJson.access_token}`;
             }
-            cookies = `auth=${resJson.access_token}`;
         }
 
         let username;
