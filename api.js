@@ -145,7 +145,7 @@ async function runApi() {
                     if (userResJson.error) {
                         util.msg("Could not fetch logged in user to dev panel: " + await userRes.text() + " (" + userRes.status + ")");
                     }
-                    if (!util.isDev(userResJson.id)) {
+                    if (!await util.isDev(userResJson.id)) {
                         res.status(403).send(`
                             <!DOCTYPE html>
                                 <html>
@@ -274,7 +274,7 @@ async function runApi() {
                     if (userResJson.error) {
                         util.msg("Could not fetch logged in user to dev panel: " + await userRes.text() + " (" + userRes.status + ")");
                     }
-                    if (!util.isDev(userResJson.id)) {
+                    if (!await util.isDev(userResJson.id)) {
                         return res.status(403).json({ error: "Forbidden: Not a developer" });
                     }
                 }
