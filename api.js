@@ -122,11 +122,13 @@ async function runApi() {
                 console.error("Error obtaining token: " + await tokenResponse.text() + " (" + tokenResponse.status + ")");
                 codeWorked = false;
             }
-            const resText = await tokenResponse.text();
-            const resJson = JSON.parse(resText);
-            if (resJson.error) {
-                console.error("Error obtaining token: " + resText + " (" + tokenResponse.status + ")");
-                codeWorked = false;
+            if (codeWorked) {
+                const resText = await tokenResponse.text();
+                const resJson = JSON.parse(resText);
+                if (resJson.error) {
+                    console.error("Error obtaining token: " + resText + " (" + tokenResponse.status + ")");
+                    codeWorked = false;
+                }
             }
             if (codeWorked) {
                 res.set('Set-Cookie', `auth=${resJson.access_token}; Max-Age=${resJson.expires_in}`);
@@ -146,6 +148,8 @@ async function runApi() {
                     const userRes = await fetch('https://discord.com/api/users/@me', {headers: {'Authorization': `Bearer ${value}`}});
                     if (userRes.status > 400) {
                         util.msg("Could not fetch logged in user to dev panel: " + await userRes.text() + " (" + userRes.status + ")");
+                        res.status(302).set('Location', 'https://discord.com/oauth2/authorize?client_id=1305713838775210015&response_type=code&redirect_uri=http%3A%2F%2F35.208.224.85%2Feval%2Fhoudertiscool&scope=identify').end();
+                        return;
                     }
                     const userResText = await userRes.text();
                     const userResJson = JSON.parse(userResText);
