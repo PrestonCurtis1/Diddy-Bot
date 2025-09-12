@@ -129,10 +129,10 @@ async function runApi() {
                     console.error("Error obtaining token: " + resText + " (" + tokenResponse.status + ")");
                     codeWorked = false;
                 }
-            }
-            if (codeWorked) {
-                res.set('Set-Cookie', `auth=${resJson.access_token}; Max-Age=${resJson.expires_in}`);
-                cookies = `auth=${resJson.access_token}`;
+                if (codeWorked) {
+                    res.set('Set-Cookie', `auth=${resJson.access_token}; Max-Age=${resJson.expires_in}`);
+                    cookies = `auth=${resJson.access_token}`;
+                }
             }
         }
 
