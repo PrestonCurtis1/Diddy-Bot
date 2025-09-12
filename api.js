@@ -122,9 +122,10 @@ async function runApi() {
                 console.error("Error obtaining token: " + await tokenResponse.text() + " (" + tokenResponse.status + ")");
                 codeWorked = false;
             }
-            const resJson = JSON.parse(await tokenResponse.text());
+            const resText = await tokenResponse.text();
+            const resJson = JSON.parse(resText);
             if (resJson.error) {
-                console.error("Error obtaining token: " + await tokenResponse.text() + " (" + tokenResponse.status + ")");
+                console.error("Error obtaining token: " + resText + " (" + tokenResponse.status + ")");
                 codeWorked = false;
             }
             if (codeWorked) {
