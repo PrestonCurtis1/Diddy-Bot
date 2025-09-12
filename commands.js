@@ -814,7 +814,7 @@ try{
         //If it is, add the server's guild ID to lynxblacklist.json
         else {
             const jsonString = JSON.stringify(data, null, 2);
-            fs.writeFileSync("lynxblacklist.json", jsonString);
+            fs.writeFileSync(lynxblacklistjson, jsonString);
             return interaction.reply({
                 content: "This server has been blacklisted from summoning Lynx."
             });
