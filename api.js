@@ -246,6 +246,7 @@ async function runApi() {
         if (token !== SECRET_KEY) return res.status(403).json({ error: "Forbidden: Invalid token" });
 
         // Check if the user is logged in
+        let cookies = req.header("cookie");
         if (cookies) {
             for (var cookie of cookies.split(";")) {
                 cookie = cookie.trim().split("=");
