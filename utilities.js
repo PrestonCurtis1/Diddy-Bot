@@ -422,6 +422,7 @@ try{
                         user.giveAura((-1*price),false);
                     }
                     this.balance += price;
+                    this.update("balance", this.balance);
                     user.giveCoins(amount,guild);
                     return `payment of ${amount} coins for ${price} ${currencyType} successful`
                 }
