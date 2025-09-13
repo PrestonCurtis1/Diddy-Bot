@@ -200,7 +200,7 @@ try{
      */ 
     async function shop(interaction){
         const response = util.Guild.getGuild(interaction.guild.id).shop.showShop();
-        await interaction.reply({content: response, fetchReply: true, allowedMentions: {parse: []}})
+        await interaction.reply({components: response.components, flags: 32768, files: [response.shopPng], fetchReply: true, allowedMentions: {parse: []}})
     }
     new util.Command({name:"shop",description: "list the items you can buy",dm_permission: false},shop);
     //giveAura
@@ -358,7 +358,7 @@ try{
     async function buycoins(interaction){
         interaction.reply({content: util.Guild.getGuild(interaction.guild.id).shop.buyCoins(interaction.options.getNumber("amount"),util.Guild.getGuild(interaction.guild.id),util.User.getUser(interaction.user.id)), fetchReply: true, allowedMentions: {parse: []}});
     }
-    new util.Command({name:"buyCoins".toLowerCase(),description:"buy coins with aura if server has enabled",dm_permission: false, options: [{name: "amount",type: 10, description: "amount of coins to buy", required: true}]},buycoins);
+    new util.Command({name:"buyCoins".toLowerCase(),description:"buy coins with aura or mangoes if server has enabled",dm_permission: false, options: [{name: "amount",type: 10, description: "amount of coins to buy", required: true}]},buycoins);
     //ShowServerSettings
     /**
      * display the current server settings
@@ -819,6 +819,42 @@ try{
         }
     }
     new util.Command({name: 'lynxblacklist',description: 'Blacklist the current server from running /lynx.',integration_types: [0, 1], contexts: [0, 1, 2] },lynxblacklist);
+
+    async function buyShopItemButton(interaction) {
+        if (interaction.customId.startsWith("buyshopitem") || interaction.customId.startsWith("buyshopconf")) {
+            const shopItemTypes = ["role", "channel"];
+            let type;
+            for (var shopItemType of shopItemTypes) {
+                if (interaction.customId.substring(11).indexOf(shopItemType) == 0) {
+                    type = shopItemType;
+                    break;
+                }
+            }
+            if (!type) return;
+            const itemId = interaction.customId.substring(11 + type.length);
+            let desc;
+                switch (type) {
+                    case "role":
+                        desc = `<@&${itemId}>`;
+                        break;
+                    case "channel":
+                        desc = `<#${itemId}>`;
+                        break;
+                }
+            if (interaction.customId.startsWith("buyshopitem")) {
+                // Send a confirmation message
+                interaction.reply({flags: 32768 | MessageFlags.Ephemeral, components: [{toJSON() {return {type: 10, content: `Are you sure you want to buy ${desc}?`}}}, {toJSON() {return {type: 1, components: [{type: 2, style: ButtonStyle.Danger, label: "Buy Item", custom_id: "buyshopconf" + type + itemId}]}}}]});
+            } else {
+                // Buy the item
+                await interaction.update({components: [{toJSON() {return {type: 10, content: "Buying item..."}}}]});
+                const guild = util.Guild.getGuild(interaction.guild.id);
+                const shopItem = util.Guild.getGuild(interaction.guild.id).shop.items.filter(item => item["type"] === type && item["itemInfo"] === itemId)[0];
+                const response = await guild.shop.buyShopItem(shopItem,util.Guild.getGuild(interaction.guild.id),util.User.getUser(interaction.user.id))
+                await interaction.followUp({content: response,fetchReply: true, allowedMentions: {parse: []}});
+            }
+        }
+    }
+    new util.ComponentCommand(buyShopItemButton);
     client.login(JSONConfig.token);
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);

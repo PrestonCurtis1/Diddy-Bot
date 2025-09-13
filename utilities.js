@@ -1,7 +1,7 @@
 const { stringify } = require('querystring');
 
 try{
-    const { Client, GatewayIntentBits, PermissionsBitField, Routes, makeURLSearchParams, DiscordAPIError, RoleSelectMenuBuilder } = require('discord.js');
+    const { Client, GatewayIntentBits, PermissionsBitField, Routes, makeURLSearchParams, DiscordAPIError, RoleSelectMenuBuilder, AttachmentBuilder, ButtonStyle } = require('discord.js');
     const JSONConfig = require('./config.json');
     const sqlite3 = require('sqlite3').verbose();
     const { promisify } = require('util');
@@ -25,6 +25,10 @@ try{
             this.booster = booster;
             this.settings = settings;//about features invite-link randomInviteEnabled
             this.users = {};
+            // Add missing settings to the shop config if they were added in an update that came after the guild was registered
+            if (shop.config.buyCoinsWithMangoes == undefined) {
+                shop.config.buyCoinsWithMangoes = false;
+            }
             this.shop = new Shop(shop.id,shop.items,shop.balance,shop.config);
             Guild.all[id] = this;
         }
@@ -55,7 +59,7 @@ try{
         static async register(guildId,guildName){
             if (loadingData)return;
             msg(`registering guild ${guildName}`);
-            new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","randomInviteEnabled":true},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}});
+            new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","randomInviteEnabled":true},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":"","buyCoinsWithMangoes":"false"}});
             let g = {"id": guildId, "name": guildName, "booster" : 1, "settings": {"about":"","features":[],"invite-code":"","randomInviteEnabled":true},"shop": {"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}}};
             await runAsync(
                 `INSERT OR REPLACE INTO Guild (id, name, booster, settings, shop_id) VALUES (?, ?, ?, ?, ?)`,
@@ -407,13 +411,19 @@ try{
                 if (typeof price === 'string') {
                     price = parseInt(value, 10);
                 }
-                if (price > user.getAura()){
-                    return `insufficient funds ${amount} coins costs ${price} aura you only have ${user.getAura()} aura`;
+                let userFunds = this.config.buyCoinsWithMangoes ? user.getMangoes() : user.getAura();
+                let currencyType = this.config.buyCoinsWithMangoes ? "mangoes" : "aura";
+                if (price > userFunds){
+                    return `insufficient funds ${amount} coins costs ${price} ${currencyType} you only have ${userFunds} ${currencyType}`;
                 } else {
-                    user.giveAura((-1*price),false);
+                    if (this.config.buyCoinsWithMangoes) {
+                        user.giveMangoes(-1*price);
+                    } else {
+                        user.giveAura((-1*price),false);
+                    }
                     this.balance += price;
                     user.giveCoins(amount,guild);
-                    return `payment of ${amount} coins for ${price} aura successful`
+                    return `payment of ${amount} coins for ${price} ${currencyType} successful`
                 }
             }
         }
@@ -434,7 +444,13 @@ try{
                     } else{
                         value = false;
                     }
-                }  
+                } else if (setting == "buyCoinsWithMangoes") {
+                    if (value.toLowerCase() == "true") {
+                        value = true;
+                    } else {
+                        value = false;
+                    }
+                }
                 this.config[setting] = value;
                 this.update("config",JSON.stringify(this.config));
             } else {
@@ -442,22 +458,28 @@ try{
             }
         }
         showShop(){
-            let message = `Shop items for ${Guild.getGuild(this.id).getName()}\n`;
-            message += `**Bank**: ${this.balance}:\tAura\n`
+            const shopPng = new AttachmentBuilder("./Shop.png"); // image made by houdert6
+            const shopThis = this;
+            let components = [{toJSON() {return {type: 9, components: [{type: 10, content: `${Guild.getGuild(shopThis.id).getName()}'s Shop`}, {type: 10, content: `-# **Bank**: ${shopThis.balance} Aura`}], accessory: {type: 11, media: {url: "attachment://Shop.png"}}}}}];
             this.items.forEach(({type, itemInfo, price}) => {
-                switch (type){
+                let title;
+                let desc;
+                switch (type) {
                     case "role":
-                        message += `${type}:\t<@&${itemInfo}>|\t${itemInfo};\t${price} coins\n`
-                        break
+                        title = "Role";
+                        desc = `<@&${itemInfo}>`;
+                        break;
                     case "channel":
-                        message += `${type}:\t<#${itemInfo}>|\t${itemInfo};\t${price} coins\n`
-                        break
-                }     
+                        title = "Channel";
+                        desc = `<#${itemInfo}>`;
+                        break;
+                }
+                components.push({toJSON() {return {type: 17, accent_color: 65348, components: [{type: 10, content: `# ${title}\n- Item: ${desc}\n- Cost: ${price} Coins`}, {type: 14}, {type: 10, content: `## How To Buy:\n\`/buyshopitem type:${type} id:${itemInfo}\``}, {type: 1, components: [{type: 2, style: ButtonStyle.Primary, label: "Buy Item", custom_id: `buyshopitem${type}${itemInfo}`}]}]}}});
             });
-            if(this.config.buyCoins){
-                message += `coins:\t${"`/buyCoins amount`"}|\t${this.config.buyCoinCost}*amount\n`;
+            if (this.config.buyCoins) {
+                components.push({toJSON() {return {type: 17, accent_color: 65348, components: [{type: 10, content: `# Coins\n- Item: Coins\n- Cost: ${shopThis.config.buyCoinCost} ${shopThis.config.buyCoinsWithMangoes ? "Mangoes" : "Aura"} per coin`}, {type: 14}, {type: 10, content: `## How To Buy:\n\`/buycoins amount:[amount of coins to buy]\``}]}}});
             }
-            return message;
+            return {components, shopPng};
         }
         withdraw(amount,user,allowed){
             if (!allowed){
