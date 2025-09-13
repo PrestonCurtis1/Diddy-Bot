@@ -64,44 +64,27 @@ async function runApi() {
     const SECRET_KEY = JSONConfig.auth
     api.use(express.json()); // make sure you have this
 
-    function objectToApi(obj, inClass = false, static=false) {
+    function objectToApi(obj) {
         let api = "";
-        let iter = Object.keys(obj);
-        if (inClass) {
-            if (static) {
-                iter.push(...Object.getOwnPropertyNames(obj).filter(o => typeof obj[o] === "function"));
-            } else {
-                iter = Object.getOwnPropertyNames(obj).filter(o => o != "constructor");
-            }
-        }
-        for (var key of iter) {
-            switch (typeof obj[key]) {
-                case 'function':
+        for (var key in obj) {
+            if (typeof obj[key] == "function") {
+                let fnStr = obj[key].toString();
+                if (fnStr.startsWith("class")) {
+                    api += `\nexport ${fnStr}`
+                } else {
+                    /** @type {string} */
                     let fnStr = obj[key].toString();
-                    if (fnStr.startsWith("class")) {
-                        //api += `\n${static ? 'static ' : ''}export class ${key} {${objectToApi(obj[key], true, true)}\nconstructor();${objectToApi(obj[key].prototype, true)}\n}`;
-                        api += `\nexport ${fnStr}`
+                    fnStr = fnStr.substring(0, fnStr.indexOf("{"));
+                    if (fnStr.startsWith("function") || fnStr.startsWith("async function")) {
+                        api += `\nexport ${fnStr};`
                     } else {
-                        /** @type {string} */
-                        let fnStr = obj[key].toString();
-                        fnStr = fnStr.substring(0, fnStr.indexOf("{"));
-                        if (fnStr.startsWith("function") || fnStr.startsWith("async function")) {
-                            api += `\n${static ? 'static ' : ''}export ${fnStr};`
-                        } else {
-                            api += `\n${static ? 'static ' : ''}${fnStr};`;
-                        }
+                        api += `\n${fnStr};`;
                     }
-                    break;
-                case 'object':
-                case 'undefined':
-                    if (inClass) {
-                        api += `\n${static ? 'static ' : ''}${key}: any;`;
-                    }
-                    break;
-                default:
-                    if (inClass) {
-                        api += `\n${static ? 'static ' : ''}${key}: ${typeof obj[key]};`
-                    }
+                }
+            } else if (typeof obj[key] == "object" || typeof obj[key] == "undefined") {
+                api += `\nexport var ${key}: any;`;
+            } else {
+                api += `\nexport var ${key}: ${typeof obj[key]};`;
             }
         }
         return api;
@@ -192,7 +175,7 @@ async function runApi() {
         const jsonKeys = Object.keys(JSONConfig);
         const declareJSONConfig = `declare const JSONConfig: {${jsonKeys.join(": string,") + ": string"}}`;
 
-        const utilApi = `${declareJSONConfig}\ndeclare namespace util {${objectToApi(util).replaceAll('`', '\\`').replaceAll('${', '\\${')}\n}`;
+        const utilApi = `${declareJSONConfig}\ndeclare namespace util {${objectToApi(util).replaceAll('\\', '\\\\').replaceAll('`', '\\`').replaceAll('${', '\\${')}\n}`;
         
         res.send(`
             <!DOCTYPE html>
