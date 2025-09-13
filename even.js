@@ -1,4 +1,4 @@
-async function isEven(num){
+function isEven(num){
     num = num.toString();
     if (num.endsWith("0"))return true;
     if (num.endsWith("1"))return false;
@@ -13,5 +13,5 @@ async function isEven(num){
     
 }
 let number = 10
-let numIsEven = await isEven(number)
+let numIsEven = isEven(number)
 console.log(numIsEven);
