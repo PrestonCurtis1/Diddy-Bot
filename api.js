@@ -309,6 +309,13 @@ async function runApi() {
             res.json({ error: err.toString() });
         }
     });
+    // Get Mangoes route
+    api.get("/getmangoes/:userid", async (req, res) => {
+        await util.msg(`[API] /getmangoes/${req.params.userid}`, JSONConfig.communityServer, JSONConfig.apiChannel)
+        console.log(req.ip);
+        let mangoes = Math.floor(util.User.getUser(req.params.userid)?.getMangoes() ?? 0);
+        res.send({mangoes});
+    });
     // Listen for requests
     api.listen(port, (e) => {
         if (e) {
