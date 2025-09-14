@@ -236,7 +236,8 @@ async function runApi() {
                                     });
 
                                     const data = await res.json(); // <-- now POST returns JSON
-                                    output.textContent = data.result ?? data.error;
+                                    const result = typeof data.result == "object" ? JSON.stringify(data.result) : data.result;
+                                    output.textContent = result ?? data.error;
                                 } catch (err) {
                                     output.textContent = "Fetch error: " + err;
                                 }
