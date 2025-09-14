@@ -183,20 +183,36 @@ async function runApi() {
             <head>
                 <script src="../monaco/min/vs/loader.js"></script>
                 <style>
-                button {
-                    width: 10px;
-                    height: 5px;
-                    background: none;
-                    border: 5px solid aquamarine;
-                    border-radius: 10px;
-                    transition: background 0.5s;
-                }
-                button:hover {
-                    background: #f3f3f3ff;
-                }
+                    button {
+                        width: 10%;
+                        height: 5%;
+                        background: none;
+                        border: 5px solid aquamarine;
+                        border-radius: 10px;
+                        transition: background 0.5s;
+                        box-sizing: content-box;
+                    }
+                    button:hover {
+                        background: #f3f3f3ff;
+                    }
+                    body {
+                        height: 100vh;
+                        display: flex; 
+                        overflow-x: clip;
+                    }
+                    input.prettyprint {
+                        position: relative;
+                        left: 10px;
+                    }
+                    input.prettyprint::before {
+                        position: relative;
+                        left: 20px;
+                        content: "Pretty Print";
+                        white-space: nowrap;
+                    }
                 </style>
             </head>
-            <body style="height:100vh;display:flex;overflow-x: clip;">
+            <body>
                 <div id="code" style="height: 100%; width: 70vw;"></div>
                 <div style="border-right: 1px solid gray; margin-left: 10px; margin-right: 20px;"></div>
                 <div style="align-items: center; display: flex; flex-direction: column; width: 100%;">
@@ -205,9 +221,12 @@ async function runApi() {
                         <img src="https://cdn.discordapp.com/avatars/${pfp}?size=512" style="width: 50px; height:50px; margin-left:100px; clip-path: circle(50% at 50% 50%)"/>
                         <span>${username} <a style="color: red;" href="#" onclick="logout();">Log Out</a><span>
                     </div>
-                    <button id="run" style="width:10%; height: 5%; padding: 5px;">Run Code</button>
+                    <button id="run">Run Code</button>
                     <div style="position: relative;top: 50%; width: 100%; left: 30px;">
-                        <h2 style="width:100%;border: 2px solid gray;border-radius: 10px;padding: 3px; margin-bottom:0;">Output</h2>
+                        <h2 style="width:100%;border: 2px solid gray;border-radius: 10px;padding: 3px; margin-bottom:0;">
+                            Output
+                            <input type="checkbox" class="prettyprint"/>
+                        </h2>
                         <pre id="output" style="height:50vh; background-color: black; color: lime; margin: 1px; overflow: scroll; width: calc(100% - 20px); position: absolute; right: 20px;"></pre>
                     </div>
                 </div>
@@ -236,7 +255,7 @@ async function runApi() {
                                     });
 
                                     const data = await res.json(); // <-- now POST returns JSON
-                                    const result = typeof data.result == "object" ? JSON.stringify(data.result) : data.result;
+                                    const result = typeof data.result == "object" ? JSON.stringify(data.result, null, document.querySelector(".prettyprint").checked ? ' ' : null) : data.result;
                                     output.textContent = result ?? data.error;
                                 } catch (err) {
                                     output.textContent = "Fetch error: " + err;
