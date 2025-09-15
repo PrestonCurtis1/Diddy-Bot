@@ -803,7 +803,7 @@ try{
         const userId = interactionUser.user.id //Gets the user's ID to check if it's lynx
         const guildId = interaction.guildId; //Gets the guild ID to blacklist it
         //Check if the user running the command is lynx
-        if (userId == 1215373521463681147) {
+        if (userId == "1215373521463681147") {
             //If it is, add the server's guild ID to lynxblacklist.json
             const jsonString = JSON.stringify(data, null, 2);
             fs.writeFile(lynxblacklistjson, jsonString)
