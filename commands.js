@@ -64,7 +64,7 @@ try{
      * @returns {Promise<Void>}
      */
     async function authors(interaction){
-        const response = "the authors of <@1305713838775210015> \n **Founder**: <@790709753138905129> \n **Developer**: <@799101657647415337>,<@1005413712536023100>,<@1215373521463681147>\n **Admin**:<@1334918738700406877>,<@1307191266525839481>,<@1248851515901481095>,<@1090663875009073163>";
+        const response = "the authors of <@1305713838775210015> \n **Founder**: <@790709753138905129> \n **Developer**: <@799101657647415337>,<@1005413712536023100>,<@1215373521463681147>\n **Admin**:<@1207854388173864971>,<@1334918738700406877>,<@1307191266525839481>,<@1248851515901481095>,<@1090663875009073163>";
         await interaction.reply({content: response, fetchReply: true});
     }
     new util.Command({name: "authors",description: "Get the authors of this bot",integration_types: [0, 1], contexts: [0, 1, 2] },authors);
