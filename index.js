@@ -88,6 +88,14 @@ try {
         if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))util.Guild.getGuild(member.guild.id).addUser({"user":util.User.getUser(member.user.id),"coins":0});
         await util.msg(`user ${member.user.tag} joined server ${member.guild.name}`);
     });
+    client.on("error", console.error);
+    client.on("shardError", error => {
+        console.error("WebSocket error:", error);
+    });
+    client.on("disconnect", () => {
+        console.log("Bot disconnected, attempting reconnect...");
+    });
+
     client.once('ready', async () => {
         await util.msg(`Logged in as ${client.user.tag}! index.js`);
         const serverCount = client.guilds.cache.size;
