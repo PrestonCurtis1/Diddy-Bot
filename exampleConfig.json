@@ -4,5 +4,8 @@
 	"communityServer" : "The Guild id of the server where logs and bot admins are",
 	"apiChannel" : "the channel id of where API logs will go",
 	"logChannel" : "the channel id of where general logs will go",
-	"auraChannel" : "the channel id of where aura logs will go"
+	"mentionsChannel" : "the channel id of where mention logs will go",
+	"voteChannel" : "channel were top.gg votes will go",
+	"devpanelredirecturl" : "the url to redirect to after oauth authentication (make sure to add to your redirect urls in discord developer portal)",
+	"auth" : "this is used as a password that to verify votes coming from top.gg. useless unless you put your for of the bot on top.gg"
 }

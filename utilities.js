@@ -195,7 +195,14 @@ try{
             return User.all[id];
         }
         getAuraMultiplier(){
-            return (1 + this.boosters.temp.multi + this.boosters.perm + (this.level/20));
+            let now = new Date();
+            let endDate = new Date(this.boosters.temp.endTime);
+            if (endDate < now){
+                this.boosters.temp.multi = 0
+                this.boosters.temp.endDate = now
+                this.update("boosters",this.boosters)
+            }
+            return (1 + this.boosters.temp.multi + this.boosters.perm + (Math.floor((this.level/2)**(1/1.5))));//x/2^1/2.25
         }
         getName(){
             return this.name
@@ -607,7 +614,6 @@ try{
 
             // Load users
             const userRows = await allAsync(`SELECT * FROM User`);
-            console.log(userRows)
             for (const user of userRows) {
             new User(
                 user.id,

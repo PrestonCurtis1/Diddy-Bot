@@ -819,7 +819,12 @@ try{
         }
     }
     new util.Command({name: 'lynxblacklist',description: 'Blacklist the current server from running /lynx.',integration_types: [0, 1], contexts: [0, 1, 2] },lynxblacklist);
-
+    /**
+     * button to by shop items
+     * function created by houdert6
+     * @param {Interaction} interaction - The interaction passed by the client.
+     * @returns {Promise<Void>}
+     */
     async function buyShopItemButton(interaction) {
         if (interaction.customId.startsWith("buyshopitem") || interaction.customId.startsWith("buyshopconf")) {
             const shopItemTypes = ["role", "channel"];
@@ -856,6 +861,94 @@ try{
     }
     new util.ComponentCommand(buyShopItemButton);
     client.login(JSONConfig.token);
+    //eatmangoes
+    /**
+     * command for eating mangoes
+     * function created by unprankable
+     * @param {Interaction} interaction - The interaction passed by the client.
+     * @returns {Promise<Void>}
+     */
+    async function eatmangoes(interaction,mangoes){
+        let amount = mangoes ?? interaction.options.getNumber("amount") ?? 1;
+        let user = util.User.getUser(interaction.user.id)
+        let userMangoes = user.mangoes;
+        let message = "";
+        //this is what you can get form eating mangoes and the chances and amount is based of off how many mangoes you ate
+        //for example if you ate 200 mangoes and your random number was 93 you would get 4 diddle buttons
+        //amount is always rounded up so if u ate 5 mangoe and got random number was 93 which is diddlebutton 5/50 = 0.1
+        //you can't have 0.1 diddlebuttons so it will just round up
+        let loot_table = {"mangoes": {"amount": 1.25, "chance": "30%"}, "aura": {"amount": 1.5, "chance": "25%"}, "booster": {"amount": 1, "chance": "20%"}, "insurance": {"amount": 0.5, "chance": "15%"}, "diddlebutton": {"amount": 0.2, "chance": "1%"}, "nothing": {"amount": 0, "chance": "9%"}}
+        if (amount > userMangoes){//user doesn't have enough mangoes
+            message += `You only have **${userMangoes}** mangoes, you need **${amount - userMangoes}** more`
+        } else {
+            user.giveMangoes(amount*-1)
+            let random_num = Math.floor(Math.random() * 100) + 1;
+            let itemList = ["mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","diddlebutton","nothing","nothing","nothing","nothing","nothing","nothing","nothing","nothing","nothing"]
+            let name = itemList[random_num-1];
+            let item = loot_table[name];
+            let chance = item.chance;
+            let quantity = Math.ceil(amount * item.amount);
+            message += `You ate **${amount}** mangoes and recieved `
+            switch(name){
+                case "mangoes":
+                    user.giveMangoes(quantity);
+                    message += `**${quantity}** mangoes:`;
+                    break
+                case "aura":
+                    user.giveAura(quantity,false);
+                    message += `**${quantity}** aura:`;
+                    break
+                case "booster":
+                    let currentBooster = user.boosters.temp
+                    if (currentBooster >= 1.5){
+                        currentBooster.endDate = Date(currentBooster.endDate.getTime() + quantity * 60000);
+                    } else {
+                        currentBooster.multi = 1.5
+                        let boosterDate = new Date(Date.now() + quantity*60000)
+                        if (boosterDate < currentBooster.endDate){
+                            currentBooster.endDate = Date(currentBooster.endDate.getTime() + quantity * 60000);
+                        } else {
+                            currentBooster.endDate = boosterDate;
+                        }
+                    }
+
+                    message  += `a **${quantity}** minute 1.5x booster:`;
+                    break
+                case "insurance"://i need to work on insurance
+                    message += `**${quantity}** insurance tickets:`;
+                    break
+                case "diddlebutton"://i need to work on a way to get diddlebutton other than the shop
+                    message += `**${quantity}** diddlebuttons:`;
+                    break
+                case "nothing":
+                    message += `nothing rip bro:`;
+                    break
+                default:
+                    message = "an error occured"
+                    break
+            }
+            message += `\n${chance} chance`
+        }
+        let mangoGif = new AttachmentBuilder("./mango.gif");
+        let reply = {files: [mangoGif], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type:10, content: message}], accessory: {type: 11, media: {url:"attachment://mango.gif"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label:"Eat More Mangoes", custom_id: `eatmangoes${amount}`,disabled: false, style: ButtonStyle.Primary}]}}}],fetchReply: true};
+        interaction.reply(reply);
+
+    }
+    new util.Command({name: "eatMangoes".toLowerCase(),description: "eat some delicous mangoes",options: [{name: "amount", description: "how many mangoes to eat", type: 10, required: false}],integration_types: [0, 1], contexts: [0, 1, 2]},eatmangoes)
+    /**
+     * button for eating mangoes
+     * function created by unprankable
+     * @param {Interaction} interaction - The interaction passed by the client.
+     * @returns {Promise<Void>}
+     */
+    async function eatmangoesbutton(interaction){
+        if (interaction.customId.startsWith("eatmangoes")) {
+            let mangoes = parseInt(interaction.customId.substring(10));
+            // Update the mango leaderboard message
+            await eatmangoes(interaction, mangoes);
+        }
+    }
+    new util.ComponentCommand(eatmangoesbutton)
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
     util.msg(`an error occured in file commands.js:\t${error}`);
