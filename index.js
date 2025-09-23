@@ -20,7 +20,6 @@ try {
     (async () => {
         try {
             await util.msg('Started refreshing application (/) commands.');
-            console.log(util.Command.commands)
             await rest.put(Routes.applicationCommands(JSONConfig.clientId), {
                 body: util.Command.commands,
             });

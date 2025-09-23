@@ -499,9 +499,7 @@ try{
             const { settings } = guildData;
             const enabled = settings["randomInviteEnabled"];
             const inviteCode = settings["invite-code"];
-
-            console.log(`🔍 Checking guild ${g.name} (${g.id}): enabled=${enabled}, code=${inviteCode}`);
-
+            
             if (enabled && inviteCode && inviteCode.trim() !== "") {
                 invites.push(inviteCode);
                 console.log(`✅ Added invite: ${inviteCode}`);
@@ -900,18 +898,19 @@ try{
                     break
                 case "booster":
                     let currentBooster = user.boosters.temp
+                    let currentBoosterDate = new Date(currentBooster.endTime)
                     if (currentBooster >= 1.5){
-                        currentBooster.endDate = Date(currentBooster.endDate.getTime() + quantity * 60000);
+                        currentBooster.endTime = new Date(currentBoosterDate.getTime() + quantity * 60000).toISOString();
                     } else {
                         currentBooster.multi = 1.5
                         let boosterDate = new Date(Date.now() + quantity*60000)
-                        if (boosterDate < currentBooster.endDate){
-                            currentBooster.endDate = Date(currentBooster.endDate.getTime() + quantity * 60000);
+                        if (boosterDate < currentBooster.endTime){
+                            currentBooster.endTime = new Date(currentBooster.endTime.getTime() + quantity * 60000).toISOString();
                         } else {
-                            currentBooster.endDate = boosterDate;
+                            currentBooster.endTime = boosterDate.toISOString();
                         }
                     }
-
+                    user.update("boosters",JSON.stringify(user.boosters))
                     message  += `a **${quantity}** minute 1.5x booster:`;
                     break
                 case "insurance"://i need to work on insurance
