@@ -100,7 +100,7 @@ async function runApi() {
         if (req.query.code) {
             let codeWorked = true;
             // User just logged in with discord
-            const tokenResponse = await fetch("https://discord.com/api/" + Routes.oauth2TokenExchange(), {body: `grant_type=authorization_code&code=${req.query.code}&redirect_uri=http%3A%2F%2Fdiddy-bot.ddns.net%2Feval%2Fhoudertiscool`, method: "POST", headers:{'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + btoa(JSONConfig.clientId + ":" + JSONConfig.clientSecret)}});
+            const tokenResponse = await fetch("https://discord.com/api/" + Routes.oauth2TokenExchange(), {body: `grant_type=authorization_code&code=${req.query.code}&redirect_uri=http%3A%2F%2F${JSONConfig.devpanelredirecturl}`, method: "POST", headers:{'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + btoa(JSONConfig.clientId + ":" + JSONConfig.clientSecret)}});
             if (tokenResponse.status > 400) {
                 console.error("Error obtaining token: " + await tokenResponse.text() + " (" + tokenResponse.status + ")");
                 codeWorked = false;
@@ -131,14 +131,14 @@ async function runApi() {
                     const userRes = await fetch('https://discord.com/api/users/@me', {headers: {'Authorization': `Bearer ${value}`}});
                     if (userRes.status > 400) {
                         util.msg("Could not fetch logged in user to dev panel: " + await userRes.text() + " (" + userRes.status + ")");
-                        res.status(302).set('Location', 'https://discord.com/oauth2/authorize?client_id=1305713838775210015&response_type=code&redirect_uri=http%3A%2F%2Fdiddy-bot.ddns.net%2Feval%2Fhoudertiscool&scope=identify').end();
+                        res.status(302).set('Location', `https://discord.com/oauth2/authorize?client_id=1305713838775210015&response_type=code&redirect_uri=http%3A%2F%2F${JSONConfig.devpanelredirecturl}&scope=identify`).end();
                         return;
                     }
                     const userResText = await userRes.text();
                     const userResJson = JSON.parse(userResText);
                     if (userResJson.error) {
                         util.msg("Could not fetch logged in user to dev panel: " + userResText + " (" + userRes.status + ")");
-                        res.status(302).set('Location', 'https://discord.com/oauth2/authorize?client_id=1305713838775210015&response_type=code&redirect_uri=http%3A%2F%2Fdiddy-bot.ddns.net%2Feval%2Fhoudertiscool&scope=identify').end();
+                        res.status(302).set('Location', `https://discord.com/oauth2/authorize?client_id=1305713838775210015&response_type=code&redirect_uri=http%3A%2F%2F${JSONConfig.devpanelredirecturl}&scope=identify`).end();
                         return;
                     }
                     if (!await util.isDev(userResJson.id)) {
@@ -168,7 +168,7 @@ async function runApi() {
                 }
             }
         } else {
-            res.status(302).set('Location', 'https://discord.com/oauth2/authorize?client_id=1305713838775210015&response_type=code&redirect_uri=http%3A%2F%2Fdiddy-bot.ddns.net%2Feval%2Fhoudertiscool&scope=identify').end();
+            res.status(302).set('Location', `https://discord.com/oauth2/authorize?client_id=1305713838775210015&response_type=code&redirect_uri=http%3A%2F%2F${JSONConfig.devpanelredirecturl}&scope=identify`).end();
             return;
         }
 

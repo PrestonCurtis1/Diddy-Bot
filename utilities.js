@@ -831,6 +831,7 @@ try{
         Shop,
         Command,
         ComponentCommand,
+        loadData
         //loadingData,
     }
     
