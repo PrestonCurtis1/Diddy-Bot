@@ -25,6 +25,16 @@ try{
             this.booster = booster;
             this.settings = settings;//about features invite-link randomInviteEnabled
             this.users = {};
+            // If the shop is somehow null for the guild, reset it
+            if (shop.id == null) {
+                console.warn(`resetting null shop for ${id}`);
+                shop = {"id":id,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":"","buyCoinsWithMangoes":"false"}};
+                runAsync(
+                    `INSERT OR REPLACE INTO Shop (id, items, balance, config) VALUES (?, ?, ?, ?)`,
+                    [shop.id, JSON.stringify(shop.items), shop.balance, JSON.stringify(shop.config)]
+                );
+                this.update("shop_id", id);
+            }
             // Add missing settings to the shop config if they were added in an update that came after the guild was registered
             if (shop.config.buyCoinsWithMangoes == undefined) {
                 shop.config.buyCoinsWithMangoes = false;
@@ -595,9 +605,6 @@ try{
                 balance: row.balance,
                 config: JSON.parse(row.config),
             };
-            if (shop.id == null) {
-                continue; // Skip loading shops with an ID of null
-            }
 
             new Guild(
                 row.guild_id,
