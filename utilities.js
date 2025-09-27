@@ -595,6 +595,9 @@ try{
                 balance: row.balance,
                 config: JSON.parse(row.config),
             };
+            if (shop.id == null) {
+                continue; // Skip loading shops with an ID of null
+            }
 
             new Guild(
                 row.guild_id,
