@@ -763,7 +763,7 @@ try{
         //const userId = '799101657647415337';//houdert6
         try {
             const user = await client.users.fetch(userId);
-            await user.send(content);
+            await user.send({content: content, allowedMentions: {parse: []}});
             msg(`DM sent to ${user.name}: ${content}`);
         } catch (err) {
             msg(`Failed to send DM to ${user.name}: ${err.message}`);
