@@ -7,5 +7,7 @@
 	"mentionsChannel" : "the channel id of where mention logs will go",
 	"voteChannel" : "channel were top.gg votes will go",
 	"devpanelredirecturl" : "the url to redirect to after oauth authentication (make sure to add to your redirect urls in discord developer portal)",
-	"auth" : "this is used as a password that to verify votes coming from top.gg. useless unless you put your for of the bot on top.gg"
+	"auth" : "this is used as a password that to verify votes coming from top.gg. useless unless you put your for of the bot on top.gg",
+	"communityDevRole": "the role in the community server needed to access the dev panel",
+	"clientSecret": "your clients secret you can get from developer portal"
 }

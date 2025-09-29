@@ -100,7 +100,9 @@ try{
                         failCount++;
                     }
                 }
-                await interaction.followUp({content:`Announcement sent! Success: ${successCount} Failed: ${failCount}`, ephemeral: false})
+                let replyMessage = `Announcement sent! Success: ${successCount} Failed: ${failCount}`
+                console.log(replyMessage);
+                await util.sendDM(replyMessage,interaction.user.id);
         } catch (error) {
             await util.msg(`error sending announcements, ${error}`)
         }
@@ -570,16 +572,10 @@ try{
      * @returns {Promise<void>}
      */
     async function dm(interaction){
-        const communityServer = await client.guilds.fetch(JSONConfig.communityServer);
-        const member = await communityServer.members.fetch(interaction.user.id);
-        if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
-            util.sendDM(interaction.options.getString('message'),interaction.options.getString('id'));
-            await interaction.reply({content: "Direct Message Sent!!",fetchReply: true, ephemeral: true});
-        } else {
-            await interaction.reply({content: "this command can only be run by bot admins",fetchReply: true, ephemeral: true});
-        }
+        util.sendDM(interaction.options.getString('message'),interaction.user.id);
+        await interaction.reply({content: "Direct Message Sent!!",fetchReply: true, ephemeral: true});
     }
-    new util.Command({name:"dm", description: "Send a message to a user as Diddy (for bot admins)", options: [{name: "id", type: 3, description: "users user id", required: true}, {name: "message", type: 3, description: "message to send user", required: true}], integration_types: [0, 1], contexts: [0, 1, 2]},dm);
+    new util.Command({name:"dm", description: "Send a message to a user yourself as diddy", options: [{name: "message", type: 3, description: "message to send user", required: true}], integration_types: [0, 1], contexts: [0, 1, 2]},dm);
     //gamble
     /**
      * gamble your aura.
@@ -590,7 +586,9 @@ try{
     async function gamble(interaction){
         let amount = Math.abs(interaction.options.getNumber("amount"));
         let convertToMangoes = interaction.options.getBoolean("winmangoes", false);
+        if(!util.User.exists(interaction.user.id))util.User.register(interaction.user.id,interaction.user.tag,{});
         let user = util.User.getUser(interaction.user.id)
+        console.log(user);
         let hasAura = amount <= user.aura; 
         if (!hasAura)amount = user.aura;
         let percent = Math.floor(Math.random()*101)/100;
@@ -600,15 +598,26 @@ try{
             result = Math.floor(amount*percent);
             if (convertToMangoes) {
                 user.giveMangoes(result);
-                interaction.reply({content: `You gained ${result} mangoes from betting ${amount} aura`,fetchReply:true});
+                interaction.reply({content: `You gained ${percent}% (${result}) mangoes from betting ${amount} aura`,fetchReply:true});
             } else {
                 user.giveAura(result,false);
-                interaction.reply({content: `You gained ${result} aura from betting ${amount}`,fetchReply:true});
+                interaction.reply({content: `You gained ${percent}% (${result}) aura from betting ${amount}`,fetchReply:true});
             }
         } else {
-            result = Math.floor(-1*(amount*percent));
-            user.giveAura(result,false);
-            interaction.reply({content: `You lost ${(-1*(result))} aura from betting ${amount}`, fetchReply: true});
+            let savedMoney = 0;
+            result = Math.floor(((amount*percent)));
+            let tickets = user.getInsuranceTickets()
+            if (tickets >= 1){
+               //so uh here i will see what percent the user saved using insurance tickets
+               let min = 50;
+               let max = 75;
+               let percentSaved = Math.floor(Math.random() * (max - min + 1)) + min;
+               savedMoney = Math.floor((result*(percentSaved/100)))
+               user.giveInsuranceTickets(-1);
+            }
+            user.giveAura(-1*(result-savedMoney),false);
+            interaction.reply({content: `You lost ${percent}% (${result}) aura from betting ${amount}\nyou had ${tickets} insurance tickets and saved ${savedMoney} aura`, fetchReply: true});
+            
         }
         
     }
@@ -677,9 +686,15 @@ try{
      */
     async function diddlebuttoncommand(interaction) {
         for (var entitlement of await util.getUserEntitlements(interaction.user.id, "1414124214578974883")) {
-            if (!entitlement.consumed) {
+        let user = util.User.getUser(interaction.user.id)
+            let allow;
+            if (!entitlement.consumed || user.diddlebutton >= 1) {
                 await interaction.reply({flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: "# Diddle Button!"}, {type: 10, content: "Click the button to diddle everyone:"}], accessory: {type: 2, style: ButtonStyle.Primary, label: "Diddle Everyone!", custom_id: "diddlebutton"}}}}]});
-                await client.application.entitlements.consume(entitlement.id); // Consume the entitlement
+                if(!user.diddlebutton <= 0){
+                    user.giveDiddlebuttons(-1);
+                } else {
+                    await client.application.entitlements.consume(entitlement.id); // Consume the entitlement
+                }
                 return;
             }
         }
@@ -913,11 +928,13 @@ try{
                     user.update("boosters",JSON.stringify(user.boosters))
                     message  += `a **${quantity}** minute 1.5x booster:`;
                     break
-                case "insurance"://i need to work on insurance
+                case "insurance":
                     message += `**${quantity}** insurance tickets:`;
+                    user.giveInsuranceTickets(1);
                     break
-                case "diddlebutton"://i need to work on a way to get diddlebutton other than the shop
+                case "diddlebutton":
                     message += `**${quantity}** diddlebuttons:`;
+                    user.giveDiddlebuttons(1);
                     break
                 case "nothing":
                     message += `nothing rip bro:`;

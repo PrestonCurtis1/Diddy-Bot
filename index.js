@@ -6,7 +6,7 @@ try {
     const util = require("./utilities.js");
     require("./commands.js");
     const api = require("./api.js");
-    const clicoderunner = ("./cli.js")
+    const logdms = require("./logdms.js");
     const client = new Client({
         intents: [
             GatewayIntentBits.Guilds,
@@ -94,6 +94,7 @@ try {
     });
     client.on("disconnect", () => {
         console.log("Bot disconnected, attempting reconnect...");
+        client.login(JSONConfig.token);
     });
 
     client.once('ready', async () => {

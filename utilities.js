@@ -149,7 +149,7 @@ try{
     }
     class User {//const futureDate = new Date(currentDate.getTime() + hoursToAdd * 60 * 60 * 1000); // Add hours in milliseconds
         static all = {};
-        constructor(id,tag,aura,boosters,guilds,mangoes){//for guilds use {"server_id_one": 10,"server_id_two":10}
+        constructor(id,tag,aura,boosters,guilds,mangoes,insuranceTickets,diddlebutton){//for guilds use {"server_id_one": 10,"server_id_two":10}
             this.id = id;//string
             this.name = tag;//string
             this.aura = aura;//int
@@ -169,6 +169,14 @@ try{
                 mangoes = 0;
             }
             this.mangoes = mangoes;
+            if (insuranceTickets === null || insuranceTickets === undefined || isNaN(insuranceTickets)) {
+                insuranceTickets = 0;
+            }
+            this.diddlebutton = diddlebutton;
+            if (diddlebutton === null || diddlebutton === undefined || isNaN(diddlebutton)) {
+                diddlebutton = 0;
+            }
+            this.diddlebutton = diddlebutton;
         }
         async update(key,value){
             if (loadingData)return;
@@ -180,11 +188,11 @@ try{
         static async register(userId,userTag,guilds={}){
             if (loadingData)return;
             msg(`registering user ${userTag}`);
-            new User(userId,userTag,100,{"temp":{"multi":0,"endTime": new Date().toISOString()},"perm":0},guilds,0);
-            let user = {"id": userId, "name": userTag, "aura": 100, "boosters": {"temp":{"multi":0,"endTime": new Date().toISOString()},"perm":0},"guilds":guilds}
+            new User(userId,userTag,100,{"temp":{"multi":0,"endTime": new Date().toISOString()},"perm":0},guilds,0,0,0);
+            let user = {"id": userId, "name": userTag, "aura": 100, "boosters": {"temp":{"multi":0,"endTime": new Date().toISOString()},"perm":0},"guilds":guilds,"mangoes":0,"insuranceTickets":0,"diddlebutton":0}
             await runAsync(
-                `INSERT OR REPLACE INTO User (id, name, aura, boosters, guilds) VALUES (?, ?, ?, ?, ?)`,
-                [user.id, user.name, user.aura, JSON.stringify(user.boosters), JSON.stringify(user.guilds),]
+                `INSERT OR REPLACE INTO User (id, name, aura, boosters, guilds, mangoes, insuranceTickets, diddlebutton) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [user.id, user.name, user.aura, JSON.stringify(user.boosters), JSON.stringify(user.guilds), user.mangoes, user.insuranceTickets, user.diddlebutton]
             );
             return User.exists(userId);
         }
@@ -232,6 +240,7 @@ try{
             return `no new level for ${this.getName()}`
             
         }
+
         pay(reciever,guild,amount){
             if (this.getCoins(guild) < amount){
                 return false;
@@ -293,11 +302,21 @@ try{
         getMangoes() {
             return this.mangoes;
         }
+        getInsuranceTickets() {
+            return this.insuranceTickets;
+        }
         giveMangoes(amount) {
             this.mangoes += Math.floor(amount);
             this.update("mangoes", this.mangoes);
         }
-
+        giveInsuranceTickets(amount){
+            this.insuranceTickets += Math.floor(amount);
+            this.update("insuranceTickets",this.insuranceTickets);
+        }
+        giveDiddlebuttons(amount) {
+            this.diddlebutton += amount;
+            this.update("diddlebutton", this.diddlebutton);
+        }
         static mangoLeaderboard(page = 1) {
             const perPage = 10;
             const userMangoList = [];
@@ -560,11 +579,13 @@ try{
             aura INTEGER,
             boosters TEXT,
             guilds TEXT,
-            mangoes INTEGER
+            mangoes INTEGER,
+            insuranceTickets INTEGER,
+            diddlebutton INTEGER
             )
         `);
         console.log("user table created");
-        // Update the user table to have a column for mangoes
+        // Update the user table to have a column for mangoes and insuranceTickets
         var userColumns = await allAsync(`
             PRAGMA table_info(User);
         `);
@@ -581,6 +602,36 @@ try{
             await runAsync(`
                 ALTER TABLE User
                 ADD COLUMN mangoes INTEGER
+            `);
+        }
+        var hasInsuranceTickets = false;
+        for (var column of userColumns){
+            if (column.name == "insuranceTickets"){
+                hasInsuranceTickets = true;
+                break
+            }
+        }
+        console.log("has insuranceTickets column:", hasInsuranceTickets);
+        if (!hasInsuranceTickets) {
+            console.log("creating insuranceTickets column");
+            await runAsync(`
+                ALTER TABLE User
+                ADD COLUMN insuranceTickets INTEGER
+            `);
+        }
+        var hasDiddlebutton = false;
+        for (var column of userColumns){
+            if (column.name == "diddlebutton"){
+                hasDiddlebutton = true;
+                break
+            }
+        }
+        console.log("has diddlebutton column:", hasDiddlebutton);
+        if (!hasDiddlebutton) {
+            console.log("creating diddlebutton column");
+            await runAsync(`
+                ALTER TABLE User
+                ADD COLUMN diddlebutton INTEGER
             `);
         }
     }
@@ -622,18 +673,20 @@ try{
             // Load users
             const userRows = await allAsync(`SELECT * FROM User`);
             for (const user of userRows) {
-            try {
-                new User(
-                    user.id,
-                    user.name,
-                    user.aura,
-                    JSON.parse(user.boosters),
-                    JSON.parse(user.guilds),
-                    user.mangoes
-                );
-            } catch(error){
-                console.error("error loading data from users",error)
-            }
+                try {
+                    new User(
+                        user.id,
+                        user.name,
+                        user.aura,
+                        JSON.parse(user.boosters),
+                        JSON.parse(user.guilds),
+                        user.mangoes,
+                        user.insuranceTickets,
+                        user.diddlebutton
+                    );
+                } catch(error){
+                    console.error("error loading data from users",error)
+                }
             }
 
             await msg(
