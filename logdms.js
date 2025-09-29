@@ -23,7 +23,7 @@ client.on("messageCreate", async (message) => {
                 const userAvatar = new AttachmentBuilder(avatarURL, { name: "avatar.png" });
                 const reply = {files: [userAvatar], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type:10, content: `📩 DM from **${message.author.tag}**: ${message.content}`}], accessory: {type: 11, media: {url:"attachment://avatar.png"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label:"Reply", custom_id: `userdm${message.author.id}`,disabled: false, style: ButtonStyle.Primary}]}}}],fetchReply: true};
                 await util.sendDM(reply,USER_IDS[ID]);
-                //await user.send(reply);
+                message.react("✅");
             }
         } catch (err) {
             console.error("Failed to forward DM:", err);
