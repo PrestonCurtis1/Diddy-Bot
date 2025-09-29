@@ -1,3 +1,5 @@
+const e = require('express');
+
 try{
     //if u need help with a certain function please contact the person who created it. 
     // it should show the author of each function above the function
@@ -531,10 +533,38 @@ try{
     * @param {Interaction} interaction The interaction passed by the client
     * @returns {Promise<void>}
     */
-    async function rizzlers(interaction){
-        interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\n@royalknight0\n@nexuscageoil\n@buldakislovebuldakislife\n@def_not_vexx\n@chi56567899\n@yellow262\n@inspectorcomrad\n@monkeiy1\n@It_KingXjimmie\n@brimisbrim\n@_htzumiii_\n@Drakkar\n@blitzfootball\n@d.tokyo.d.\n@69master0569\n@wehttam._\n@hunterstudios947\n@ListAck\n@Frostbite53\n@ace_nowhere\n@doogledean91\n@4mz4r.\n@._._.hi\n@jlee406\n@Figgy Pudding\n@joeypterodactyl\n@KingCreeper531\n@masterofbluefire_21530\n@thegoldenknight2\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}});
+    async function rizzlers(interaction, navigatePage){
+        let perPage = 10;
+        let rizzlers = util.getRizzlers();
+        let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
+        const totalPages = Math.ceil(rizzlers.length / perPage);
+        const pageIndex = Math.max(0, Math.min(page - 1, totalPages - 1));
+        let start = pageIndex * perPage;
+        let end = start + perPage;
+        const pageUsers = rizzlers.slice(start, end);
+        let message = `Diddy Bot Rizzlers Page ${page}/${totalPages}\n`
+        let rizzImage = new AttachmentBuilder("./rizz.png");//image from walmart.com. the image is slighlty edited
+        pageUsers.forEach((rizzler, index) => {
+                const order = start + index + 1;
+                message += `**${order}.** @${rizzler}\n`;
+            });
+        message += "Contribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)"
+        let reply = {files: [rizzImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: message}], accessory: {type: 11, media: {url: "attachment://rizz.png"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `rizzpage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `rizzpage${page + 1}`, disabled: page == totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
+        if(navigatePage){
+            interaction.update(reply);
+        } else {
+            interaction.reply(reply);
+        }
     }
-    new util.Command({name: "rizzlers",description: "people who contributed pickup-lines",integration_types: [0, 1], contexts: [0, 1, 2]},rizzlers);
+    new util.Command({name: "rizzlers",description: "people who contributed pickup-lines",options:[{name: 'page', type: 10, description: 'What page to show', required: false}],integration_types: [0, 1], contexts: [0, 1, 2]},rizzlers);
+    async function rizzlersButtons(interaction) {
+        if (interaction.customId.startsWith("rizzpage")) {
+            let page = parseInt(interaction.customId.substring(8));
+            // Update the mango leaderboard message
+            await rizzlers(interaction, page);
+        }
+    }
+    new util.ComponentCommand(rizzlersButtons);
     client.once('ready', async () => {
         await util.msg(`Logged in as ${client.user.tag}! commands.js`);
     });
@@ -598,10 +628,10 @@ try{
             result = Math.floor(amount*percent);
             if (convertToMangoes) {
                 user.giveMangoes(result);
-                interaction.reply({content: `You gained ${percent}% (${result}) mangoes from betting ${amount} aura`,fetchReply:true});
+                interaction.reply({content: `You gained ${percent*100}% (${result}) mangoes from betting ${amount} aura`,fetchReply:true});
             } else {
                 user.giveAura(result,false);
-                interaction.reply({content: `You gained ${percent}% (${result}) aura from betting ${amount}`,fetchReply:true});
+                interaction.reply({content: `You gained ${percent*100}% (${result}) aura from betting ${amount}`,fetchReply:true});
             }
         } else {
             let savedMoney = 0;
@@ -616,7 +646,7 @@ try{
                user.giveInsuranceTickets(-1);
             }
             user.giveAura(-1*(result-savedMoney),false);
-            interaction.reply({content: `You lost ${percent}% (${result}) aura from betting ${amount}\nyou had ${tickets} insurance tickets and saved ${savedMoney} aura`, fetchReply: true});
+            interaction.reply({content: `You lost ${percent*100}% (${result}) aura from betting ${amount}\nyou had ${tickets} insurance tickets and saved ${savedMoney} aura`, fetchReply: true});
             
         }
         
@@ -930,11 +960,11 @@ try{
                     break
                 case "insurance":
                     message += `**${quantity}** insurance tickets:`;
-                    user.giveInsuranceTickets(1);
+                    user.giveInsuranceTickets(quantity);
                     break
                 case "diddlebutton":
                     message += `**${quantity}** diddlebuttons:`;
-                    user.giveDiddlebuttons(1);
+                    user.giveDiddlebuttons(quantity);
                     break
                 case "nothing":
                     message += `nothing rip bro:`;

@@ -11,6 +11,7 @@ try{
     const JSONLynx = require('./lynx.json');
 
     let PICKUP_LINES;
+    let RIZZLERS;
     let loadingData = true;
     const db = new sqlite3.Database('./database.sqlite');
     const runAsync = promisify(db.run).bind(db);
@@ -172,7 +173,7 @@ try{
             if (insuranceTickets === null || insuranceTickets === undefined || isNaN(insuranceTickets)) {
                 insuranceTickets = 0;
             }
-            this.diddlebutton = diddlebutton;
+            this.insuranceTickets = insuranceTickets;
             if (diddlebutton === null || diddlebutton === undefined || isNaN(diddlebutton)) {
                 diddlebutton = 0;
             }
@@ -277,7 +278,6 @@ try{
             }
 
             userAuraList.sort((a, b) => b.aura - a.aura);
-
             const totalPages = Math.ceil(userAuraList.length / perPage);
             const pageIndex = Math.max(0, Math.min(page - 1, totalPages - 1)); // Clamp page
 
@@ -705,6 +705,14 @@ try{
             process.exit(1);
         }
         msg("loaded data pickuplines")
+        try {
+            const data = fs.readFileSync('./rizzlers.txt', 'utf8');//the file containing all the pickuplines
+            RIZZLERS = data.split('\n').filter(line => line.trim() !== ''); // Remove empty lines
+        } catch (error) {
+            console.error("Error reading rizzlers.txt:",error);
+            process.exit(1);
+        }
+        msg("loaded data rizzlers")
     }
     process.on("SIGINT", () => {
         process.exit(0);
@@ -825,6 +833,10 @@ try{
         return PICKUP_LINES;
     }
 
+    function getRizzlers(){
+        return RIZZLERS;
+    }
+
     async function getLynxAccessToken() {
         if (lynxAccessToken) {
             return lynxAccessToken;
@@ -886,6 +898,7 @@ try{
         userHasChannel,
         addChannel,
         getPickupLines,
+        getRizzlers,
         getLynxAccessToken,
         getUserEntitlements,
         isDev,
