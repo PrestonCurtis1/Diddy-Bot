@@ -761,12 +761,13 @@ try{
         //const userId = '790709753138905129';//unprankable
         //const userId = '1273153837699563565';//chibubbles
         //const userId = '799101657647415337';//houdert6
+        let user;
         try {
-            const user = await client.users.fetch(userId);
-            await user.send({content: content, allowedMentions: {parse: []}});
+            user = await client.users.fetch(userId);
+            await user.send(content);
             msg(`DM sent to ${user.name}: ${content}`);
         } catch (err) {
-            msg(`Failed to send DM to ${user.name}: ${err.message}`);
+            msg(`Failed to send DM to ${user}: ${err.message}`);
         }
     }
     async function userHasRole(client, guildId, userId, roleId) {
