@@ -6,7 +6,7 @@ try {
     const util = require("./utilities.js");
     require("./commands.js");
     const api = require("./api.js");
-    const clicoderunner = ("./cli.js")
+    const logdms = require("./logdms.js");
     const client = new Client({
         intents: [
             GatewayIntentBits.Guilds,
@@ -20,7 +20,6 @@ try {
     (async () => {
         try {
             await util.msg('Started refreshing application (/) commands.');
-            console.log(util.Command.commands)
             await rest.put(Routes.applicationCommands(JSONConfig.clientId), {
                 body: util.Command.commands,
             });
@@ -89,6 +88,15 @@ try {
         if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))util.Guild.getGuild(member.guild.id).addUser({"user":util.User.getUser(member.user.id),"coins":0});
         await util.msg(`user ${member.user.tag} joined server ${member.guild.name}`);
     });
+    client.on("error", console.error);
+    client.on("shardError", error => {
+        console.error("WebSocket error:", error);
+    });
+    client.on("disconnect", () => {
+        console.log("Bot disconnected, attempting reconnect...");
+        client.login(JSONConfig.token);
+    });
+
     client.once('ready', async () => {
         await util.msg(`Logged in as ${client.user.tag}! index.js`);
         const serverCount = client.guilds.cache.size;

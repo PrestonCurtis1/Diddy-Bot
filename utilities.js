@@ -11,6 +11,7 @@ try{
     const JSONLynx = require('./lynx.json');
 
     let PICKUP_LINES;
+    let RIZZLERS;
     let loadingData = true;
     const db = new sqlite3.Database('./database.sqlite');
     const runAsync = promisify(db.run).bind(db);
@@ -159,7 +160,7 @@ try{
     }
     class User {//const futureDate = new Date(currentDate.getTime() + hoursToAdd * 60 * 60 * 1000); // Add hours in milliseconds
         static all = {};
-        constructor(id,tag,aura,boosters,guilds,mangoes){//for guilds use {"server_id_one": 10,"server_id_two":10}
+        constructor(id,tag,aura,boosters,guilds,mangoes,insuranceTickets,diddlebutton){//for guilds use {"server_id_one": 10,"server_id_two":10}
             this.id = id;//string
             this.name = tag;//string
             this.aura = aura;//int
@@ -179,6 +180,14 @@ try{
                 mangoes = 0;
             }
             this.mangoes = mangoes;
+            if (insuranceTickets === null || insuranceTickets === undefined || isNaN(insuranceTickets)) {
+                insuranceTickets = 0;
+            }
+            this.insuranceTickets = insuranceTickets;
+            if (diddlebutton === null || diddlebutton === undefined || isNaN(diddlebutton)) {
+                diddlebutton = 0;
+            }
+            this.diddlebutton = diddlebutton;
         }
         async update(key,value){
             if (loadingData)return;
@@ -190,11 +199,11 @@ try{
         static async register(userId,userTag,guilds={}){
             if (loadingData)return;
             msg(`registering user ${userTag}`);
-            new User(userId,userTag,100,{"temp":{"multi":0,"endTime": new Date()},"perm":0},guilds,0);
-            let user = {"id": userId, "name": userTag, "aura": 100, "boosters": {"temp":{"multi":0,"endTime": new Date()},"perm":0},"guilds":guilds}
+            new User(userId,userTag,100,{"temp":{"multi":0,"endTime": new Date().toISOString()},"perm":0},guilds,0,0,0);
+            let user = {"id": userId, "name": userTag, "aura": 100, "boosters": {"temp":{"multi":0,"endTime": new Date().toISOString()},"perm":0},"guilds":guilds,"mangoes":0,"insuranceTickets":0,"diddlebutton":0}
             await runAsync(
-                `INSERT OR REPLACE INTO User (id, name, aura, boosters, guilds) VALUES (?, ?, ?, ?, ?)`,
-                [user.id, user.name, user.aura, JSON.stringify(user.boosters), JSON.stringify(user.guilds),]
+                `INSERT OR REPLACE INTO User (id, name, aura, boosters, guilds, mangoes, insuranceTickets, diddlebutton) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [user.id, user.name, user.aura, JSON.stringify(user.boosters), JSON.stringify(user.guilds), user.mangoes, user.insuranceTickets, user.diddlebutton]
             );
             return User.exists(userId);
         }
@@ -205,7 +214,14 @@ try{
             return User.all[id];
         }
         getAuraMultiplier(){
-            return (1 + this.boosters.temp.multi + this.boosters.perm + (this.level/20));
+            let now = new Date();
+            let endDate = new Date(this.boosters.temp.endTime);
+            if (endDate < now){
+                this.boosters.temp.multi = 0
+                this.boosters.temp.endTime = now.toISOString()
+                this.update("boosters",JSON.stringify(this.boosters));
+            }
+            return (1 + this.boosters.temp.multi + this.boosters.perm + (Math.floor((this.level/2)**(1/1.5))));//x/2^1/2.25
         }
         getName(){
             return this.name
@@ -235,6 +251,7 @@ try{
             return `no new level for ${this.getName()}`
             
         }
+
         pay(reciever,guild,amount){
             if (this.getCoins(guild) < amount){
                 return false;
@@ -271,7 +288,6 @@ try{
             }
 
             userAuraList.sort((a, b) => b.aura - a.aura);
-
             const totalPages = Math.ceil(userAuraList.length / perPage);
             const pageIndex = Math.max(0, Math.min(page - 1, totalPages - 1)); // Clamp page
 
@@ -296,11 +312,21 @@ try{
         getMangoes() {
             return this.mangoes;
         }
+        getInsuranceTickets() {
+            return this.insuranceTickets;
+        }
         giveMangoes(amount) {
             this.mangoes += Math.floor(amount);
             this.update("mangoes", this.mangoes);
         }
-
+        giveInsuranceTickets(amount){
+            this.insuranceTickets += Math.floor(amount);
+            this.update("insuranceTickets",this.insuranceTickets);
+        }
+        giveDiddlebuttons(amount) {
+            this.diddlebutton += amount;
+            this.update("diddlebutton", this.diddlebutton);
+        }
         static mangoLeaderboard(page = 1) {
             const perPage = 10;
             const userMangoList = [];
@@ -563,11 +589,13 @@ try{
             aura INTEGER,
             boosters TEXT,
             guilds TEXT,
-            mangoes INTEGER
+            mangoes INTEGER,
+            insuranceTickets INTEGER,
+            diddlebutton INTEGER
             )
         `);
         console.log("user table created");
-        // Update the user table to have a column for mangoes
+        // Update the user table to have a column for mangoes and insuranceTickets
         var userColumns = await allAsync(`
             PRAGMA table_info(User);
         `);
@@ -586,6 +614,36 @@ try{
                 ADD COLUMN mangoes INTEGER
             `);
         }
+        var hasInsuranceTickets = false;
+        for (var column of userColumns){
+            if (column.name == "insuranceTickets"){
+                hasInsuranceTickets = true;
+                break
+            }
+        }
+        console.log("has insuranceTickets column:", hasInsuranceTickets);
+        if (!hasInsuranceTickets) {
+            console.log("creating insuranceTickets column");
+            await runAsync(`
+                ALTER TABLE User
+                ADD COLUMN insuranceTickets INTEGER
+            `);
+        }
+        var hasDiddlebutton = false;
+        for (var column of userColumns){
+            if (column.name == "diddlebutton"){
+                hasDiddlebutton = true;
+                break
+            }
+        }
+        console.log("has diddlebutton column:", hasDiddlebutton);
+        if (!hasDiddlebutton) {
+            console.log("creating diddlebutton column");
+            await runAsync(`
+                ALTER TABLE User
+                ADD COLUMN diddlebutton INTEGER
+            `);
+        }
     }
     async function loadData() {
         loadingData = true;
@@ -597,36 +655,48 @@ try{
             FROM Guild g
             LEFT JOIN Shop s ON g.shop_id = s.id
             `);
-
             for (const row of guildRows) {
-            const shop = {
-                id: row.shop_id,
-                items: JSON.parse(row.items),
-                balance: row.balance,
-                config: JSON.parse(row.config),
-            };
-
-            new Guild(
-                row.guild_id,
-                row.name,
-                row.booster,
-                JSON.parse(row.settings),
-                shop
-            );
+            let shop;
+            try {
+                shop = {
+                    id: row.shop_id,
+                    items: JSON.parse(row.items),
+                    balance: row.balance,
+                    config: JSON.parse(row.config),
+                };
+            } catch(error){
+                console.error("error loading data from shops")
+            }
+            try{
+                new Guild(
+                    row.guild_id,
+                    row.name,
+                    row.booster,
+                    JSON.parse(row.settings),
+                    shop
+                );
+            } catch(error){
+                console.error("error loading data from guilds",error)
+            }
             }
 
             // Load users
             const userRows = await allAsync(`SELECT * FROM User`);
-            console.log(userRows)
             for (const user of userRows) {
-            new User(
-                user.id,
-                user.name,
-                user.aura,
-                JSON.parse(user.boosters),
-                JSON.parse(user.guilds),
-                user.mangoes
-            );
+                try {
+                    new User(
+                        user.id,
+                        user.name,
+                        user.aura,
+                        JSON.parse(user.boosters),
+                        JSON.parse(user.guilds),
+                        user.mangoes,
+                        user.insuranceTickets,
+                        user.diddlebutton
+                    );
+                } catch(error){
+                    console.error("error loading data from users",error)
+                }
             }
 
             await msg(
@@ -635,19 +705,27 @@ try{
             loadingData = false;
         } catch (error) {
             msg(`Error loading data from database: ${error}`);
-            process.exit();
+            //process.exit(1);
         }
         try {
             const data = fs.readFileSync('./pickup_lines.txt', 'utf8');//the file containing all the pickuplines
             PICKUP_LINES = data.split('\n').filter(line => line.trim() !== ''); // Remove empty lines
         } catch (error) {
             console.error("Error reading pickup_lines.txt:",error);
-            process.exit();
+            process.exit(1);
         }
         msg("loaded data pickuplines")
+        try {
+            const data = fs.readFileSync('./rizzlers.txt', 'utf8');//the file containing all the pickuplines
+            RIZZLERS = data.split('\n').filter(line => line.trim() !== ''); // Remove empty lines
+        } catch (error) {
+            console.error("Error reading rizzlers.txt:",error);
+            process.exit(1);
+        }
+        msg("loaded data rizzlers")
     }
     process.on("SIGINT", () => {
-        process.exit();
+        process.exit(0);
     })
     const client = new Client({
         intents: [
@@ -765,6 +843,10 @@ try{
         return PICKUP_LINES;
     }
 
+    function getRizzlers(){
+        return RIZZLERS;
+    }
+
     async function getLynxAccessToken() {
         if (lynxAccessToken) {
             return lynxAccessToken;
@@ -826,6 +908,7 @@ try{
         userHasChannel,
         addChannel,
         getPickupLines,
+        getRizzlers,
         getLynxAccessToken,
         getUserEntitlements,
         isDev,
@@ -835,6 +918,7 @@ try{
         Shop,
         Command,
         ComponentCommand,
+        loadData
         //loadingData,
     }
     

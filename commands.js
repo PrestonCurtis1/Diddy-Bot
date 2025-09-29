@@ -1,3 +1,5 @@
+const e = require('express');
+
 try{
     //if u need help with a certain function please contact the person who created it. 
     // it should show the author of each function above the function
@@ -100,7 +102,9 @@ try{
                         failCount++;
                     }
                 }
-                await interaction.followUp({content:`Announcement sent! Success: ${successCount} Failed: ${failCount}`, ephemeral: false})
+                let replyMessage = `Announcement sent! Success: ${successCount} Failed: ${failCount}`
+                console.log(replyMessage);
+                await util.sendDM(replyMessage,interaction.user.id);
         } catch (error) {
             await util.msg(`error sending announcements, ${error}`)
         }
@@ -499,9 +503,7 @@ try{
             const { settings } = guildData;
             const enabled = settings["randomInviteEnabled"];
             const inviteCode = settings["invite-code"];
-
-            console.log(`🔍 Checking guild ${g.name} (${g.id}): enabled=${enabled}, code=${inviteCode}`);
-
+            
             if (enabled && inviteCode && inviteCode.trim() !== "") {
                 invites.push(inviteCode);
                 console.log(`✅ Added invite: ${inviteCode}`);
@@ -531,10 +533,38 @@ try{
     * @param {Interaction} interaction The interaction passed by the client
     * @returns {Promise<void>}
     */
-    async function rizzlers(interaction){
-        interaction.reply({content: "@unprankable01\n@houdert6\n@owcapl_\n@royalknight0\n@nexuscageoil\n@buldakislovebuldakislife\n@def_not_vexx\n@chi56567899\n@yellow262\n@inspectorcomrad\n@monkeiy1\n@It_KingXjimmie\n@brimisbrim\n@_htzumiii_\n@Drakkar\n@blitzfootball\n@d.tokyo.d.\n@69master0569\n@wehttam._\n@hunterstudios947\n@ListAck\n@Frostbite53\n@ace_nowhere\n@doogledean91\n@4mz4r.\n@._._.hi\n@jlee406\n@Figgy Pudding\n@joeypterodactyl\n@KingCreeper531\n@masterofbluefire_21530\n@thegoldenknight2\nContribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)",fetchReply: true,allowedMentions: {parse: []}});
+    async function rizzlers(interaction, navigatePage){
+        let perPage = 10;
+        let rizzlers = util.getRizzlers();
+        let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
+        const totalPages = Math.ceil(rizzlers.length / perPage);
+        const pageIndex = Math.max(0, Math.min(page - 1, totalPages - 1));
+        let start = pageIndex * perPage;
+        let end = start + perPage;
+        const pageUsers = rizzlers.slice(start, end);
+        let message = `Diddy Bot Rizzlers Page ${page}/${totalPages}\n`
+        let rizzImage = new AttachmentBuilder("./rizz.png");//image from walmart.com. the image is slighlty edited
+        pageUsers.forEach((rizzler, index) => {
+                const order = start + index + 1;
+                message += `**${order}.** @${rizzler}\n`;
+            });
+        message += "Contribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)"
+        let reply = {files: [rizzImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: message}], accessory: {type: 11, media: {url: "attachment://rizz.png"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `rizzpage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `rizzpage${page + 1}`, disabled: page == totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
+        if(navigatePage){
+            interaction.update(reply);
+        } else {
+            interaction.reply(reply);
+        }
     }
-    new util.Command({name: "rizzlers",description: "people who contributed pickup-lines",integration_types: [0, 1], contexts: [0, 1, 2]},rizzlers);
+    new util.Command({name: "rizzlers",description: "people who contributed pickup-lines",options:[{name: 'page', type: 10, description: 'What page to show', required: false}],integration_types: [0, 1], contexts: [0, 1, 2]},rizzlers);
+    async function rizzlersButtons(interaction) {
+        if (interaction.customId.startsWith("rizzpage")) {
+            let page = parseInt(interaction.customId.substring(8));
+            // Update the mango leaderboard message
+            await rizzlers(interaction, page);
+        }
+    }
+    new util.ComponentCommand(rizzlersButtons);
     client.once('ready', async () => {
         await util.msg(`Logged in as ${client.user.tag}! commands.js`);
     });
@@ -572,16 +602,10 @@ try{
      * @returns {Promise<void>}
      */
     async function dm(interaction){
-        const communityServer = await client.guilds.fetch(JSONConfig.communityServer);
-        const member = await communityServer.members.fetch(interaction.user.id);
-        if (member.permissions.has(PermissionsBitField.Flags.Administrator)){
-            util.sendDM(interaction.options.getString('message'),interaction.options.getString('id'));
-            await interaction.reply({content: "Direct Message Sent!!",fetchReply: true, ephemeral: true});
-        } else {
-            await interaction.reply({content: "this command can only be run by bot admins",fetchReply: true, ephemeral: true});
-        }
+        util.sendDM(interaction.options.getString('message'),interaction.user.id);
+        await interaction.reply({content: "Direct Message Sent!!",fetchReply: true, ephemeral: true});
     }
-    new util.Command({name:"dm", description: "Send a message to a user as Diddy (for bot admins)", options: [{name: "id", type: 3, description: "users user id", required: true}, {name: "message", type: 3, description: "message to send user", required: true}], integration_types: [0, 1], contexts: [0, 1, 2]},dm);
+    new util.Command({name:"dm", description: "Send a message to a user yourself as diddy", options: [{name: "message", type: 3, description: "message to send user", required: true}], integration_types: [0, 1], contexts: [0, 1, 2]},dm);
     //gamble
     /**
      * gamble your aura.
@@ -592,7 +616,9 @@ try{
     async function gamble(interaction){
         let amount = Math.abs(interaction.options.getNumber("amount"));
         let convertToMangoes = interaction.options.getBoolean("winmangoes", false);
+        if(!util.User.exists(interaction.user.id))util.User.register(interaction.user.id,interaction.user.tag,{});
         let user = util.User.getUser(interaction.user.id)
+        console.log(user);
         let hasAura = amount <= user.aura; 
         if (!hasAura)amount = user.aura;
         let percent = Math.floor(Math.random()*101)/100;
@@ -602,15 +628,26 @@ try{
             result = Math.floor(amount*percent);
             if (convertToMangoes) {
                 user.giveMangoes(result);
-                interaction.reply({content: `You gained ${result} mangoes from betting ${amount} aura`,fetchReply:true});
+                interaction.reply({content: `You gained ${percent*100}% (${result}) mangoes from betting ${amount} aura`,fetchReply:true});
             } else {
                 user.giveAura(result,false);
-                interaction.reply({content: `You gained ${result} aura from betting ${amount}`,fetchReply:true});
+                interaction.reply({content: `You gained ${percent*100}% (${result}) aura from betting ${amount}`,fetchReply:true});
             }
         } else {
-            result = Math.floor(-1*(amount*percent));
-            user.giveAura(result,false);
-            interaction.reply({content: `You lost ${(-1*(result))} aura from betting ${amount}`, fetchReply: true});
+            let savedMoney = 0;
+            result = Math.floor(((amount*percent)));
+            let tickets = user.getInsuranceTickets()
+            if (tickets >= 1){
+               //so uh here i will see what percent the user saved using insurance tickets
+               let min = 50;
+               let max = 75;
+               let percentSaved = Math.floor(Math.random() * (max - min + 1)) + min;
+               savedMoney = Math.floor((result*(percentSaved/100)))
+               user.giveInsuranceTickets(-1);
+            }
+            user.giveAura(-1*(result-savedMoney),false);
+            interaction.reply({content: `You lost ${percent*100}% (${result}) aura from betting ${amount}\nyou had ${tickets} insurance tickets and saved ${savedMoney} aura`, fetchReply: true});
+            
         }
         
     }
@@ -679,9 +716,15 @@ try{
      */
     async function diddlebuttoncommand(interaction) {
         for (var entitlement of await util.getUserEntitlements(interaction.user.id, "1414124214578974883")) {
-            if (!entitlement.consumed) {
+        let user = util.User.getUser(interaction.user.id)
+            let allow;
+            if (!entitlement.consumed || user.diddlebutton >= 1) {
                 await interaction.reply({flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: "# Diddle Button!"}, {type: 10, content: "Click the button to diddle everyone:"}], accessory: {type: 2, style: ButtonStyle.Primary, label: "Diddle Everyone!", custom_id: "diddlebutton"}}}}]});
-                await client.application.entitlements.consume(entitlement.id); // Consume the entitlement
+                if(!user.diddlebutton <= 0){
+                    user.giveDiddlebuttons(-1);
+                } else {
+                    await client.application.entitlements.consume(entitlement.id); // Consume the entitlement
+                }
                 return;
             }
         }
@@ -819,7 +862,12 @@ try{
         }
     }
     new util.Command({name: 'lynxblacklist',description: 'Blacklist the current server from running /lynx.',integration_types: [0, 1], contexts: [0, 1, 2] },lynxblacklist);
-
+    /**
+     * button to by shop items
+     * function created by houdert6
+     * @param {Interaction} interaction - The interaction passed by the client.
+     * @returns {Promise<Void>}
+     */
     async function buyShopItemButton(interaction) {
         if (interaction.customId.startsWith("buyshopitem") || interaction.customId.startsWith("buyshopconf")) {
             const shopItemTypes = ["role", "channel"];
@@ -856,6 +904,97 @@ try{
     }
     new util.ComponentCommand(buyShopItemButton);
     client.login(JSONConfig.token);
+    //eatmangoes
+    /**
+     * command for eating mangoes
+     * function created by unprankable
+     * @param {Interaction} interaction - The interaction passed by the client.
+     * @returns {Promise<Void>}
+     */
+    async function eatmangoes(interaction,mangoes){
+        let amount = mangoes ?? interaction.options.getNumber("amount") ?? 1;
+        let user = util.User.getUser(interaction.user.id)
+        let userMangoes = user.mangoes;
+        let message = "";
+        //this is what you can get form eating mangoes and the chances and amount is based of off how many mangoes you ate
+        //for example if you ate 200 mangoes and your random number was 93 you would get 4 diddle buttons
+        //amount is always rounded up so if u ate 5 mangoe and got random number was 93 which is diddlebutton 5/50 = 0.1
+        //you can't have 0.1 diddlebuttons so it will just round up
+        let loot_table = {"mangoes": {"amount": 1.25, "chance": "30%"}, "aura": {"amount": 1.5, "chance": "25%"}, "booster": {"amount": 1, "chance": "20%"}, "insurance": {"amount": 0.5, "chance": "15%"}, "diddlebutton": {"amount": 0.2, "chance": "1%"}, "nothing": {"amount": 0, "chance": "9%"}}
+        if (amount > userMangoes){//user doesn't have enough mangoes
+            message += `You only have **${userMangoes}** mangoes, you need **${amount - userMangoes}** more`
+        } else {
+            user.giveMangoes(amount*-1)
+            let random_num = Math.floor(Math.random() * 100) + 1;
+            let itemList = ["mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","diddlebutton","nothing","nothing","nothing","nothing","nothing","nothing","nothing","nothing","nothing"]
+            let name = itemList[random_num-1];
+            let item = loot_table[name];
+            let chance = item.chance;
+            let quantity = Math.ceil(amount * item.amount);
+            message += `You ate **${amount}** mangoes and recieved `
+            switch(name){
+                case "mangoes":
+                    user.giveMangoes(quantity);
+                    message += `**${quantity}** mangoes:`;
+                    break
+                case "aura":
+                    user.giveAura(quantity,false);
+                    message += `**${quantity}** aura:`;
+                    break
+                case "booster":
+                    let currentBooster = user.boosters.temp
+                    let currentBoosterDate = new Date(currentBooster.endTime)
+                    if (currentBooster >= 1.5){
+                        currentBooster.endTime = new Date(currentBoosterDate.getTime() + quantity * 60000).toISOString();
+                    } else {
+                        currentBooster.multi = 1.5
+                        let boosterDate = new Date(Date.now() + quantity*60000)
+                        if (boosterDate < currentBooster.endTime){
+                            currentBooster.endTime = new Date(currentBooster.endTime.getTime() + quantity * 60000).toISOString();
+                        } else {
+                            currentBooster.endTime = boosterDate.toISOString();
+                        }
+                    }
+                    user.update("boosters",JSON.stringify(user.boosters))
+                    message  += `a **${quantity}** minute 1.5x booster:`;
+                    break
+                case "insurance":
+                    message += `**${quantity}** insurance tickets:`;
+                    user.giveInsuranceTickets(quantity);
+                    break
+                case "diddlebutton":
+                    message += `**${quantity}** diddlebuttons:`;
+                    user.giveDiddlebuttons(quantity);
+                    break
+                case "nothing":
+                    message += `nothing rip bro:`;
+                    break
+                default:
+                    message = "an error occured"
+                    break
+            }
+            message += `\n${chance} chance`
+        }
+        let mangoGif = new AttachmentBuilder("./mango.gif");
+        let reply = {files: [mangoGif], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type:10, content: message}], accessory: {type: 11, media: {url:"attachment://mango.gif"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label:"Eat More Mangoes", custom_id: `eatmangoes${amount}`,disabled: false, style: ButtonStyle.Primary}]}}}],fetchReply: true};
+        interaction.reply(reply);
+
+    }
+    new util.Command({name: "eatMangoes".toLowerCase(),description: "eat some delicous mangoes",options: [{name: "amount", description: "how many mangoes to eat", type: 10, required: false}],integration_types: [0, 1], contexts: [0, 1, 2]},eatmangoes)
+    /**
+     * button for eating mangoes
+     * function created by unprankable
+     * @param {Interaction} interaction - The interaction passed by the client.
+     * @returns {Promise<Void>}
+     */
+    async function eatmangoesbutton(interaction){
+        if (interaction.customId.startsWith("eatmangoes")) {
+            let mangoes = parseInt(interaction.customId.substring(10));
+            // Update the mango leaderboard message
+            await eatmangoes(interaction, mangoes);
+        }
+    }
+    new util.ComponentCommand(eatmangoesbutton)
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
     util.msg(`an error occured in file commands.js:\t${error}`);

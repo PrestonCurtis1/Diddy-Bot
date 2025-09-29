@@ -7,7 +7,8 @@ shop.json
 database.sqlite
 oldData.json
 userMessageLists.json
-backup/
+backups/
+logs/
 bot.log
 cron-check.log
 lynx.json
