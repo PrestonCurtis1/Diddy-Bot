@@ -2,6 +2,7 @@ const { deserialize } = require('v8');
 try {
     const fs = require('fs');
     const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField} = require('discord.js');
+    const https = require("https");
     const JSONConfig = require('./config.json');
     const util = require("./utilities.js");
     require("./commands.js");
@@ -16,7 +17,8 @@ try {
            
         ]
     });
-    const rest = new REST({ version: '10' }).setToken(JSONConfig.token);
+    const agent = new https.Agent({ keepAlive: true, family: 4 });
+    const rest = new REST({ version: '10' , agent ,timeout: 60000}).setToken(JSONConfig.token);
     (async () => {
         try {
             await util.msg('Started refreshing application (/) commands.');
@@ -94,7 +96,6 @@ try {
     });
     client.on("disconnect", () => {
         console.log("Bot disconnected, attempting reconnect...");
-        client.login(JSONConfig.token);
     });
 
     client.once('ready', async () => {
@@ -106,7 +107,7 @@ try {
             status: 'online', 
         });
     });
-    client.login(JSONConfig.token);
+    client.login(JSONConfig.token)
 
     api.runApi();
 } catch (error) {
