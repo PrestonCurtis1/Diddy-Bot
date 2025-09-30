@@ -113,7 +113,20 @@ try {
         });
     });
     client.login(JSONConfig.token)
+    process.on("unhandledRejection", (reason, p) => {
+        console.error("Unhandled Rejection at:", p, "reason:", reason);
+    });
 
+    process.on("uncaughtException", (err) => {
+        console.error("Uncaught Exception thrown:", err);
+        process.exit(1); 
+    });
+    process.on("SIGINT", async (code) => {await util.msg(`Bot has exited with code ${code}`);process.exit(0);});   // Ctrl+C
+    process.on("SIGTERM", async (code) => {await util.msg(`Bot has exited with code ${code}`);process.exit(0);});
+    process.on("SIGKILL", async (code) => {await util.msg(`Bot has exited with code ${code}`);process.exit(0);});
+    process.on("exit",(code) => {
+        console.log(`Bot has exited with code ${code}`);
+    });
     api.runApi();
 } catch (error) {
     console.error("A fatal error occured in file index.js",error);

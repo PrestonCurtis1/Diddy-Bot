@@ -724,9 +724,6 @@ try{
         }
         msg("loaded data rizzlers")
     }
-    process.on("SIGINT", () => {
-        process.exit(0);
-    })
     const client = new Client({
         intents: [
             GatewayIntentBits.Guilds, 
