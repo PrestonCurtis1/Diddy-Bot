@@ -5,7 +5,8 @@ try {
     const https = require("https");
     const JSONConfig = require('./config.json');
     const util = require("./utilities.js");
-    require("./commands.js");
+    const commands = require("./commands.js");
+    const { Agent } = require('undici');
     const api = require("./api.js");
     const logdms = require("./logdms.js");
     const client = new Client({
@@ -17,7 +18,11 @@ try {
            
         ]
     });
-    const agent = new https.Agent({ keepAlive: true, family: 4 });
+    const agent = new Agent({
+        connect: { family: 4 },   // force IPv4
+        keepAliveTimeout: 60_000, // keep sockets alive for 60s
+        keepAliveMaxTimeout: 120_000
+    });
     const rest = new REST({ version: '10' , agent ,timeout: 60000}).setToken(JSONConfig.token);
     (async () => {
         try {
