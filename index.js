@@ -121,9 +121,6 @@ try {
         console.error("Uncaught Exception thrown:", err);
         process.exit(1); 
     });
-    process.on("SIGINT", async (code) => {await util.msg(`Bot has exited with code ${code}\n${Math.ceil(process.uptime()/60)} minutes`);process.exit(0);});   // Ctrl+C
-    process.on("SIGTERM", async (code) => {await util.msg(`Bot has exited with code ${code}\n${Math.ceil(process.uptime()/60)} minutes`);process.exit(0);});
-    process.on("SIGKILL", async (code) => {await util.msg(`Bot has exited with code ${code}\n${Math.ceil(process.uptime()/60)} minutes`);process.exit(0);});
     process.on("exit",(code) => {
         console.log(`Bot has exited with code ${code}\n${Math.ceil(process.uptime()/60)} minutes`);
     });
