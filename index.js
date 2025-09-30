@@ -98,6 +98,7 @@ try {
     client.on("error", console.error);
     client.on("shardError", error => {
         console.error("WebSocket error:", error);
+        process.exit(1);
     });
     client.on("disconnect", () => {
         console.log("Bot disconnected, attempting reconnect...");
