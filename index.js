@@ -6,7 +6,6 @@ try {
     const JSONConfig = require('./config.json');
     const util = require("./utilities.js");
     const commands = require("./commands.js");
-    const { Agent } = require('undici');
     const api = require("./api.js");
     const logdms = require("./logdms.js");
     const client = new Client({
@@ -18,12 +17,7 @@ try {
            
         ]
     });
-    const agent = new Agent({
-        connect: { family: 4 },   // force IPv4
-        keepAliveTimeout: 60_000, // keep sockets alive for 60s
-        keepAliveMaxTimeout: 120_000
-    });
-    const rest = new REST({ version: '10' , agent ,timeout: 60000}).setToken(JSONConfig.token);
+    const rest = new REST({ version: '10', timeout: 60000}).setToken(JSONConfig.token);
     (async () => {
         try {
             await util.msg('Started refreshing application (/) commands.');
@@ -95,13 +89,12 @@ try {
         if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))util.Guild.getGuild(member.guild.id).addUser({"user":util.User.getUser(member.user.id),"coins":0});
         await util.msg(`user ${member.user.tag} joined server ${member.guild.name}`);
     });
-    client.on("error", console.error);
+    client.on("error", error => {
+        console.error("An error occured with the bot", error);
+    });
     client.on("shardError", error => {
         console.error("WebSocket error:", error);
         process.exit(1);
-    });
-    client.on("disconnect", () => {
-        console.log("Bot disconnected, attempting reconnect...");
     });
 
     client.once('ready', async () => {
@@ -114,9 +107,14 @@ try {
         });
     });
     client.login(JSONConfig.token)
-    process.on("unhandledRejection", (reason, p) => {
-        console.error("Unhandled Rejection at:", p, "reason:", reason);
-    });
+    process.on("unhandledRejection", (err) => {
+    if (err && err.code === "UND_ERR_CONNECT_TIMEOUT") {
+        console.error("❌ Connection to Discord API timed out. Exiting...");
+        process.exit(1);
+    } else {
+        console.error("⚠️ Unhandled rejection:", err);
+    }
+});
 
     process.on("uncaughtException", (err) => {
         console.error("Uncaught Exception thrown:", err);
