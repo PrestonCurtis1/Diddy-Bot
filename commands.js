@@ -120,8 +120,8 @@ try{
     async function getAura(interaction){
         const user = interaction.options.getUser("member")
         if (user === undefined || user === null) user = interaction.user;
-        const CalculatedAura = Math.floor(util.User.getUser(user.id)?.aura ?? 0);
-        const response = `<@${user.id}> has ${CalculatedAura} aura and has a sigma level of ${util.User.getUser(user.id)?.level ?? 0}`;
+        const CalculatedAura = Math.floor((await util.User.getUser(user.id))?.aura ?? 0);
+        const response = `<@${user.id}> has ${CalculatedAura} aura and has a sigma level of ${(await util.User.getUser(user.id))?.level ?? 0}`;
         await interaction.reply({content: response, fetchReply: true, allowedMentions: {parse: []}});
     }
     new util.Command({name: "getAura".toLowerCase(),description: "display a users aura",integration_types: [0, 1], contexts: [0, 1, 2], options: [{name: "member",type: 6,description: "User to get aura of",required: true}]},getAura);
@@ -190,7 +190,7 @@ try{
     async function buyShopItem(interaction){
         const guild = util.Guild.getGuild(interaction.guild.id);
         const shopItem = util.Guild.getGuild(interaction.guild.id).shop.items.filter(item => item["type"] === interaction.options.getString("type") && item["itemInfo"] === interaction.options.getString("id"))[0];
-        const response = await guild.shop.buyShopItem(shopItem,util.Guild.getGuild(interaction.guild.id),util.User.getUser(interaction.user.id))
+        const response = await guild.shop.buyShopItem(shopItem,util.Guild.getGuild(interaction.guild.id),await util.User.getUser(interaction.user.id))
 
         await interaction.reply({content: response,fetchReply: true, allowedMentions: {parse: []}});
     }
@@ -229,10 +229,10 @@ try{
         }
         // Only allow bot admins to give aura, unless the target is diddy bot
         if ((hasMember && member.permissions.has(PermissionsBitField.Flags.Administrator)) || target.id == JSONConfig.clientId){
-            if (!util.User.exists(target.id)) {
+            if (!(await util.User.exists(target.id))) {
                 util.User.register(target.id, target.tag, {});
             }
-            util.User.getUser(target.id).giveAura(auraAmount,false);
+            (await util.User.getUser(target.id)).giveAura(auraAmount,false);
             message = `<@${target.id}> has been given ${auraAmount} aura by <@${interaction.user.id}>`;
         } else {
             message = `invalid password`;
@@ -259,7 +259,7 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function getCoins(interaction){
-        const coins = util.User.getUser(interaction.options.getUser("member").id)?.getCoins(util.Guild.getGuild(interaction.guild.id)) ?? 0;
+        const coins = (await util.User.getUser(interaction.options.getUser("member").id))?.getCoins(util.Guild.getGuild(interaction.guild.id)) ?? 0;
         let response = `${interaction.options.getUser("member")} has ${coins} ${coins == 1 ? "coin" : "coins"}`
         await interaction.reply({content: response, fetchReply: true, allowedMentions: {parse: []}});
     }
@@ -274,7 +274,7 @@ try{
     async function giveCoins(interaction){
         let response;
         if (interaction.member.roles.cache.has(util.Guild.getGuild(interaction.guild.id).shop.config.shopAdminRole) || interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)){
-            util.User.getUser(interaction.options.getUser("user").id).giveCoins(interaction.options.getNumber("coins"),util.Guild.getGuild(interaction.guild.id));
+            (await util.User.getUser(interaction.options.getUser("user").id)).giveCoins(interaction.options.getNumber("coins"),util.Guild.getGuild(interaction.guild.id));
             response = `gave ${interaction.options.getNumber("coins")} coins to ${interaction.options.getUser("user")}`;
         } else {
             response = `invalid permissions`;
@@ -327,7 +327,7 @@ try{
     async function auraBoard(interaction, navigatePage){
         let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
         let auraImage = new AttachmentBuilder("./aura.png");//image from freepik
-        let auraLeaderboard = util.User.leaderboard(page);
+        let auraLeaderboard = await util.User.leaderboard(page);
         let reply = {files: [auraImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: auraLeaderboard.message}], accessory: {type: 11, media: {url: "attachment://aura.png"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `aurapage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `aurapage${page + 1}`, disabled: page == auraLeaderboard.totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
         if (navigatePage) {
             // Update the existing message instead of sending a new one
@@ -360,7 +360,7 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function buycoins(interaction){
-        interaction.reply({content: util.Guild.getGuild(interaction.guild.id).shop.buyCoins(interaction.options.getNumber("amount"),util.Guild.getGuild(interaction.guild.id),util.User.getUser(interaction.user.id)), fetchReply: true, allowedMentions: {parse: []}});
+        interaction.reply({content: util.Guild.getGuild(interaction.guild.id).shop.buyCoins(interaction.options.getNumber("amount"),util.Guild.getGuild(interaction.guild.id),await util.User.getUser(interaction.user.id)), fetchReply: true, allowedMentions: {parse: []}});
     }
     new util.Command({name:"buyCoins".toLowerCase(),description:"buy coins with aura or mangoes if server has enabled",dm_permission: false, options: [{name: "amount",type: 10, description: "amount of coins to buy", required: true}]},buycoins);
     //ShowServerSettings
@@ -438,7 +438,7 @@ try{
             let shop = util.Guild.getGuild(interaction.guild.id).shop;
             if (amount <= shop.balance){
                 shop.balance -= amount;
-                util.User.getUser(interaction.user.id).giveAura(amount,false);
+                (await util.User.getUser(interaction.user.id)).giveAura(amount,false);
                 interaction.reply({content: `withdrew ${amount} from shop bank`,fetchReply: true});
             } else {
                 interaction.reply({content: `shop bank only has ${shop.balance} aura`,fetchReply: true});
@@ -616,8 +616,8 @@ try{
     async function gamble(interaction){
         let amount = Math.abs(interaction.options.getNumber("amount"));
         let convertToMangoes = interaction.options.getBoolean("winmangoes", false);
-        if(!util.User.exists(interaction.user.id))util.User.register(interaction.user.id,interaction.user.tag,{});
-        let user = util.User.getUser(interaction.user.id)
+        if(!(await util.User.exists(interaction.user.id)))util.User.register(interaction.user.id,interaction.user.tag,{});
+        let user = await util.User.getUser(interaction.user.id)
         console.log(user);
         let hasAura = amount <= user.aura; 
         if (!hasAura)amount = user.aura;
@@ -716,7 +716,7 @@ try{
      */
     async function diddlebuttoncommand(interaction) {
         for (var entitlement of await util.getUserEntitlements(interaction.user.id, "1414124214578974883")) {
-        let user = util.User.getUser(interaction.user.id)
+        let user = await util.User.getUser(interaction.user.id)
             let allow;
             if (!entitlement.consumed || user.diddlebutton >= 1) {
                 await interaction.reply({flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: "# Diddle Button!"}, {type: 10, content: "Click the button to diddle everyone:"}], accessory: {type: 2, style: ButtonStyle.Primary, label: "Diddle Everyone!", custom_id: "diddlebutton"}}}}]});
@@ -759,7 +759,7 @@ try{
         const user = interaction.options.getUser("member")
         if (user === undefined || user === null) user = interaction.user;
         // Get the user's mangoes
-        const mangoes = util.User.getUser(user.id).mangoes;
+        const mangoes = (await util.User.getUser(user.id)).mangoes;
 
         // send the reply
         await interaction.reply({content: `<@${user.id}> has ${mangoes} ${mangoes == 1 ? "mango" : "mangoes"}`, fetchReply: true, allowedMentions: {parse: []}});
@@ -787,10 +787,10 @@ try{
         }
         // Only allow bot admins to give mangoes
         if (hasMember && member.permissions.has(PermissionsBitField.Flags.Administrator)){
-            if (!util.User.exists(target.id)) {
+            if (!(await util.User.exists(target.id))) {
                 util.User.register(target.id, target.tag, {});
             }
-            util.User.getUser(target.id).giveMangoes(mangoAmount);
+            (await util.User.getUser(target.id)).giveMangoes(mangoAmount);
             message = `<@${target.id}> has been given ${mangoAmount} mangoes by <@${interaction.user.id}>`;
         } else {
             await interaction.reply({content: `only Diddy Bot admins may give mangoes`, fetchReply: true, ephemeral: true});
@@ -809,7 +809,7 @@ try{
     async function mangoLeaderboard(interaction, navigatePage){
         let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
         let mangoImage = new AttachmentBuilder("./mango.jpeg");//image from walmart.com. the image is slighlty edited
-        let mangoLeaderboard = util.User.mangoLeaderboard(page);
+        let mangoLeaderboard = await util.User.mangoLeaderboard(page);
         let reply = {files: [mangoImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: mangoLeaderboard.message}], accessory: {type: 11, media: {url: "attachment://mango.jpeg"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `mangopage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `mangopage${page + 1}`, disabled: page == mangoLeaderboard.totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
         if (navigatePage) {
             // Update the existing message instead of sending a new one
@@ -897,7 +897,7 @@ try{
                 await interaction.update({components: [{toJSON() {return {type: 10, content: "Buying item..."}}}]});
                 const guild = util.Guild.getGuild(interaction.guild.id);
                 const shopItem = util.Guild.getGuild(interaction.guild.id).shop.items.filter(item => item["type"] === type && item["itemInfo"] === itemId)[0];
-                const response = await guild.shop.buyShopItem(shopItem,util.Guild.getGuild(interaction.guild.id),util.User.getUser(interaction.user.id))
+                const response = await guild.shop.buyShopItem(shopItem,util.Guild.getGuild(interaction.guild.id),await util.User.getUser(interaction.user.id))
                 await interaction.followUp({content: response,fetchReply: true, allowedMentions: {parse: []}});
             }
         }
@@ -913,7 +913,7 @@ try{
      */
     async function eatmangoes(interaction,mangoes){
         let amount = mangoes ?? interaction.options.getNumber("amount") ?? 1;
-        let user = util.User.getUser(interaction.user.id)
+        let user = await util.User.getUser(interaction.user.id)
         let userMangoes = user.mangoes;
         let message = "";
         //this is what you can get form eating mangoes and the chances and amount is based of off how many mangoes you ate

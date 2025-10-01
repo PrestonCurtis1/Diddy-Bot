@@ -49,9 +49,9 @@ try {
                 if (interaction.guild){
                 if(!interaction.isCommand() && !interaction.isMessageComponent()) return;
                 if(!util.Guild.exists(interaction.guild.id))util.Guild.register(interaction.guild.id,interaction.guild.name);
-                if(!util.User.exists(interaction.user.id))util.User.register(interaction.user.id,interaction.user.tag,{[interaction.guild.id]:0});
-                if(!util.Guild.getGuild(interaction.guild.id).hasUser(interaction.user.id))util.Guild.getGuild(interaction.guild.id).addUser({"user":util.User.getUser(interaction.user.id),"coins":0});
-                util.User.getUser(interaction.user.id).setName(interaction.user.tag);
+                if(!(await util.User.exists(interaction.user.id)))util.User.register(interaction.user.id,interaction.user.tag,{[interaction.guild.id]:0});
+                if(!util.Guild.getGuild(interaction.guild.id).hasUser(interaction.user.id))util.Guild.getGuild(interaction.guild.id).addUser({"user":await util.User.getUser(interaction.user.id),"coins":0});
+                (await util.User.getUser(interaction.user.id)).setName(interaction.user.tag);
                 util.Guild.getGuild(interaction.guild.id).setName(interaction.guild.name);
             }
             if (interaction.isCommand()) {
@@ -68,7 +68,7 @@ try {
             console.error("Error handling interaction:",error);
         }
     });
-    client.on('messageCreate', (message) => {
+    client.on('messageCreate', async (message) => {
         if(util.isLoadingData())return;
         if (message.author.bot) return;
         if (!message.guild) return;
@@ -83,14 +83,14 @@ try {
             message.reply("Ping sent to diddy bot discord");
         }
         if(!util.Guild.exists(message.guild.id))util.Guild.register(message.guild.id,message.guild.name);
-        if(!util.User.exists(message.author.id))util.User.register(message.author.id,message.author.tag,{[message.guild.id]:0});
+        if(!(await util.User.exists(message.author.id)))util.User.register(message.author.id,message.author.tag,{[message.guild.id]:0});
         let guild = util.Guild.getGuild(message.guild.id);
 	if(!guild)return;
-        if(!guild.hasUser(message.author.id))guild.addUser({"user":util.User.getUser(message.author.id),"coins":0});
-        util.User.getUser(message.author.id)?.setName(message.author.tag);
+        if(!guild.hasUser(message.author.id))guild.addUser({"user":await util.User.getUser(message.author.id),"coins":0});
+        (await util.User.getUser(message.author.id))?.setName(message.author.tag);
         guild.setName(message.guild.name);
-        util.User.getUser(message.author.id).giveAura(messagePoints,true);
-        util.User.getUser(message.author.id).giveCoins(messagePoints*util.Guild.getGuild(message.guild.id).booster,util.Guild.getGuild(message.guild.id));
+        (await util.User.getUser(message.author.id)).giveAura(messagePoints,true);
+        (await util.User.getUser(message.author.id)).giveCoins(messagePoints*util.Guild.getGuild(message.guild.id).booster,util.Guild.getGuild(message.guild.id));
     });
     client.on('guildCreate', async (guild) => {
         const welcomeMessage = fs.readFileSync('./welcome', 'utf8');
@@ -99,8 +99,8 @@ try {
     });
     client.on('guildMemberAdd', async (member) => {
         if(!util.Guild.exists(member.guild.id))util.Guild.register(member.guild.id,member.guild.name);
-        if(!util.User.exists(member.id))util.User.register(member.user.id,member.user.tag,{[member.guild.id]:0});
-        if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))util.Guild.getGuild(member.guild.id).addUser({"user":util.User.getUser(member.user.id),"coins":0});
+        if(!(await util.User.exists(member.id)))util.User.register(member.user.id,member.user.tag,{[member.guild.id]:0});
+        if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))util.Guild.getGuild(member.guild.id).addUser({"user":await util.User.getUser(member.user.id),"coins":0});
         await util.msg(`user ${member.user.tag} joined server ${member.guild.name}`);
     });
     client.on("error", error => {
