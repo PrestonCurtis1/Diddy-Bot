@@ -160,6 +160,7 @@ try{
     }
     class User {//const futureDate = new Date(currentDate.getTime() + hoursToAdd * 60 * 60 * 1000); // Add hours in milliseconds
         static all = {};
+        static allUsersLoaded = false;
         constructor(id,tag,aura,boosters,guilds,mangoes,insuranceTickets,diddlebutton){//for guilds use {"server_id_one": 10,"server_id_two":10}
             this.id = id;//string
             this.name = tag;//string
@@ -238,6 +239,33 @@ try{
                 }
             }
         }
+        static async getAllUsers() {
+            if (User.allUsersLoaded) {
+                return Object.values(User.all);
+            } else {
+                const allUsers = await allAsync(`SELECT * FROM User`);
+                let users = [];
+                for (const user of allUsers) {
+                    try {
+                        const userObj = new User(
+                            user.id,
+                            user.name,
+                            user.aura,
+                            JSON.parse(user.boosters),
+                            JSON.parse(user.guilds),
+                            user.mangoes,
+                            user.insuranceTickets,
+                            user.diddlebutton
+                        );
+                        users.push(userObj);
+                    } catch(error){
+                        console.error("error loading data from users",error)
+                    }
+                }
+                User.allUsersLoaded = true;
+                return users;
+            }
+        }
         getAuraMultiplier(){
             let now = new Date();
             let endDate = new Date(this.boosters.temp.endTime);
@@ -301,7 +329,7 @@ try{
             const perPage = 10;
             const userAuraList = [];
 
-            const users = await allAsync(`SELECT id, name, aura FROM User`);
+            const users = await User.getAllUsers();
 
             for (const user of users) {
                 // Exclude diddy bot from the aura leaderboard
@@ -312,6 +340,23 @@ try{
                     name: user.name,
                     aura: user.aura
                 });
+
+                // Load the user for 5 mins
+                try {
+                    const userObj = new User(
+                        user.id,
+                        user.name,
+                        user.aura,
+                        JSON.parse(user.boosters),
+                        JSON.parse(user.guilds),
+                        user.mangoes,
+                        user.insuranceTickets,
+                        user.diddlebutton
+                    );
+                    return userObj;
+                } catch(error){
+                    console.error("error loading data from users",error)
+                }
             }
 
             userAuraList.sort((a, b) => b.aura - a.aura);
@@ -358,13 +403,30 @@ try{
             const perPage = 10;
             const userMangoList = [];
 
-            const users = await allAsync(`SELECT name, mangoes FROM User`);
+            const users = await User.getAllUsers();
 
             for (const user of users) {
                 userMangoList.push({
                     name: user.name,
                     mangoes: user.mangoes
                 });
+
+                // Load the user for 5 mins
+                try {
+                    const userObj = new User(
+                        user.id,
+                        user.name,
+                        user.aura,
+                        JSON.parse(user.boosters),
+                        JSON.parse(user.guilds),
+                        user.mangoes,
+                        user.insuranceTickets,
+                        user.diddlebutton
+                    );
+                    return userObj;
+                } catch(error){
+                    console.error("error loading data from users",error)
+                }
             }
 
             userMangoList.sort((a, b) => b.mangoes - a.mangoes);
@@ -713,6 +775,7 @@ try{
                 for (var key in User.all) {
                     if (User.all[key].unloadUser) {
                         delete User.all[key];
+                        User.allUsersLoaded = false;
                     } else {
                         User.all[key].unloadUser = true;
                     }
