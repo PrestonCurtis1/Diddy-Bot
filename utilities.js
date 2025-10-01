@@ -218,7 +218,6 @@ try{
                 return User.all[id];
             } else {
                 const user = (await allAsync(`SELECT * FROM User WHERE id=:userId`, { ":userId": id }))[0];
-                console.log(id);
                 if (user) {
                     try {
                         const userObj = new User(
