@@ -325,6 +325,7 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function auraBoard(interaction, navigatePage){
+        navigatePage ? await interaction.deferUpdate : await interaction.deferReply();
         let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
         let auraImage = new AttachmentBuilder("./aura.png");//image from freepik
         let auraLeaderboard = await util.User.leaderboard(page);
@@ -333,7 +334,7 @@ try{
             // Update the existing message instead of sending a new one
             await interaction.update(reply);
         } else {
-            await interaction.reply(reply);
+            await interaction.editReply(reply);
         }
     }
     new util.Command({name: "auraLeaderboard".toLowerCase(),description: "Show the global aura leaderboard",options: [{name: "page", description: "what page to show", type: 10, required: false}],integration_types: [0, 1], contexts: [0, 1, 2]},auraBoard);
@@ -807,6 +808,7 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function mangoLeaderboard(interaction, navigatePage){
+        navigatePage ? await interaction.deferUpdate : await interaction.deferReply;
         let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
         let mangoImage = new AttachmentBuilder("./mango.jpeg");//image from walmart.com. the image is slighlty edited
         let mangoLeaderboard = await util.User.mangoLeaderboard(page);
