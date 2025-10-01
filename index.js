@@ -1,21 +1,21 @@
 const { deserialize } = require('v8');
 try {
     const fs = require('fs');
-    const { setGlobalDispatcher, Agent } = require("undici");
-    const agent = new Agent({
-        connect: { timeout: 10_000 } // 10s timeout
-    });
-    setGlobalDispatcher(agent);
+    // const { setGlobalDispatcher, Agent } = require("undici");
+    // const agent = new Agent({
+    //     connect: { timeout: 10_000 } // 10s timeout
+    // });
+    // setGlobalDispatcher(agent);
 
-    agent.on("connectError", (err) => {
-        console.log("Logging ConnectError",err?.code,err?.name)
-        if (err?.code === "UND_ERR_CONNECT_TIMEOUT" || err?.name === "ConnectTimeoutError") {
-            console.error("Global undici connect timeout detected, exiting...");
-            process.exit(1);//im just exitting so pm2 can restart it once i setup pm2
-        }
-    });//im restorting to using chatgpt to fix this error, and chatgpt said to put the code here but idk if it knows what its doing tbh lol
+    // agent.on("connectError", (err) => {
+    //     console.log("Logging ConnectError",err?.code,err?.name)
+    //     if (err?.code === "UND_ERR_CONNECT_TIMEOUT" || err?.name === "ConnectTimeoutError") {
+    //         console.error("Global undici connect timeout detected, exiting...");
+    //         process.exit(1);//im just exitting so pm2 can restart it once i setup pm2
+    //     }
+    // });//im restorting to using chatgpt to fix this error, and chatgpt said to put the code here but idk if it knows what its doing tbh lol
     const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField} = require('discord.js');
-    const https = require("https");
+    // const https = require("https");
     const JSONConfig = require('./config.json');
     const util = require("./utilities.js");
     const commands = require("./commands.js");
