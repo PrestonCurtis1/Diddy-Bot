@@ -18,14 +18,14 @@ async function runApi() {
     api.get("/getaura/:userid", async (req, res) => {
         await util.msg(`[API] /getaura/${req.params.userid}`, JSONConfig.communityServer, JSONConfig.apiChannel)
         console.log(req.ip);
-        let aura = Math.floor(util.User.getUser(req.params.userid)?.aura ?? 0);
+        let aura = Math.floor((await util.User.getUser(req.params.userid))?.aura ?? 0);
         res.send({aura});
     });
     // Get Coins route
     api.get("/getcoins/:guildid/:userid", async (req, res) => {
         await util.msg(`[API] /getcoins/${req.params.guildid}/${req.params.userid}`, JSONConfig.communityServer, JSONConfig.apiChannel)
         console.log(req.ip);
-        let coins = util.User.getUser(req.params.userid)?.getCoins(util.Guild.getGuild(req.params.guildid)) ?? 0;
+        let coins = (await util.User.getUser(req.params.userid))?.getCoins(util.Guild.getGuild(req.params.guildid)) ?? 0;
         res.send({coins});
     });
     // rizzme messages route
@@ -55,7 +55,7 @@ async function runApi() {
             if(req.body.type == "upvote" && req.body.bot == JSONConfig.clientId){
                 let aura = 1000
                 console.log(req.body.user);
-                util.User.getUser(req.body.user).giveAura(aura,false);
+                (await util.User.getUser(req.body.user)).giveAura(aura,false);
                 util.msg(`<@${req.body.user}> voted for the bot and got ${aura} aura`,JSONConfig.communityServer, JSONConfig.voteChannel);
             }
         }
@@ -313,7 +313,7 @@ async function runApi() {
     api.get("/getmangoes/:userid", async (req, res) => {
         await util.msg(`[API] /getmangoes/${req.params.userid}`, JSONConfig.communityServer, JSONConfig.apiChannel)
         console.log(req.ip);
-        let mangoes = Math.floor(util.User.getUser(req.params.userid)?.getMangoes() ?? 0);
+        let mangoes = Math.floor((await util.User.getUser(req.params.userid))?.getMangoes() ?? 0);
         res.send({mangoes});
     });
     // Listen for requests

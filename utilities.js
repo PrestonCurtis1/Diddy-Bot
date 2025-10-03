@@ -188,13 +188,15 @@ try{
                 diddlebutton = 0;
             }
             this.diddlebutton = diddlebutton;
+            this.unloadUser = false;
         }
         async update(key,value){
             if (loadingData)return;
             await runAsync(`UPDATE User SET ${key} = ? WHERE id = ?`, [value, this.id]);
         }
-        static exists(id){
-            return id in this.all;
+        static async exists(id){
+            const user = await User.getUser(id);
+            return user != null && user != undefined;
         }
         static async register(userId,userTag,guilds={}){
             if (loadingData)return;
@@ -205,13 +207,36 @@ try{
                 `INSERT OR REPLACE INTO User (id, name, aura, boosters, guilds, mangoes, insuranceTickets, diddlebutton) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                 [user.id, user.name, user.aura, JSON.stringify(user.boosters), JSON.stringify(user.guilds), user.mangoes, user.insuranceTickets, user.diddlebutton]
             );
-            return User.exists(userId);
+            return await User.exists(userId);
         }
         inGuild(id){
             return id in this.guilds;
         }
-        static getUser(id){
-            return User.all[id];
+        static async getUser(id){
+            if (id in User.all) {
+                User.all[id].unloadUser = false; // User has been used, don't unload
+                return User.all[id];
+            } else {
+                const user = (await allAsync(`SELECT * FROM User WHERE id=:userId`, { ":userId": id }))[0];
+                if (user) {
+                    try {
+                        const userObj = new User(
+                            user.id,
+                            user.name,
+                            user.aura,
+                            JSON.parse(user.boosters),
+                            JSON.parse(user.guilds),
+                            user.mangoes,
+                            user.insuranceTickets,
+                            user.diddlebutton
+                        );
+                        return userObj;
+                    } catch(error){
+                        console.error("error loading data from users",error)
+                    }
+                    return undefined;
+                }
+            }
         }
         getAuraMultiplier(){
             let now = new Date();
@@ -272,18 +297,20 @@ try{
         getCoins(guild){
             return guild.users[this.id].coins;
         }
-        static leaderboard(page = 1) {
+        static async leaderboard(page = 1) {
             const perPage = 10;
             const userAuraList = [];
 
-            for (const key in User.all) {
+            const users = await allAsync(`SELECT id, name, aura FROM User`);
+
+            for (const user of users) {
                 // Exclude diddy bot from the aura leaderboard
-                if (key == JSONConfig.clientId) {
+                if (user.id == JSONConfig.clientId) {
                     continue;
                 }
                 userAuraList.push({
-                    name: User.all[key].getName(),
-                    aura: User.all[key].getAura()
+                    name: user.name,
+                    aura: user.aura
                 });
             }
 
@@ -327,14 +354,16 @@ try{
             this.diddlebutton += amount;
             this.update("diddlebutton", this.diddlebutton);
         }
-        static mangoLeaderboard(page = 1) {
+        static async mangoLeaderboard(page = 1) {
             const perPage = 10;
             const userMangoList = [];
 
-            for (const key in User.all) {
+            const users = await allAsync(`SELECT name, mangoes FROM User`);
+
+            for (const user of users) {
                 userMangoList.push({
-                    name: User.all[key].getName(),
-                    mangoes: User.all[key].getMangoes()
+                    name: user.name,
+                    mangoes: user.mangoes
                 });
             }
 
@@ -594,7 +623,6 @@ try{
             diddlebutton INTEGER
             )
         `);
-        console.log("user table created");
         // Update the user table to have a column for mangoes and insuranceTickets
         var userColumns = await allAsync(`
             PRAGMA table_info(User);
@@ -680,24 +708,16 @@ try{
             }
             }
 
-            // Load users
-            const userRows = await allAsync(`SELECT * FROM User`);
-            for (const user of userRows) {
-                try {
-                    new User(
-                        user.id,
-                        user.name,
-                        user.aura,
-                        JSON.parse(user.boosters),
-                        JSON.parse(user.guilds),
-                        user.mangoes,
-                        user.insuranceTickets,
-                        user.diddlebutton
-                    );
-                } catch(error){
-                    console.error("error loading data from users",error)
+            // Interval to unload users that haven't been used in 5 mins
+            setInterval(() => {
+                for (var key in User.all) {
+                    if (User.all[key].unloadUser) {
+                        delete User.all[key];
+                    } else {
+                        User.all[key].unloadUser = true;
+                    }
                 }
-            }
+            }, 300000); // Every 5 mins
 
             await msg(
             `Loaded ${Object.keys(Guild.all).length} Guilds and ${Object.keys(User.all).length} Users`
