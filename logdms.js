@@ -44,17 +44,19 @@ client.on("interactionCreate", async (interaction) =>{
         try {//im putting a try catch around this fetch cuz these sometimes fail
             let userId = interaction.customId.replace("userdmmodal","");
             console.log("log",interaction.customId)
-            const content = interaction.fields.getTextInputValue("replyText");
+            let content = interaction.fields.getTextInputValue("replyText");
             console.log(userId,"|",userId.length,typeof userId,userId === "799101657647415337");
             // const avatarURL = interaction.user.displayAvatarURL({ extension: "png", size: 512 });
             // const userAvatar = new AttachmentBuilder(avatarURL, { name: "avatar.png" });
             // const reply = {files: [userAvatar], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type:10, content: `📩 DM from **${interaction.user.tag}**: ${content}`}], accessory: {type: 11, media: {url:"attachment://avatar.png"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label:"Reply", custom_id: `userdm${interaction.user.id}`,disabled: false, style: ButtonStyle.Primary}]}}}],fetchReply: true};
             await interaction.reply({ content: `Sending message: ${content}`, ephemeral: true });
+            
             try{
-                eval(`util.sendDM(${content},userId)`);
+                content = JSON.parse(content)
             } catch(error){
-                util.sendDM(content,userId);
+                console.error("invalid json",error);
             }
+            util.sendDM(content,userId);
         } catch (error){
             console.error("error submitting modal logdms.js",error);
             return

@@ -2,7 +2,7 @@ const { deserialize } = require('v8');
 try {
     const fs = require('fs');
     // const { setGlobalDispatcher, Agent } = require("undici");
-    // const agent = new Agent({
+    // cognst agent = new Agent({
     //     connect: { timeout: 10_000 } // 10s timeout
     // });
     // setGlobalDispatcher(agent);
@@ -55,10 +55,12 @@ try {
                 util.Guild.getGuild(interaction.guild.id).setName(interaction.guild.name);
             }
             if (interaction.isCommand()) {
+                await interaction.deferReply();
                 const command = util.Command.getCommand(interaction.commandName);
                 await command.runCommand(interaction);
                 await util.msg(`[${interaction.commandName}](${interaction.guild?.name ?? "DM"}){${interaction.channel?.name ?? "DM"}}<${interaction.user.tag}>`);
             } else if (interaction.isMessageComponent()) {
+                await interaction.deferUpdate()
                 for (var command of util.ComponentCommand.commands) {
                     command.run(interaction);
                 }
