@@ -200,6 +200,7 @@ try{
         }
         static async register(userId,userTag,guilds={}){
             if (loadingData)return;
+            if (User.exists(userId))return true;
             msg(`registering user ${userTag}`);
             new User(userId,userTag,100,{"temp":{"multi":0,"endTime": new Date().toISOString()},"perm":0},guilds,0,0,0);
             let user = {"id": userId, "name": userTag, "aura": 100, "boosters": {"temp":{"multi":0,"endTime": new Date().toISOString()},"perm":0},"guilds":guilds,"mangoes":0,"insuranceTickets":0,"diddlebutton":0}

@@ -303,7 +303,7 @@ async function runApi() {
         if (!code) return res.json({ error: "No code provided" });
 
         try {
-            const result = eval(code); // ⚠️ Dangerous
+            const result = await eval(code); // ⚠️ Dangerous
             res.json({ result }); // <-- must send JSON
         } catch (err) {
             res.json({ error: err.toString() });
