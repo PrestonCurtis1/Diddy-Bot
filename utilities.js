@@ -153,7 +153,7 @@ try{
             });
 
             if (userCoinList.length === 0) {
-                message += `No players found.`;
+                message += `No users found.`;
             }
 
             return {message, totalPages};
@@ -332,7 +332,7 @@ try{
             });
 
             if (userAuraList.length === 0) {
-                message += `No players found.`;
+                message += `No users found.`;
             }
 
             return {message, totalPages};
@@ -386,7 +386,7 @@ try{
             });
 
             if (userMangoList.length === 0) {
-                message += `No players found.`;
+                message += `No users found.`;
             }
 
             return {message, totalPages};
@@ -584,8 +584,10 @@ try{
     }
     class ComponentCommand {
         static commands = [];
-        constructor(run) {
+        constructor(run, prefix, defer = true) {
             this.run = run;
+            this.prefix = prefix;
+            this.defer = defer;
             ComponentCommand.commands.push(this);
         }
         display(){
@@ -805,7 +807,7 @@ try{
         try {
             user = await client.users.fetch(userId);
             await user.send(content);
-            msg(`DM sent to ${user.name}: ${content}`);
+            msg(`DM sent to ${user.tag}: ${content}`);
         } catch (err) {
             msg(`Failed to send DM to ${user}: ${err.message}`);
         }

@@ -60,9 +60,11 @@ try {
                 await command.runCommand(interaction);
                 await util.msg(`[${interaction.commandName}](${interaction.guild?.name ?? "DM"}){${interaction.channel?.name ?? "DM"}}<${interaction.user.tag}>`);
             } else if (interaction.isMessageComponent()) {
-                await interaction.deferUpdate()
                 for (var command of util.ComponentCommand.commands) {
-                    command.run(interaction);
+                    if (interaction.customId.startsWith(command.prefix)){
+                        if (command.defer)await interaction.deferUpdate();
+                        command.run(interaction);
+                    }
                 }
                 await util.msg(`[${interaction.customId} (message component)](${interaction.guild?.name ?? "DM"}){${interaction.channel?.name ?? "DM"}}<${interaction.user.tag}>`);
             }
