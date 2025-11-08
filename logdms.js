@@ -50,7 +50,7 @@ client.on("interactionCreate", async (interaction) =>{
     if (interaction.isModalSubmit() && interaction.customId.startsWith("userdmmodal")) {
         try {//im putting a try catch around this fetch cuz these sometimes fail
             let userId = interaction.customId.replace("userdmmodal","");
-            console.log("log",interaction.customId)
+            console.log("log",interaction.customId);
             let content = interaction.fields.getTextInputValue("replyText");
             console.log(userId,"|",userId.length,typeof userId,userId === "799101657647415337");
             // const avatarURL = interaction.user.displayAvatarURL({ extension: "png", size: 512 });
