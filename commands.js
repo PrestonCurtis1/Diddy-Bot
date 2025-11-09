@@ -259,7 +259,8 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function getCoins(interaction){
-        const coins = (await util.User.getUser(interaction.options.getUser("member").id))?.getCoins(util.Guild.getGuild(interaction.guild.id)) ?? 0;
+        const user = await util.User.getUser(interaction.options.getUser("member").id)
+        const coins = user?.getCoins(interaction.guild.id) ?? 0;
         let response = `${interaction.options.getUser("member")} has ${coins} ${coins == 1 ? "coin" : "coins"}`
         await interaction.editReply({content: response, fetchReply: true, allowedMentions: {parse: []}});
     }
@@ -874,10 +875,10 @@ try{
                 }
             if (interaction.customId.startsWith("buyshopitem")) {
                 // Send a confirmation message
-                interaction.editReply({flags: 32768 | MessageFlags.Ephemeral, components: [{toJSON() {return {type: 10, content: `Are you sure you want to buy ${desc}?`}}}, {toJSON() {return {type: 1, components: [{type: 2, style: ButtonStyle.Danger, label: "Buy Item", custom_id: "buyshopconf" + type + itemId}]}}}]});
+                interaction.reply({flags: 32768 | MessageFlags.Ephemeral, components: [{toJSON() {return {type: 10, content: `Are you sure you want to buy ${desc}?`}}}, {toJSON() {return {type: 1, components: [{type: 2, style: ButtonStyle.Danger, label: "Buy Item", custom_id: "buyshopconf" + type + itemId}]}}}]});
             } else {
                 // Buy the item
-                await interaction.deferUpdate({components: [{toJSON() {return {type: 10, content: "Buying item..."}}}]});
+                await interaction.update({components: [{toJSON() {return {type: 10, content: "Buying item..."}}}]});
                 const guild = util.Guild.getGuild(interaction.guild.id);
                 const shopItem = util.Guild.getGuild(interaction.guild.id).shop.items.filter(item => item["type"] === type && item["itemInfo"] === itemId)[0];
                 const response = await guild.shop.buyShopItem(shopItem,util.Guild.getGuild(interaction.guild.id),await util.User.getUser(interaction.user.id))
@@ -885,7 +886,7 @@ try{
             }
         }
     }
-    new util.ComponentCommand(buyShopItemButton,"buyshop");
+    new util.ComponentCommand(buyShopItemButton,"buyshop",false);
     client.login(JSONConfig.token);
     //eatmangoes
     /**
