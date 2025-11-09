@@ -293,7 +293,7 @@ try{
     async function coinBoard(interaction, navigatePage){
         let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
         let diddycoinImage = new AttachmentBuilder("./DiddyBotCoin.png");//image from chatgpt.com. the image is slighlty edited
-        let coinLeaderBoard = util.Guild.getGuild(interaction.guild.id).leaderboard(page)
+        let coinLeaderBoard = await util.Guild.getGuild(interaction.guild.id).leaderboard(page)
         let reply = {files: [diddycoinImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: coinLeaderBoard.message}], accessory: {type: 11, media: {url: "attachment://DiddyBotCoin.png"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `coinpage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `coinpage${page + 1}`, disabled: page == coinLeaderBoard.totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
         await interaction.editReply(reply);
     }
