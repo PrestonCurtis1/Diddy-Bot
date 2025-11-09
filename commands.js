@@ -732,7 +732,7 @@ try{
             const response = `@everyone has been diddled by <@${interaction.user.id}>`;
 
             // Send the reply
-            await interaction.editReply({ content: response, fetchReply: true , allowedMentions: {parse: []}});
+            await interaction.reply({ content: response, fetchReply: true , allowedMentions: {parse: []}});
         }
     }
     new util.ComponentCommand(diddlebutton,"diddlebutton",false);
