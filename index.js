@@ -50,7 +50,7 @@ try {
                 if(!interaction.isCommand() && !interaction.isMessageComponent()) return;
                 if(!util.Guild.exists(interaction.guild.id))util.Guild.register(interaction.guild.id,interaction.guild.name);
                 if(!(await util.User.exists(interaction.user.id)))util.User.register(interaction.user.id,interaction.user.tag,{[interaction.guild.id]:0});
-                if(!util.Guild.getGuild(interaction.guild.id).hasUser(interaction.user.id))util.Guild.getGuild(interaction.guild.id).addUser({"user":await util.User.getUser(interaction.user.id),"coins":0});
+                if(!util.Guild.getGuild(interaction.guild.id).hasUser(interaction.user.id))await util.Guild.getGuild(interaction.guild.id).addUser(interaction.user.id);
                 (await util.User.getUser(interaction.user.id)).setName(interaction.user.tag);
                 util.Guild.getGuild(interaction.guild.id).setName(interaction.guild.name);
             }
@@ -60,9 +60,11 @@ try {
                 await command.runCommand(interaction);
                 await util.msg(`[${interaction.commandName}](${interaction.guild?.name ?? "DM"}){${interaction.channel?.name ?? "DM"}}<${interaction.user.tag}>`);
             } else if (interaction.isMessageComponent()) {
-                await interaction.deferUpdate()
                 for (var command of util.ComponentCommand.commands) {
-                    command.run(interaction);
+                    if (interaction.customId.startsWith(command.prefix)){
+                        if (command.defer)await interaction.deferUpdate();
+                        command.run(interaction);
+                    }
                 }
                 await util.msg(`[${interaction.customId} (message component)](${interaction.guild?.name ?? "DM"}){${interaction.channel?.name ?? "DM"}}<${interaction.user.tag}>`);
             }
@@ -87,8 +89,8 @@ try {
         if(!util.Guild.exists(message.guild.id))util.Guild.register(message.guild.id,message.guild.name);
         if(!(await util.User.exists(message.author.id)))util.User.register(message.author.id,message.author.tag,{[message.guild.id]:0});
         let guild = util.Guild.getGuild(message.guild.id);
-	if(!guild)return;
-        if(!guild.hasUser(message.author.id))guild.addUser({"user":await util.User.getUser(message.author.id),"coins":0});
+	    if(!guild)return;
+        if(!guild.hasUser(message.author.id))await guild.addUser(message.author.id);
         (await util.User.getUser(message.author.id))?.setName(message.author.tag);
         guild.setName(message.guild.name);
         (await util.User.getUser(message.author.id)).giveAura(messagePoints,true);
@@ -102,7 +104,7 @@ try {
     client.on('guildMemberAdd', async (member) => {
         if(!util.Guild.exists(member.guild.id))util.Guild.register(member.guild.id,member.guild.name);
         if(!(await util.User.exists(member.id)))util.User.register(member.user.id,member.user.tag,{[member.guild.id]:0});
-        if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))util.Guild.getGuild(member.guild.id).addUser({"user":await util.User.getUser(member.user.id),"coins":0});
+        if(!util.Guild.getGuild(member.guild.id).hasUser(member.user.id))await util.Guild.getGuild(member.guild.id).addUser(member.user.id);
         await util.msg(`user ${member.user.tag} joined server ${member.guild.name}`);
     });
     client.on("error", error => {

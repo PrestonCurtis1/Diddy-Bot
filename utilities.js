@@ -20,12 +20,12 @@ try{
     let lynxRefreshToken = JSONLynx.lynxRefreshToken;
     class Guild {
         static all = {};
-        constructor(id,name,booster,settings,shop){
+        constructor(id,name,booster,settings,shop,users){
             this.id = id;
             this.name = name;
             this.booster = booster;
             this.settings = settings;//about features invite-link randomInviteEnabled
-            this.users = {};
+            this.users = users;
             // If the shop is somehow null for the guild, reset it
             if (shop.id == null) {
                 console.warn(`resetting null shop for ${id}`);
@@ -62,7 +62,7 @@ try{
             this.update("booster",this.booster);
         }
         hasUser(id){
-            return (this.users[id]);
+            return this.users.includes(id);
         }
         static exists(id){
             return id in this.all;
@@ -70,11 +70,11 @@ try{
         static async register(guildId,guildName){
             if (loadingData)return;
             msg(`registering guild ${guildName}`);
-            new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","randomInviteEnabled":true},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":"","buyCoinsWithMangoes":"false"}});
-            let g = {"id": guildId, "name": guildName, "booster" : 1, "settings": {"about":"","features":[],"invite-code":"","randomInviteEnabled":true},"shop": {"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}}};
+            new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","randomInviteEnabled":true},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":"","buyCoinsWithMangoes":"false"}},[]);
+            let g = {"id": guildId, "name": guildName, "booster" : 1, "settings": {"about":"","features":[],"invite-code":"","randomInviteEnabled":true},"shop": {"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}},"users":[]};
             await runAsync(
-                `INSERT OR REPLACE INTO Guild (id, name, booster, settings, shop_id) VALUES (?, ?, ?, ?, ?)`,
-                [g.id, g.name, g.booster, JSON.stringify(g.settings), g.shop.id]
+                `INSERT OR REPLACE INTO Guild (id, name, booster, settings, shop_id, users) VALUES (?, ?, ?, ?, ?)`,
+                [g.id, g.name, g.booster, JSON.stringify(g.settings), g.shop.id, JSON.stringify([])]
             );
             let shop = g.shop;
             await runAsync(
@@ -86,17 +86,19 @@ try{
         static getGuild(id){
             return Guild.all[id];
         }
-        addUser(userData){
+        async addUser(id){
             //{"user":this,"coins":guilds[serverId]}
-            if (typeof userData?.user?.id === "undefined") {
+            if (typeof id === "undefined") {
                 return
             }
-            if (!this.users[userData.user.id]){//user isn't already added to guild
-                this.users[userData.user.id] = {"user":userData.user,"coins":userData.coins};
-                if(!userData.user.inGuild(this.id)){
-                    userData.user.guilds[this.id] = userData.coins;
-                    userData.user.update("guilds",JSON.stringify(userData.user.guilds));
-                }     
+            let user = await User.getUser(id);
+            if(!this.id in user.guilds){
+                user.guilds[this.id] = 0;//add the guild to the user
+                user.update("guilds",user.guilds);
+            }
+            if (!this.hasUser(id)){
+                this.users.push(id);//add the user to the guild
+                this.update("users",JSON.stringify(this.users));
             }
         }
         showSettings(){
@@ -123,14 +125,14 @@ try{
         display(){
             console.log("|\tGUILD CLASS\t|\n",this);
         }
-        leaderboard(page = 1) {
+        async leaderboard(page = 1) {
             const perPage = 10;
             const userCoinList = [];
-
-            for (const key in this.users) {
+            for (const userIndex in this.users) {
+                let user = await User.getUser(this.users[userIndex]);
                 userCoinList.push({
-                    name: this.users[key].user.getName(),
-                    coins: this.users[key].coins
+                    name: user.getName(),
+                    coins: user.getCoins(this.id)
                 });
             }
 
@@ -138,11 +140,9 @@ try{
 
             const totalPages = Math.ceil(userCoinList.length / perPage);
             const pageIndex = Math.max(0, Math.min(page - 1, totalPages - 1)); // Clamp to valid range
-
             const start = pageIndex * perPage;
             const end = start + perPage;
             const pageUsers = userCoinList.slice(start, end);
-
             let message = `**Server Coin Leaderboard — Page ${pageIndex + 1}/${totalPages} for ${this.getName()}**\n`;
 
             pageUsers.forEach((user, index) => {
@@ -151,7 +151,7 @@ try{
             });
 
             if (userCoinList.length === 0) {
-                message += `No players found.`;
+                message += `No users found.`;
             }
 
             return {message, totalPages};
@@ -174,7 +174,8 @@ try{
             this.guilds = guilds;
             User.all[id] = this;
             for (const serverId in guilds){
-                Guild.getGuild(serverId).addUser({"user":this,"coins":guilds[serverId]});
+                let guild = Guild.getGuild(serverId);
+                if(!guild.hasUser(this.id))guild.addUser(this.id);
             };
             if (mangoes === null || mangoes === undefined || isNaN(mangoes)) {
                 mangoes = 0;
@@ -200,7 +201,7 @@ try{
         }
         static async register(userId,userTag,guilds={}){
             if (loadingData)return;
-            if (User.exists(userId))return true;
+            if (await User.exists(userId))return true;
             msg(`registering user ${userTag}`);
             new User(userId,userTag,100,{"temp":{"multi":0,"endTime": new Date().toISOString()},"perm":0},guilds,0,0,0);
             let user = {"id": userId, "name": userTag, "aura": 100, "boosters": {"temp":{"multi":0,"endTime": new Date().toISOString()},"perm":0},"guilds":guilds,"mangoes":0,"insuranceTickets":0,"diddlebutton":0}
@@ -289,14 +290,13 @@ try{
         }
         giveCoins(amount,guild){
             if(!guild.hasUser(this.id)){
-                guild.addUser({"user":this,"coins":amount});
+                guild.addUser(this.id);
             }
-            guild.users[this.id].coins += Math.floor(amount);
             this.guilds[guild.id] += Math.floor(amount);
             this.update("guilds",JSON.stringify(this.guilds));
         }
-        getCoins(guild){
-            return guild.users[this.id].coins;
+        getCoins(guildId){
+            return this.guilds[guildId];
         }
         static async leaderboard(page = 1) {
             const perPage = 10;
@@ -331,7 +331,7 @@ try{
             });
 
             if (userAuraList.length === 0) {
-                message += `No players found.`;
+                message += `No users found.`;
             }
 
             return {message, totalPages};
@@ -385,7 +385,7 @@ try{
             });
 
             if (userMangoList.length === 0) {
-                message += `No players found.`;
+                message += `No users found.`;
             }
 
             return {message, totalPages};
@@ -583,8 +583,10 @@ try{
     }
     class ComponentCommand {
         static commands = [];
-        constructor(run) {
+        constructor(run, prefix, defer = true) {
             this.run = run;
+            this.prefix = prefix;
+            this.defer = defer;
             ComponentCommand.commands.push(this);
         }
         display(){
@@ -608,6 +610,7 @@ try{
             booster INTEGER,
             settings TEXT,
             shop_id TEXT,
+            users TEXT,
             FOREIGN KEY(shop_id) REFERENCES Shop(id)
             )
         `);
@@ -628,6 +631,24 @@ try{
         var userColumns = await allAsync(`
             PRAGMA table_info(User);
         `);
+        var guildColumns = await allAsync(`
+            PRAGMA table_info(Guild);
+        `)
+        var hasUsers = false
+        for (var column of guildColumns){
+            if(column.name == "users"){
+                hasUsers = true;
+                break;
+            }
+        }
+        console.log("has users column:", hasUsers);
+        if (!hasUsers) {
+            console.log("creating users column");
+            await runAsync(`
+                ALTER TABLE Guild
+                ADD COLUMN users TEXT
+            `);
+        }
         var hasMangoes = false;
         for (var column of userColumns) {
             if (column.name == "mangoes") {
@@ -679,34 +700,36 @@ try{
         try {
             // Load guilds with their shops
             const guildRows = await allAsync(`
-            SELECT g.id as guild_id, g.name, g.booster, g.settings,
+            SELECT g.id as guild_id, g.name, g.booster, g.settings, g.users,
                     s.id as shop_id, s.items, s.balance, s.config
             FROM Guild g
             LEFT JOIN Shop s ON g.shop_id = s.id
             `);
             for (const row of guildRows) {
-            let shop;
-            try {
-                shop = {
-                    id: row.shop_id,
-                    items: JSON.parse(row.items),
-                    balance: row.balance,
-                    config: JSON.parse(row.config),
-                };
-            } catch(error){
-                console.error("error loading data from shops")
-            }
-            try{
-                new Guild(
-                    row.guild_id,
-                    row.name,
-                    row.booster,
-                    JSON.parse(row.settings),
-                    shop
-                );
-            } catch(error){
-                console.error("error loading data from guilds",error)
-            }
+                let shop;
+                try {
+                    shop = {
+                        id: row.shop_id,
+                        items: JSON.parse(row.items),
+                        balance: row.balance,
+                        config: JSON.parse(row.config),
+                    };
+                } catch(error){
+                    console.error("error loading data from shops")
+                }
+                try{
+                    new Guild(
+                        row.guild_id,
+                        row.name,
+                        row.booster,
+                        JSON.parse(row.settings),
+                        shop,
+                        JSON.parse(row.users ?? "[]")
+                        
+                    );
+                } catch(error){
+                    console.error("error loading data from guilds",error)
+                }
             }
 
             // Interval to unload users that haven't been used in 5 mins
@@ -783,7 +806,7 @@ try{
         try {
             user = await client.users.fetch(userId);
             await user.send(content);
-            msg(`DM sent to ${user.name}: ${content}`);
+            msg(`DM sent to ${user.tag}: ${content}`);
         } catch (err) {
             msg(`Failed to send DM to ${user}: ${err.message}`);
         }

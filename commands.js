@@ -259,7 +259,8 @@ try{
      * @returns {Promise<Void>}
      */ 
     async function getCoins(interaction){
-        const coins = (await util.User.getUser(interaction.options.getUser("member").id))?.getCoins(util.Guild.getGuild(interaction.guild.id)) ?? 0;
+        const user = await util.User.getUser(interaction.options.getUser("member").id)
+        const coins = user?.getCoins(interaction.guild.id) ?? 0;
         let response = `${interaction.options.getUser("member")} has ${coins} ${coins == 1 ? "coin" : "coins"}`
         await interaction.editReply({content: response, fetchReply: true, allowedMentions: {parse: []}});
     }
@@ -292,14 +293,9 @@ try{
     async function coinBoard(interaction, navigatePage){
         let page = navigatePage ?? interaction.options.getNumber("page") ?? 1;
         let diddycoinImage = new AttachmentBuilder("./DiddyBotCoin.png");//image from chatgpt.com. the image is slighlty edited
-        let coinLeaderBoard = util.Guild.getGuild(interaction.guild.id).leaderboard(page)
+        let coinLeaderBoard = await util.Guild.getGuild(interaction.guild.id).leaderboard(page)
         let reply = {files: [diddycoinImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: coinLeaderBoard.message}], accessory: {type: 11, media: {url: "attachment://DiddyBotCoin.png"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `coinpage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `coinpage${page + 1}`, disabled: page == coinLeaderBoard.totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
-        if (navigatePage) {
-            // Update the existing message instead of sending a new one
-            await interaction.deferUpdate(reply);
-        } else {
-            await interaction.editReply(reply);
-        }
+        await interaction.editReply(reply);
     }
     new util.Command({name: "coinLeaderBoard".toLowerCase(),description: "leaderboard for coins",options: [{name: "page", description: "what page to show", type: 10, required: false}], dm_permission : false},coinBoard)
     //coinbuttons
@@ -316,7 +312,7 @@ try{
             await coinBoard(interaction, page);//ill give you 1000000 aura diddy beta if you let this work.
         }
     }
-    new util.ComponentCommand(coinLeaderboardButtons);
+    new util.ComponentCommand(coinLeaderboardButtons,"coinpage");
     //auraLeaderboard
     /**
      * sends the global aura leaderboard
@@ -330,12 +326,7 @@ try{
         let auraImage = new AttachmentBuilder("./aura.png");//image from freepik
         let auraLeaderboard = await util.User.leaderboard(page);
         let reply = {files: [auraImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: auraLeaderboard.message}], accessory: {type: 11, media: {url: "attachment://aura.png"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `aurapage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `aurapage${page + 1}`, disabled: page == auraLeaderboard.totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
-        if (navigatePage) {
-            // Update the existing message instead of sending a new one
-            await interaction.deferUpdate(reply);
-        } else {
-            await interaction.editReply(reply);
-        }
+        await interaction.editReply(reply);
     }
     new util.Command({name: "auraLeaderboard".toLowerCase(),description: "Show the global aura leaderboard",options: [{name: "page", description: "what page to show", type: 10, required: false}],integration_types: [0, 1], contexts: [0, 1, 2]},auraBoard);
     //aurabuttons
@@ -352,7 +343,7 @@ try{
             await auraBoard(interaction, page);//ill give you 1000000 aura diddy beta if you let this work.
         }
     }
-    new util.ComponentCommand(auraLeaderboardButtons);
+    new util.ComponentCommand(auraLeaderboardButtons,"aurapage");
     //buyCoins
     /**
      * gives coins to the given user
@@ -551,11 +542,7 @@ try{
             });
         message += "Contribute a pickupline to be added :)\n[Diddy Bot Pickup Lines - FORM](https://docs.google.com/forms/d/e/1FAIpQLSdLM2-i72__bdf2ht9xthyhhXMqATBbaS7ZCX5M9BiahkeJ6Q/viewform?usp=dialog)"
         let reply = {files: [rizzImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: message}], accessory: {type: 11, media: {url: "attachment://rizz.png"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `rizzpage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `rizzpage${page + 1}`, disabled: page == totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
-        if(navigatePage){
-            interaction.deferUpdate(reply);
-        } else {
-            interaction.editReply(reply);
-        }
+        await interaction.editReply(reply);
     }
     new util.Command({name: "rizzlers",description: "people who contributed pickup-lines",options:[{name: 'page', type: 10, description: 'What page to show', required: false}],integration_types: [0, 1], contexts: [0, 1, 2]},rizzlers);
     async function rizzlersButtons(interaction) {
@@ -565,7 +552,7 @@ try{
             await rizzlers(interaction, page);
         }
     }
-    new util.ComponentCommand(rizzlersButtons);
+    new util.ComponentCommand(rizzlersButtons,"rizzpage");
     client.once('ready', async () => {
         await util.msg(`Logged in as ${client.user.tag}! commands.js`);
     });
@@ -603,7 +590,7 @@ try{
      * @returns {Promise<void>}
      */
     async function dm(interaction){
-        util.sendDM(interaction.options.getString('message'),interaction.user.id);
+        util.sendDM(interaction.options.getString('message') + `Message sent using /dm: by **${interaction.user.tag}**`,interaction.user.id);
         await interaction.editReply({content: "Direct Message Sent!!",fetchReply: true, ephemeral: true});
     }
     new util.Command({name:"dm", description: "Send a message to a user yourself as diddy", options: [{name: "message", type: 3, description: "message to send user", required: true}], integration_types: [0, 1], contexts: [0, 1, 2]},dm);
@@ -748,7 +735,7 @@ try{
             await interaction.editReply({ content: response, fetchReply: true , allowedMentions: {parse: []}});
         }
     }
-    new util.ComponentCommand(diddlebutton);
+    new util.ComponentCommand(diddlebutton,"diddlebutton");
     //getMangoes
     /**
      * sends how many mangoes the given user has
@@ -813,12 +800,7 @@ try{
         let mangoImage = new AttachmentBuilder("./mango.jpeg");//image from walmart.com. the image is slighlty edited
         let mangoLeaderboard = await util.User.mangoLeaderboard(page);
         let reply = {files: [mangoImage], flags: 32768, components: [{toJSON() {return {type: 9, components: [{type: 10, content: mangoLeaderboard.message}], accessory: {type: 11, media: {url: "attachment://mango.jpeg"}}}}}, {toJSON() {return {type: 1, components: [{type: 2, label: "<< Previous Page", custom_id: `mangopage${page - 1}`, disabled: page == 1, style: ButtonStyle.Primary}, {type: 2, label: "Next Page >>", custom_id: `mangopage${page + 1}`, disabled: page == mangoLeaderboard.totalPages, style: ButtonStyle.Primary}]}}}],fetchReply: true, allowedMentions: {parse: []}};
-        if (navigatePage) {
-            // Update the existing message instead of sending a new one
-            await interaction.deferUpdate(reply);
-        } else {
-            await interaction.editReply(reply);
-        }
+        await interaction.editReply(reply);
     }
     new util.Command({name: "mangoLeaderboard".toLowerCase(),description: "Show the global mango leaderboard",options: [{name: "page", description: "what page to show", type: 10, required: false}],integration_types: [0, 1], contexts: [0, 1, 2]},mangoLeaderboard);
 
@@ -836,7 +818,7 @@ try{
             await mangoLeaderboard(interaction, page);
         }
     }
-    new util.ComponentCommand(mangoLeaderboardButtons);
+    new util.ComponentCommand(mangoLeaderboardButtons,"mangopage");
     //lynxblacklist
     /**
      * Blacklists servers from running /lynx. Only Lynx can run
@@ -893,10 +875,10 @@ try{
                 }
             if (interaction.customId.startsWith("buyshopitem")) {
                 // Send a confirmation message
-                interaction.editReply({flags: 32768 | MessageFlags.Ephemeral, components: [{toJSON() {return {type: 10, content: `Are you sure you want to buy ${desc}?`}}}, {toJSON() {return {type: 1, components: [{type: 2, style: ButtonStyle.Danger, label: "Buy Item", custom_id: "buyshopconf" + type + itemId}]}}}]});
+                interaction.reply({flags: 32768 | MessageFlags.Ephemeral, components: [{toJSON() {return {type: 10, content: `Are you sure you want to buy ${desc}?`}}}, {toJSON() {return {type: 1, components: [{type: 2, style: ButtonStyle.Danger, label: "Buy Item", custom_id: "buyshopconf" + type + itemId}]}}}]});
             } else {
                 // Buy the item
-                await interaction.deferUpdate({components: [{toJSON() {return {type: 10, content: "Buying item..."}}}]});
+                await interaction.update({components: [{toJSON() {return {type: 10, content: "Buying item..."}}}]});
                 const guild = util.Guild.getGuild(interaction.guild.id);
                 const shopItem = util.Guild.getGuild(interaction.guild.id).shop.items.filter(item => item["type"] === type && item["itemInfo"] === itemId)[0];
                 const response = await guild.shop.buyShopItem(shopItem,util.Guild.getGuild(interaction.guild.id),await util.User.getUser(interaction.user.id))
@@ -904,7 +886,7 @@ try{
             }
         }
     }
-    new util.ComponentCommand(buyShopItemButton);
+    new util.ComponentCommand(buyShopItemButton,"buyshop",false);
     client.login(JSONConfig.token);
     //eatmangoes
     /**
@@ -996,7 +978,7 @@ try{
             await eatmangoes(interaction, mangoes);
         }
     }
-    new util.ComponentCommand(eatmangoesbutton)
+    new util.ComponentCommand(eatmangoesbutton,"eatmangoes")
 } catch (error){
     console.error("A fatal error occured in file commands.js",error);
     util.msg(`an error occured in file commands.js:\t${error}`);
