@@ -735,7 +735,7 @@ try{
             await interaction.editReply({ content: response, fetchReply: true , allowedMentions: {parse: []}});
         }
     }
-    new util.ComponentCommand(diddlebutton,"diddlebutton");
+    new util.ComponentCommand(diddlebutton,"diddlebutton",false);
     //getMangoes
     /**
      * sends how many mangoes the given user has
