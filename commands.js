@@ -476,44 +476,30 @@ try{
      * @param {Interaction} interaction - The interaction passed by the client.
      * @returns {Promise<Void>}
      */ 
-    async function getInvite(interaction) {
-        let invites = [];
-
-        client.guilds.cache.forEach(g => {
-            const guildData = util.Guild.getGuild(g.id);
-
-            if (!guildData) {
-                //console.log(`❌ No guild data for ID: ${g.id}`);
-                return;
+    async function getInvite(interaction){
+        let servers = {};
+        for (guild in util.Guild.all){
+            let guildData = util.Guild.getGuild(guild)
+            if (!guildData || !guildData.settings) {
+                continue
             }
-
-            if (!guildData.settings) {
-                //console.log(`❌ No settings for guild ID: ${g.id}`);
-                return;
-            }
-
-            const { settings } = guildData;
+            const settings = guildData.settings;
             const enabled = settings["randomInviteEnabled"];
             const inviteCode = settings["invite-code"];
             
             if (enabled && inviteCode && inviteCode.trim() !== "") {
-                invites.push(inviteCode);
-                console.log(`✅ Added invite: ${inviteCode}`);
+                servers[guildData.name] = settings;
             }
-        });
-
-        if (invites.length > 0) {
-            let randomInvite = Math.floor(Math.random() * invites.length);
-            await interaction.editReply({
-                content: `https://discord.gg/${invites[randomInvite]}\nset your invite code and add your server`,
-                fetchReply: true
-            });
-        } else {
-            await interaction.editReply({
-                content: "Couldn't find a valid server.",
-                fetchReply: true
-            });
         }
+        let response;
+        if (Object.keys(servers).length > 0) {
+            let name = Object.keys(servers)[Math.floor(Math.random() * Object.keys(servers).length)]
+            let server = servers[name];
+            response = `about:    **${server["about"]}.**\nfeatures:\t**${server["features"]}.**\ninvite:    [${name}](https://discord.gg/${server["invite-code"]})\nset your invite code and add your server`
+        } else {
+            response = `Couldn't find a valid server.`    
+        }
+        await interaction.editReply({content: response,fetchReply: true});
     }
 
 
@@ -732,10 +718,10 @@ try{
             const response = `@everyone has been diddled by <@${interaction.user.id}>`;
 
             // Send the reply
-            await interaction.editReply({ content: response, fetchReply: true , allowedMentions: {parse: []}});
+            await interaction.reply({ content: response, fetchReply: true , allowedMentions: {parse: []}});
         }
     }
-    new util.ComponentCommand(diddlebutton,"diddlebutton");
+    new util.ComponentCommand(diddlebutton,"diddlebutton",false);
     //getMangoes
     /**
      * sends how many mangoes the given user has

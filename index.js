@@ -84,7 +84,7 @@ try {
 		if (message.mentions.has(client.user) && msgcontent != "none" && msgcontent.includes("<@1305713838775210015>")) {
             content = `User:\t${message.author.username}\nServer:\t${message.guild.name}\nchannel:\t${message.channel.name}\nmessage:\t${msgcontent}`;
             util.msg(content,JSONConfig.communityServer,JSONConfig.mentionsChannel);
-            message.reply("Ping sent to diddy bot discord");
+            message.reply("The bot uses slash commands");
         }
         if(!util.Guild.exists(message.guild.id))util.Guild.register(message.guild.id,message.guild.name);
         if(!(await util.User.exists(message.author.id)))util.User.register(message.author.id,message.author.tag,{[message.guild.id]:0});

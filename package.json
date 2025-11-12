@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "Diddy-Bot"
+    "url": "https://github.com/PrestonCurtis1/Diddy-Bot.git"
   },
   "keywords": [
     "Diddy",
@@ -25,5 +25,9 @@
     "Bot"
   ],
   "author": "Unprankable",
+  "contributors": [
+    "Houdert6",
+    "LynxOfLucdity"
+  ],
   "license": "ISC"
 }

@@ -2,8 +2,16 @@ const util = require("./utilities.js");
 const JSONConfig = require("./config.json")
 const express = require("express");
 const path = require("path");
-const { Routes } = require("discord.js");
-
+    const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField} = require('discord.js');
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.DirectMessages,
+        
+    ]
+});
 async function runApi() {
     const api = express();
     const port = 80;
