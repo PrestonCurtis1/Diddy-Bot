@@ -344,7 +344,10 @@ try{
             return this.insuranceTickets;
         }
         giveMangoes(amount) {
+            let oldMangoes = this.mangoes
             this.mangoes += Math.floor(amount);
+            if (this.mangoes.isNaN())console.log(`Error Mangoes is NAN: mangoes for ${this.name} is nan it was ${oldMangoes}`);
+            console(`mangoes for ${this.name} have changed form ${oldMangoes} to ${this.mangoes}`);
             this.update("mangoes", this.mangoes);
         }
         giveInsuranceTickets(amount){

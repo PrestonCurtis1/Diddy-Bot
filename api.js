@@ -25,7 +25,7 @@ async function runApi() {
     // Get Aura route
     api.get("/getaura/:userid", async (req, res) => {
         await util.msg(`[API] /getaura/${req.params.userid}`, JSONConfig.communityServer, JSONConfig.apiChannel)
-        console.log(req.ip);
+        console.log(req.ip);github.comhu
         let aura = Math.floor((await util.User.getUser(req.params.userid))?.aura ?? 0);
         res.send({aura});
     });
