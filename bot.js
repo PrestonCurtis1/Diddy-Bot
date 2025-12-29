@@ -7,13 +7,39 @@ try {
     const commands = require('./commands.js');
     const logdms = require('./logdms.js');
 
-    const client = new Client({
+    // Debug: print process start info to help diagnose sharding environment
+    console.log(`bot.js starting. pid=${process.pid} argv=${process.argv.join(' ')} cwd=${process.cwd()}`);
+    console.log('SHARDING_MANAGER:', process.env.SHARDING_MANAGER);
+    console.log('SHARDING_MANAGER_MODE:', process.env.SHARDING_MANAGER_MODE);
+    console.log('SHARDS env:', process.env.SHARDS);
+    console.log('SHARD_COUNT env:', process.env.SHARD_COUNT);
+    console.log('DISCORD_TOKEN present:', !!process.env.DISCORD_TOKEN);
+
+    // Support being launched by ShardingManager (env vars SHARDS and SHARD_COUNT)
+    const shardEnv = process.env.SHARDS; // single id or comma-separated list
+    const shardCountEnv = process.env.SHARD_COUNT;
+    let clientOptions = {
         intents: [
             GatewayIntentBits.Guilds,
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.DirectMessages,
-        ]
-    });
+        ],
+    };
+
+    if (shardEnv !== undefined && shardCountEnv !== undefined) {
+        const shardList = String(shardEnv).split(',').map(s => Number(s)).filter(n => !Number.isNaN(n));
+        const shardCount = Number(shardCountEnv);
+        if (shardList.length > 0 && Number.isInteger(shardCount) && shardCount > 0) {
+            clientOptions.shards = shardList;
+            clientOptions.shardCount = shardCount;
+            console.log(`Starting shard worker. shard ids: ${clientOptions.shards}, shardCount: ${clientOptions.shardCount}`);
+        } else {
+            console.log('Shard env detected but invalid shard list or count', { shardList, shardCountEnv });
+        }
+    }
+
+    const client = new Client(clientOptions);
+    console.log('Client options:', { shards: clientOptions.shards, shardCount: clientOptions.shardCount });
 
     client.on('interactionCreate', async (interaction) => {
         if (util.isLoadingData()) return;
@@ -103,19 +129,19 @@ try {
 
     client.login(JSONConfig.token);
 
-    process.on('unhandledRejection', (err) => {
-        if (err && err.code === 'UND_ERR_CONNECT_TIMEOUT') {
-            console.error('❌ Connection to Discord API timed out. Exiting...');
-            process.exit(1);
-        } else {
-            console.error('⚠️ Unhandled rejection:', err);
-        }
-    });
+    // process.on('unhandledRejection', (err) => {
+    //     if (err && err.code === 'UND_ERR_CONNECT_TIMEOUT') {
+    //         console.error('❌ Connection to Discord API timed out. Exiting...');
+    //         process.exit(1);
+    //     } else {
+    //         console.error('⚠️ Unhandled rejection:', err);
+    //     }
+    // });
 
-    process.on('uncaughtException', (err) => {
-        console.error('Uncaught Exception thrown:', err);
-        process.exit(1);
-    });
+    // process.on('uncaughtException', (err) => {
+    //     console.error('Uncaught Exception thrown:', err);
+    //     process.exit(1);
+    // });
 
     process.on('exit', (code) => {
         console.log(`Bot (shard) has exited with code ${code}\n${Math.ceil(process.uptime() / 60)} minutes`);

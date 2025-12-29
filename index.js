@@ -39,5 +39,7 @@ const api = require('./api.js');
     } catch (err) {
         console.error('Failed to spawn shards:', err);
     }
+    util.loadData();
+
 })();
 // index.js is the sharding master only. All worker logic lives in `bot.js`.

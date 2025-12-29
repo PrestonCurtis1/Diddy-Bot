@@ -73,7 +73,7 @@ try{
             new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","randomInviteEnabled":true},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":"","buyCoinsWithMangoes":"false"}},[]);
             let g = {"id": guildId, "name": guildName, "booster" : 1, "settings": {"about":"","features":[],"invite-code":"","randomInviteEnabled":true},"shop": {"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}},"users":[]};
             await runAsync(
-                `INSERT OR REPLACE INTO Guild (id, name, booster, settings, shop_id, users) VALUES (?, ?, ?, ?, ?)`,
+                `INSERT OR REPLACE INTO Guild (id, name, booster, settings, shop_id, users) VALUES (?, ?, ?, ?, ?, ?)`,
                 [g.id, g.name, g.booster, JSON.stringify(g.settings), g.shop.id, JSON.stringify([])]
             );
             let shop = g.shop;
@@ -92,9 +92,10 @@ try{
                 return
             }
             let user = await User.getUser(id);
-            if(!this.id in user.guilds){
-                user.guilds[this.id] = 0;//add the guild to the user
-                user.update("guilds",user.guilds);
+            if (!user) return;
+            if (!(this.id in user.guilds)) {
+                user.guilds[this.id] = 0; // add the guild to the user
+                user.update("guilds", user.guilds);
             }
             if (!this.hasUser(id)){
                 this.users.push(id);//add the user to the guild
@@ -171,7 +172,7 @@ try{
             this.level = Math.floor((this.aura/2)**(1/2.25));
             this.boosters = boosters;//object
             this.serverMulti = {};
-            this.guilds = guilds;
+            
             User.all[id] = this;
             for (const serverId in guilds){
                 let guild = Guild.getGuild(serverId);
@@ -190,6 +191,10 @@ try{
             }
             this.diddlebutton = diddlebutton;
             this.unloadUser = false;
+            if (guilds === null || guilds === undefined) {
+                guilds = []
+            }
+            this.guilds = guilds;
         }
         async update(key,value){
             if (loadingData)return;
@@ -700,6 +705,7 @@ try{
     }
     async function loadData() {
         loadingData = true;
+        await createTables();
         try {
             // Load guilds with their shops
             const guildRows = await allAsync(`
@@ -771,28 +777,33 @@ try{
         }
         msg("loaded data rizzlers")
     }
-    const client = new Client({
-        intents: [
-            GatewayIntentBits.Guilds, 
-            GatewayIntentBits.GuildMessages, 
-            GatewayIntentBits.DirectMessages,
-            GatewayIntentBits.GuildMembers
-        ] // Ensure the necessary intents are enabled
-    });
+    // Create Discord client only in shard workers (when SHARD_COUNT is present) or when explicitly forced
+    let client = null;
+    const shouldCreateClient = process.env.SHARD_COUNT !== undefined || process.env.FORCE_DISCORD_CLIENT === 'true';
+    if (shouldCreateClient) {
+        client = new Client({
+            intents: [
+                GatewayIntentBits.Guilds,
+                GatewayIntentBits.GuildMessages,
+                GatewayIntentBits.DirectMessages,
+                GatewayIntentBits.GuildMembers,
+            ],
+        });
+    } else {
+        console.log('utilities: running without Discord client (master/sharding manager). msg will use console.log fallback.');
+    }
 
     // Function to send a message to a specific channel in a specific server
-    async function msg(logMessage,guildId=JSONConfig.communityServer, channelId=JSONConfig.logChannel) {
+    async function msg(logMessage, guildId = JSONConfig.communityServer, channelId = JSONConfig.logChannel) {
+        if (!client) {
+            console.log(`[msg fallback] guild:${guildId} channel:${channelId} -> ${logMessage}`);
+            return;
+        }
         try {
-            // Fetch the guild using its ID
             const guild = await client.guilds.fetch(guildId);
-            
-            // Fetch the channel using its ID
             const channel = await guild.channels.fetch(channelId);
-
-            // Check if the channel is text-based and send the message
             if (channel.isTextBased()) {
-                //use console.log instead of msg in this function because other-wise it will loop infinitely
-                await channel.send({content:`${logMessage}`, allowedMentions: {parse: []}});
+                await channel.send({ content: `${logMessage}`, allowedMentions: { parse: [] } });
                 console.log(`Message sent to ${channel.name} in guild ${guild.name}: ${logMessage}`);
             } else {
                 console.log('The specified channel is not a text channel.');
@@ -807,6 +818,10 @@ try{
         //const userId = '799101657647415337';//houdert6
         let user;
         try {
+            if (!client) {
+                console.log(`[sendDM fallback] to ${userId}: ${content}`);
+                return;
+            }
             user = await client.users.fetch(userId);
             await user.send(content);
             msg(`DM sent to ${user.tag}: ${content}`);
@@ -940,11 +955,12 @@ try{
     function isLoadingData() {
         return loadingData;
     }
-    client.once('ready', async () => {
-        await msg(`Logged in as ${client.user.tag}! utilities.js`);
-        await createTables();
-        await loadData();
-    });
+    if (client) {
+        client.once('ready', async () => {
+            await msg(`Logged in as ${client.user.tag}! utilities.js`);
+        });
+    }
+
     module.exports = {
         msg,
         addRole,
@@ -967,7 +983,9 @@ try{
         //loadingData,
     }
     
-    client.login(JSONConfig.token);
+    if (client) {
+        client.login(JSONConfig.token);
+    }
 } catch (error){
     console.error("A fatal error occured in file utilities.js",error);
     msg(`an error occured in file utilities.js:\t${error}`);
