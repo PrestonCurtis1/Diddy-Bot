@@ -2,6 +2,7 @@ const util = require("./utilities.js");
 const JSONConfig = require("./config.json")
 const express = require("express");
 const path = require("path");
+const commands = require("commands.js")
     const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField} = require('discord.js');
     // Don't create a gateway client in the master/sharding manager process to avoid ShardingRequired errors.
     let client = null;
