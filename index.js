@@ -2,7 +2,7 @@ const { ShardingManager, REST, Routes } = require('discord.js');
 const JSONConfig = require('./config.json');
 const util = require('./utilities.js');
 const api = require('./api.js');
-
+const commands = require("commands.js");
 (async () => {
     try {
         // Register global application commands once from the master process
