@@ -2,7 +2,6 @@ const util = require("./utilities.js");
 const JSONConfig = require("./config.json")
 const express = require("express");
 const path = require("path");
-const commands = require("commands.js")
     const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField} = require('discord.js');
     // Don't create a gateway client in the master/sharding manager process to avoid ShardingRequired errors.
     let client = null;
@@ -21,7 +20,7 @@ const commands = require("commands.js")
 async function runApi() {
     const api = express();
     // Use configurable port from config.json to avoid requiring root for port 80
-    const port = JSONConfig.apiPort || 3000;
+    const port = JSONConfig.apiPort || 80;
 
     // Set up the API to serve the monaco editor
     api.use("/monaco", express.static(path.dirname(require.resolve('monaco-editor/package.json'))));
