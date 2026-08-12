@@ -898,13 +898,13 @@ try{
             let random_num = Math.floor(Math.random() * 100) + 1;
             let item = {};
             for (let index = 0; index < loot_table.length; index++){
-                currentItem = loot_table[index];
-                chance = currentItem["chance"];
+                let currentItem = loot_table[index];
+                let chance = currentItem["chance"];
                 if (random_num <= chance){
                     item = currentItem;
                     break;
                 } else {
-                    random_num-=chance;
+                    random_num -= chance;
                 }
             }
             let chance = item.chance;
