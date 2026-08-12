@@ -907,12 +907,10 @@ try{
                     random_num -= chance;
                 }
             }
-            let name = item.item;
-            let amount = item.amount;
             let chance = item.chance;
             let quantity = Math.ceil(amount * item.amount);
             message += `You ate **${amount}** mangoes and recieved `
-            switch(name){
+            switch(item.item){
                 case "mangoes":
                     user.giveMangoes(quantity);
                     message += `**${quantity}** mangoes:`;
