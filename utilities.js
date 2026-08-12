@@ -92,9 +92,14 @@ try{
                 return
             }
             let user = await User.getUser(id);
-            if(!this.id in user.guilds){
-                user.guilds[this.id] = 0;//add the guild to the user
-                user.update("guilds",user.guilds);
+            if (!user) {
+                return;
+            }
+            const guilds = user.guilds ?? {};
+            if (!(this.id in guilds)){
+                guilds[this.id] = 0;//add the guild to the user
+                user.guilds = guilds;
+                user.update("guilds",JSON.stringify(user.guilds));
             }
             if (!this.hasUser(id)){
                 this.users.push(id);//add the user to the guild
@@ -171,11 +176,11 @@ try{
             this.level = Math.floor((this.aura/2)**(1/2.25));
             this.boosters = boosters;//object
             this.serverMulti = {};
-            this.guilds = guilds;
+            this.guilds = guilds ?? {};
             User.all[id] = this;
-            for (const serverId in guilds){
+            for (const serverId in this.guilds){
                 let guild = Guild.getGuild(serverId);
-                if(!guild.hasUser(this.id))guild.addUser(this.id);
+                if (guild && !guild.hasUser(this.id)) guild.addUser(this.id);
             };
             if (mangoes === null || mangoes === undefined || isNaN(mangoes)) {
                 mangoes = 0;
@@ -346,8 +351,11 @@ try{
         giveMangoes(amount) {
             let oldMangoes = this.mangoes
             this.mangoes += Math.floor(amount);
-            if (this.mangoes.isNaN())console.log(`Error Mangoes is NAN: mangoes for ${this.name} is nan it was ${oldMangoes}`);
-            console(`mangoes for ${this.name} have changed form ${oldMangoes} to ${this.mangoes}`);
+            if (Number.isNaN(Number(this.mangoes))) {
+                this.mangoes = 0;
+                console.log(`Error Mangoes is NAN: mangoes for ${this.name} is nan it was ${oldMangoes}`);
+            }
+            console.log(`mangoes for ${this.name} have changed from ${oldMangoes} to ${this.mangoes}`);
             this.update("mangoes", this.mangoes);
         }
         giveInsuranceTickets(amount){
