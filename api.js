@@ -3,24 +3,18 @@ const JSONConfig = require("./config.json")
 const express = require("express");
 const path = require("path");
     const { Client, GatewayIntentBits, REST, Routes, PermissionsBitField} = require('discord.js');
-    // Don't create a gateway client in the master/sharding manager process to avoid ShardingRequired errors.
-    let client = null;
-    const shouldCreateClient = process.env.SHARD_COUNT !== undefined || process.env.FORCE_DISCORD_CLIENT === 'true';
-    if (shouldCreateClient) {
-        client = new Client({
-            intents: [
-                GatewayIntentBits.Guilds,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.DirectMessages,
-            ],
-        });
-    } else {
-        console.log('api: not creating gateway client in master process');
-    }
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.DirectMessages,
+        
+    ]
+});
 async function runApi() {
     const api = express();
-    // Use configurable port from config.json to avoid requiring root for port 80
-    const port = JSONConfig.apiPort || 80;
+    const port = 80;
 
     // Set up the API to serve the monaco editor
     api.use("/monaco", express.static(path.dirname(require.resolve('monaco-editor/package.json'))));
