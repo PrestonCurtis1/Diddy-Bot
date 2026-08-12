@@ -73,8 +73,8 @@ try{
             new Guild(guildId,guildName,1,{"about":"","features":[],"invite-code":"","randomInviteEnabled":true},{"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":"","buyCoinsWithMangoes":"false"}},[]);
             let g = {"id": guildId, "name": guildName, "booster" : 1, "settings": {"about":"","features":[],"invite-code":"","randomInviteEnabled":true},"shop": {"id":guildId,"items":[],"balance":0,"config":{"buyCoinCost":20,"buyCoins":"true","shopAdminRole":""}},"users":[]};
             await runAsync(
-                `INSERT OR REPLACE INTO Guild (id, name, booster, settings, shop_id, users) VALUES (?, ?, ?, ?, ?)`,
-                [g.id, g.name, g.booster, JSON.stringify(g.settings), g.shop.id, JSON.stringify([])]
+                `INSERT OR REPLACE INTO Guild (id, name, booster, settings, shop_id, users) VALUES (?, ?, ?, ?, ?, ?)`,
+                [g.id, g.name, g.booster, JSON.stringify(g.settings), g.shop.id, JSON.stringify(g.users)]
             );
             let shop = g.shop;
             await runAsync(
