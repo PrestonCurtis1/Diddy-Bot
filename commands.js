@@ -890,15 +890,23 @@ try{
         //for example if you ate 200 mangoes and your random number was 93 you would get 4 diddle buttons
         //amount is always rounded up so if u ate 5 mangoe and got random number was 93 which is diddlebutton 5/50 = 0.1
         //you can't have 0.1 diddlebuttons so it will just round up
-        let loot_table = {"mangoes": {"amount": 1.25, "chance": "30%"}, "aura": {"amount": 1.5, "chance": "25%"}, "booster": {"amount": 1, "chance": "20%"}, "insurance": {"amount": 0.5, "chance": "15%"}, "diddlebutton": {"amount": 0.2, "chance": "1%"}, "nothing": {"amount": 0, "chance": "9%"}}
+        let loot_table = [{"item": "mangoes", "amount": 1.25, "chance": 30},{"item": "aura", "amount": 1.5, "chance": 25},{"item": "booster", "amount": 1, "chance": 20},{"item": "insurance", "amount": 0.5, "chance": 15},{"item": "diddlebutton", "amount": 0.2, "chance": 1},{"item": "nothing", "amount": 0, "chance": 9}];
         if (amount > userMangoes){//user doesn't have enough mangoes
             message += `You only have **${userMangoes}** mangoes, you need **${amount - userMangoes}** more`
         } else {
             user.giveMangoes(amount*-1)
             let random_num = Math.floor(Math.random() * 100) + 1;
-            let itemList = ["mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","mangoes","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","aura","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","booster","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","insurance","diddlebutton","nothing","nothing","nothing","nothing","nothing","nothing","nothing","nothing","nothing"]
-            let name = itemList[random_num-1];
-            let item = loot_table[name];
+            let item = {};
+            for (let index = 0; index < loot_table.length; index++){
+                currentItem = loot_table[index];
+                chance = currentItem["chance"];
+                if (random_num <= chance){
+                    item = currentItem;
+                    break;
+                } else {
+                    random_num-=chance;
+                }
+            }
             let chance = item.chance;
             let quantity = Math.ceil(amount * item.amount);
             message += `You ate **${amount}** mangoes and recieved `
